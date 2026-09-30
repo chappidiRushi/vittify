@@ -48,18 +48,35 @@ android {
 
     signingConfigs {
         create("release") {
-            // Default to values from local.properties if available
-            val localPropertiesFile = rootProject.file("local.properties")
-            if (localPropertiesFile.exists()) {
-                val localProperties = Properties()
-                localProperties.load(localPropertiesFile.inputStream())
-                
-                val keystorePath = localProperties.getProperty("RELEASE_STORE_FILE", "")
-                if (keystorePath.isNotEmpty()) {
-                    storeFile = file(keystorePath)
-                    storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD", "")
-                    keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS", "")
-                    keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD", "")
+            // Support CI/CD project properties or environment variables
+            val storeFilePath = (project.findProperty("android.injected.signing.store.file") as? String)
+                ?: System.getenv("RELEASE_STORE_FILE")
+            val storePass = (project.findProperty("android.injected.signing.store.password") as? String)
+                ?: System.getenv("RELEASE_STORE_PASSWORD")
+            val keyAliasProp = (project.findProperty("android.injected.signing.key.alias") as? String)
+                ?: System.getenv("RELEASE_KEY_ALIAS")
+            val keyPass = (project.findProperty("android.injected.signing.key.password") as? String)
+                ?: System.getenv("RELEASE_KEY_PASSWORD")
+
+            if (!storeFilePath.isNullOrEmpty() && file(storeFilePath).exists()) {
+                storeFile = file(storeFilePath)
+                storePassword = storePass
+                keyAlias = keyAliasProp
+                keyPassword = keyPass
+            } else {
+                // Default to values from local.properties if available
+                val localPropertiesFile = rootProject.file("local.properties")
+                if (localPropertiesFile.exists()) {
+                    val localProperties = Properties()
+                    localProperties.load(localPropertiesFile.inputStream())
+                    
+                    val keystorePath = localProperties.getProperty("RELEASE_STORE_FILE", "")
+                    if (keystorePath.isNotEmpty()) {
+                        storeFile = file(keystorePath)
+                        storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD", "")
+                        keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS", "")
+                        keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD", "")
+                    }
                 }
             }
         }
