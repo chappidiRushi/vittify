@@ -75,7 +75,7 @@ To add support for a new bank:
 
 ```bash
 # Clone the repo
-git clone https://github.com/RReddy/Vittify.git
+git clone https://github.com/chappidiRushi/Vittify.git
 cd Vittify
 
 # Build debug APK

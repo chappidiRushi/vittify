@@ -996,7 +996,7 @@ class TransactionDetailViewModel @Inject constructor(
         val encodedTitle = URLEncoder.encode(issueTitle, "UTF-8")
         val encodedBody = URLEncoder.encode(issueBody, "UTF-8")
 
-        return "https://github.com/RReddy/Vittify/issues/new?title=$encodedTitle&body=$encodedBody"
+        return "https://github.com/chappidiRushi/Vittify/issues/new?title=$encodedTitle&body=$encodedBody"
     }
 
     fun showDeleteDialog() {

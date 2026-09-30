@@ -290,7 +290,7 @@ vittify/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/RReddy/Vittify.git
+   git clone https://github.com/chappidiRushi/Vittify.git
    cd Vittify
    ```
 
