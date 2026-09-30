@@ -72,3 +72,6 @@ bugs/
 /bugs_features/
 /new_bugs_features/
 /logo/
+showcase/node_modules/
+showcase/dist/
+*.tsbuildinfo

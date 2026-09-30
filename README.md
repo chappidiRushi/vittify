@@ -75,14 +75,15 @@ Captured directly from **Google Pixel 7 Pro** running the latest Vittify Beta bu
   </tr>
 </table>
 
-### 4. Personalization, Accounts & Quick Actions
+### 4. Personalization, Accounts & Backup
 
 <table>
   <tr>
-    <td align="center" width="25%"><img src="screenshots/settings.png" width="200" alt="Appearance & Themes" /><br /><b>Themes & Monet</b><br /><sub>Dynamic palette seeds, curated palettes & typography</sub></td>
-    <td align="center" width="25%"><img src="screenshots/account_detail.png" width="200" alt="Account Balance Detail" /><br /><b>Account Balances</b><br /><sub>Running balance ledger & balance trend graphs</sub></td>
-    <td align="center" width="25%"><img src="screenshots/budget_history.png" width="200" alt="Budget History" /><br /><b>Budget History</b><br /><sub>Historical performance tracking across previous cycles</sub></td>
-    <td align="center" width="25%"><img src="screenshots/add_transaction.png" width="200" alt="Quick Add Transaction" /><br /><b>Quick Add Flow</b><br /><sub>Rolling hero amount container & instant categorization</sub></td>
+    <td align="center" width="20%"><img src="screenshots/settings.png" width="180" alt="Appearance & Themes" /><br /><b>Themes & Monet</b><br /><sub>Dynamic palette seeds & typography</sub></td>
+    <td align="center" width="20%"><img src="screenshots/backup_sync.png" width="180" alt="Backup & Sync" /><br /><b>Backup & Sync</b><br /><sub>Google Drive, Nextcloud & WebDAV</sub></td>
+    <td align="center" width="20%"><img src="screenshots/account_detail.png" width="180" alt="Account Balance Detail" /><br /><b>Account Balances</b><br /><sub>Running balance ledger & trend graphs</sub></td>
+    <td align="center" width="20%"><img src="screenshots/budget_history.png" width="180" alt="Budget History" /><br /><b>Budget History</b><br /><sub>Performance tracking across cycles</sub></td>
+    <td align="center" width="20%"><img src="screenshots/add_transaction.png" width="180" alt="Quick Add Transaction" /><br /><b>Quick Add Flow</b><br /><sub>Rolling hero amount & categorization</sub></td>
   </tr>
 </table>
 
@@ -162,6 +163,12 @@ Captured directly from **Google Pixel 7 Pro** running the latest Vittify Beta bu
 - **Biometric Lock**: Protect your financial data with Android BiometricPrompt (Fingerprint / Face Unlock).
 - **Encrypted Local Storage**: Sensitive settings and credentials stored using AndroidX EncryptedSharedPreferences and cryptographic keystores.
 - **Data Sanitization**: Option to sanitize or mask sensitive account digits when sharing screenshots or exporting records.
+
+### ☁️ 13. Encrypted Multi-Cloud Backup & Restore
+- **Google Drive Integration**: Direct, one-tap backup to your private Google Drive AppData folder with scheduled daily/weekly auto-backups.
+- **Nextcloud & WebDAV**: Sync with self-hosted Nextcloud instances, ownCloud, Synology NAS, or any custom WebDAV endpoint.
+- **Client-Side AES-256 Encryption**: All backup archives are encrypted locally before upload with your private passphrase. The cloud provider only ever sees ciphertext.
+- **Full Offline Portability**: Restore your entire ledger and preferences on any new device with zero friction.
 
 ---
 
