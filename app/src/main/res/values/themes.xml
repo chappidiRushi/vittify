@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base theme -->
+    <style name="Theme.VittifyCompose" parent="Theme.AppCompat.Light.NoActionBar" />
+
+    <!-- Transparent theme for overlay activities -->
+    <style name="Theme.Vittify.Transparent" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+    
+    <!-- Splash Screen theme for light mode -->
+    <style name="Theme.Vittify.SplashScreen" parent="Theme.SplashScreen">
+        
+        <!-- Set splash screen duration (Android 12+) -->
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        
+        <!-- Set the theme to use after splash screen -->
+        <item name="postSplashScreenTheme">@style/Theme.VittifyCompose</item>
+    </style>
+
+    <style name="Theme.Vittify.SplashScreen.Original" parent="Theme.Vittify.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_original_fg</item>
+    </style>
+
+    <style name="Theme.Vittify.SplashScreen.Anarchy" parent="Theme.Vittify.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_anarchy_fg</item>
+    </style>
+
+    <style name="Theme.Vittify.SplashScreen.Zenith" parent="Theme.Vittify.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_zenith_fg</item>
+    </style>
+
+    <style name="Theme.Vittify.SplashScreen.Monochrome" parent="Theme.Vittify.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_monochrome_fg</item>
+    </style>
+
+    <style name="Theme.Vittify.SplashScreen.Comic" parent="Theme.Vittify.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_comic_fg</item>
+    </style>
+</resources>

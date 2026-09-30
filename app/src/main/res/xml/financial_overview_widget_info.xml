@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/financial_overview"
+    android:initialLayout="@layout/widget_financial_overview"
+    android:previewLayout="@layout/widget_financial_overview"
+    android:minWidth="180dp"
+    android:minHeight="100dp"
+    android:minResizeWidth="180dp"
+    android:minResizeHeight="90dp"
+    android:maxResizeWidth="512dp"
+    android:maxResizeHeight="260dp"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2" />

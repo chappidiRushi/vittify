@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Cache directory for temporary export files -->
+    <cache-path 
+        name="exports" 
+        path="exports/" />
+    
+    <!-- Cache directory for backup files -->
+    <cache-path 
+        name="backups" 
+        path="backups/" />
+    
+    <!-- Cache directory for crash log files -->
+    <cache-path
+        name="crash_logs"
+        path="." />
+
+    <!-- Files directory for attachments -->
+    <files-path 
+        name="attachments" 
+        path="attachments/" />
+</paths>

@@ -1,0 +1,8 @@
+- Integrated BPCE and Prime Commercial Bank parsers.
+- Stability: Brand icons now persist correctly across app updates.
+- Refreshed UI: New onboarding, filter sheets, and transaction card designs.
+- Features: Unified currency, swipe to edit subscriptions, and custom billing cycles.
+- Enhancements: Improved PDF import, duplicate detection, and PhonePe parsing.
+- Customization: New "Rose Pine" palette and adaptive app icons.
+- Convenience: Added Quick Setting toggles and App Shortcuts.
+- Bug fixes

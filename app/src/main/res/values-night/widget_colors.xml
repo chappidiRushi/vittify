@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Surface Container (Dark Mode Fallback) -->
+    <color name="widget_background">#211F26</color>
+    <color name="widget_container_stroke">#49454F</color>
+
+    <!-- AI Sparkle Badge: Primary Container in Dark Mode -->
+    <color name="widget_badge_background">#4F378B</color>
+    <color name="widget_badge_tint">#EADDFF</color>
+
+    <!-- Typography -->
+    <color name="widget_text_title">#E6E1E5</color>
+    <color name="widget_text_subtitle">#CAC4D0</color>
+
+    <!-- Right Action Button: Primary filled in dark mode -->
+    <color name="widget_action_btn_background">#D0BCFF</color>
+    <color name="widget_action_btn_tint">#381E72</color>
+
+    <!-- Legacy compatibility tokens -->
+    <color name="widget_text_color">#CAC4D0</color>
+    <color name="widget_icon_tint">#D0BCFF</color>
+
+    <!-- Financial Overview Widget Tokens -->
+    <color name="widget_item_background">#2E2B35</color>
+</resources>

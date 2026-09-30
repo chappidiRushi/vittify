@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- SMS Permissions for reading and receiving transaction messages -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+    <!-- Notification permission for Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Alarm permissions -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Telephony hardware feature (optional for ChromeOS compatibility) -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <!-- Internet permission for downloading AI model -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Biometric permission for app lock feature -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
+    <!-- Peer-to-Peer Nearby Connections & WebRTC permissions -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:targetApi="s" />
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="tiramisu" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
+
+    <!-- Explicitly remove AD_ID permission to ensure privacy -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+
+    <application
+        android:name=".VittifyApplication"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="${appName}"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:localeConfig="@xml/locales_config"
+        android:theme="@style/Theme.VittifyCompose">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Vittify.SplashScreen"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.reddy.vittify.action.ADD_TRANSACTION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <activity-alias
+            android:name=".MainActivityOriginal"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_original"
+            android:label="${appName}"
+            android:roundIcon="@mipmap/ic_launcher_original_round"
+            android:targetActivity=".MainActivity"
+            android:theme="@style/Theme.Vittify.SplashScreen.Original">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityAnarchy"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_anarchy"
+            android:label="${appName}"
+            android:roundIcon="@mipmap/ic_launcher_anarchy_round"
+            android:targetActivity=".MainActivity"
+            android:theme="@style/Theme.Vittify.SplashScreen.Anarchy">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityZenith"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_zenith"
+            android:label="${appName}"
+            android:roundIcon="@mipmap/ic_launcher_zenith_round"
+            android:targetActivity=".MainActivity"
+            android:theme="@style/Theme.Vittify.SplashScreen.Zenith">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityMonochrome"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_monochrome"
+            android:label="${appName}"
+            android:roundIcon="@mipmap/ic_launcher_monochrome_round"
+            android:targetActivity=".MainActivity"
+            android:theme="@style/Theme.Vittify.SplashScreen.Monochrome">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityComic"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_comic"
+            android:label="${appName}"
+            android:roundIcon="@mipmap/ic_launcher_comic_round"
+            android:targetActivity=".MainActivity"
+            android:theme="@style/Theme.Vittify.SplashScreen.Comic">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity-alias>
+        
+        <!-- Crash report screen – launched in a separate process so it survives main-process death -->
+        <activity
+            android:name=".presentation.ui.screens.crash.CrashActivity"
+            android:exported="false"
+            android:theme="@style/Theme.VittifyCompose"
+            android:process=":crash" />
+
+        <!-- Disable default WorkManager initialization -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+        
+        <!-- FileProvider for CSV export -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- SMS BroadcastReceiver for real-time transaction processing -->
+        <receiver
+            android:name=".receiver.SmsBroadcastReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Notification Action Receiver for handling notification button actions -->
+        <receiver
+            android:name=".receiver.NotificationActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.reddy.vittify.ACTION_DELETE_TRANSACTION" />
+                <action android:name="com.reddy.vittify.ACTION_CONFIRM_TRANSACTION" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Reminder Receiver for daily alerts -->
+        <receiver
+            android:name=".receiver.ReminderReceiver"
+            android:exported="false" />
+
+        <!-- Boot Receiver for rescheduling alarms on reboot -->
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".receiver.WebhookSyncAlarmReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".receiver.CoupleSyncAlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.reddy.vittify.ACTION_COUPLE_PERIODIC_SYNC" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Quick Settings Tiles -->
+        <service
+            android:name=".service.AddTransactionTileService"
+            android:exported="true"
+            android:label="@string/add_transaction"
+            android:icon="@drawable/ic_add_transaction"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.AddSubscriptionTileService"
+            android:exported="true"
+            android:label="@string/add_subscription"
+            android:icon="@drawable/ic_add_subscription"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.AddTransferTileService"
+            android:exported="true"
+            android:label="@string/add_transfer"
+            android:icon="@drawable/ic_transfer"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- Service to enable in-app language switching persistence on all Android versions -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+
+        <!-- Notification Listener Service for intercepting bank push notifications -->
+        <service
+            android:name=".receiver.BankNotificationListenerService"
+            android:exported="true"
+            android:label="Bank Notification Listener"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- Quick Add Widget -->
+        <receiver
+            android:name=".widget.QuickAddWidgetProvider"
+            android:exported="true"
+            android:label="@string/quick_add_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_add_widget_info" />
+        </receiver>
+
+        <!-- Financial Overview Widget -->
+        <receiver
+            android:name=".widget.FinancialOverviewWidgetProvider"
+            android:exported="true"
+            android:label="@string/financial_overview">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/financial_overview_widget_info" />
+        </receiver>
+
+        <!-- Transparent overlay activity for the widget input -->
+        <activity
+            android:name=".widget.QuickAddWidgetActivity"
+            android:theme="@style/Theme.Vittify.Transparent"
+            android:exported="false"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
+
+        <!-- Transparent overlay activity for fast notification category selection -->
+        <activity
+            android:name=".presentation.ui.features.categories.QuickCategoryPickerActivity"
+            android:theme="@style/Theme.Vittify.Transparent"
+            android:exported="false"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
+    </application>
+
+</manifest>

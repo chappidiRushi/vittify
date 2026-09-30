@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Surface Container matching wallpaper Monet palette (Dark Mode) -->
+    <color name="widget_background">@android:color/system_neutral1_900</color>
+    <color name="widget_container_stroke">@android:color/system_neutral2_800</color>
+
+    <!-- AI Sparkle Badge: Primary Container in Dark Mode -->
+    <color name="widget_badge_background">@android:color/system_accent1_700</color>
+    <color name="widget_badge_tint">@android:color/system_accent1_100</color>
+
+    <!-- Typography -->
+    <color name="widget_text_title">@android:color/system_neutral1_100</color>
+    <color name="widget_text_subtitle">@android:color/system_neutral2_300</color>
+
+    <!-- Right Action Button: Primary filled in dark mode -->
+    <color name="widget_action_btn_background">@android:color/system_accent1_200</color>
+    <color name="widget_action_btn_tint">@android:color/system_accent1_900</color>
+
+    <!-- Legacy compatibility tokens -->
+    <color name="widget_text_color">@android:color/system_neutral2_300</color>
+    <color name="widget_icon_tint">@android:color/system_accent1_200</color>
+
+    <!-- Financial Overview Widget Tokens -->
+    <color name="widget_item_background">@android:color/system_neutral1_800</color>
+</resources>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Surface Container (Light Mode Fallback) -->
+    <color name="widget_background">#F3EFF4</color>
+    <color name="widget_container_stroke">#E6E0E9</color>
+
+    <!-- AI Sparkle Badge: Primary Container -->
+    <color name="widget_badge_background">#E8DEF8</color>
+    <color name="widget_badge_tint">#21005D</color>
+
+    <!-- Typography -->
+    <color name="widget_text_title">#1D1B20</color>
+    <color name="widget_text_subtitle">#49454F</color>
+
+    <!-- Right Action Button: Primary filled circle -->
+    <color name="widget_action_btn_background">#6750A4</color>
+    <color name="widget_action_btn_tint">#FFFFFF</color>
+
+    <!-- Legacy compatibility tokens -->
+    <color name="widget_text_color">#49454F</color>
+    <color name="widget_icon_tint">#6750A4</color>
+
+    <!-- Financial Overview Widget Tokens -->
+    <color name="widget_item_background">#99FFFFFF</color>
+    <color name="widget_green_light">#FFBBEFBA</color>
+    <color name="widget_green_dark">#FF03512C</color>
+    <color name="widget_orange_light">#FFFFDBC3</color>
+    <color name="widget_orange_dark">#FF723504</color>
+    <color name="widget_red_light">#FFFFD9F0</color>
+    <color name="widget_red_dark">#FF8A0050</color>
+    <color name="widget_blue_light">#FFCEE3FE</color>
+    <color name="widget_blue_dark">#FF002C89</color>
+</resources>

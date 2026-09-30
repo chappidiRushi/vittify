@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Coin Arc -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M 8.5,5.5 A 3.5,3.5 0 0,1 15.5,5.5" />
+    <!-- Wallet Card Outline -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 6,5 C 4.34,5 3,6.34 3,8 L 3,18 C 3,19.66 4.34,21 6,21 L 18,21 C 19.66,21 21,19.66 21,18 L 21,8 C 21,6.34 19.66,5 18,5 L 14.5,5 C 13.5,5 13,6.2 12,6.2 C 11,6.2 10.5,5 9.5,5 L 6,5 Z" />
+    <!-- Rupee Symbol -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 10,9.5 L 14,9.5 M 10,11.5 L 14,11.5 M 10.8,9.5 L 10.8,11.5 C 13,11.5 13,13.5 10.8,13.5 M 10.8,13.5 L 13.5,16.5" />
+</vector>

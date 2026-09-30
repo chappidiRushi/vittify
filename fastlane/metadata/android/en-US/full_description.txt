@@ -1,0 +1,51 @@
+Vittify — Free & Open-Source, private SMS-powered expense tracker
+
+Automatically extracts transaction data from bank SMS messages and PDF Statements [Gpay & Phonepe UPI] using pattern-based parsing. Works 100% offline - no internet connection required.
+
+Key Features:
+• Multi-Source Transaction Extraction - Automatically parses SMS and PDF Statements [Gpay & Phonepe UPI] with pattern-based extraction
+• 100% Offline Core Features - Transaction parsing, analytics, and exports work without internet
+• Optional AI Chat - Download Qwen 2.5 model (1.5GB, Apache 2.0) for natural language queries
+• Dynamic Home Screen - Customizable widgets including heatmaps, analytics, and transaction lists
+• Advanced Budgeting - Track historical spending, manage monthly limits, and view subscription trends
+• Auto-Categorization - Intelligent merchant cleaning and categorization for clear spending insights
+• Data Portability - Export as CSV ; smart backup/restore for all preferences and data
+• Premium Material You Design - Sleek interface with blur effects and fully customizable dynamic theming
+
+Currently Supported Banks & Countries (80+ banks across 14 countries):
+• India: HDFC, SBI, ICICI, Axis, PNB, IDBI, Indian, Federal, BOB, Canara, etc.
+• USA: Citi, Discover, Old Hickory, Charles Schwab, Navy Federal
+• UAE: FAB, ADCB, Emirates NBD, Mashreq, Liv Bank
+• Nepal: Laxmi Sunrise, Everest, NMB, Siddhartha, Prime Commercial
+• Thailand: Bangkok Bank, Kasikorn, SCB, Krungthai, Krungsri, etc.
+• Other regions: Ethiopia (CBE), Tanzania (M-Pesa), Kenya (M-PESA), Pakistan, Iran, Egypt, Saudi Arabia, Colombia, Belarus.
+• Plus payment services like Slice, LazyPay, Jio Pay, and Juspay.
+
+Privacy & Security:
+• No internet required for core functionality (SMS parsing, analytics, exports)
+• Pattern-based transaction extraction - no AI needed for parsing
+• Optional AI chat uses on-device Qwen 2.5 model (Apache 2.0 licensed)
+• SMS permission is read-only - we never send messages
+• No user accounts or cloud sync required
+• Open source - audit the code yourself on GitHub
+• Zero data collection or tracking
+
+How It Works:
+1. Grant SMS permission (read-only access)
+2. App automatically parses bank SMS using regex patterns
+3. View categorized transactions, analytics, and subscriptions
+4. Optionally download AI model for chat features
+
+Perfect for:
+• Automatic daily expense tracking
+• Understanding spending patterns and budgeting
+• Managing subscription payments
+• Financial planning and analysis
+• Maintaining detailed transaction records
+
+Technical Notes:
+• Core SMS parsing uses regex patterns, not AI
+• Optional Qwen 2.5 model (Apache 2.0) for chat feature only
+• F-Droid flavor excludes all proprietary dependencies
+
+Cashiro respects your privacy while helping you take control of your finances. Join thousands of users who trust Cashiro for secure, automatic expense tracking without compromising their data.

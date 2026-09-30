@@ -1,0 +1,19 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@iamtraction/google-translate": "^2.0.1",
+    "@vitalets/google-translate-api": "^9.2.1",
+    "bing-translate-api": "^4.2.0",
+    "glob": "^13.0.6",
+    "xml2js": "^0.6.2"
+  }
+}

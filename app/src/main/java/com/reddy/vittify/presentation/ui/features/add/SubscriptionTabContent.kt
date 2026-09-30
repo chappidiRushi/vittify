@@ -1,0 +1,858 @@
+package com.reddy.vittify.presentation.ui.features.add
+
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.reddy.vittify.presentation.ui.theme.VittifyShapes
+import com.reddy.vittify.presentation.ui.theme.VittifySurface
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.SubdirectoryArrowRight
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.reddy.vittify.R
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.reddy.vittify.presentation.effects.overScrollVertical
+import com.reddy.vittify.presentation.effects.rememberOverscrollFlingBehavior
+import com.reddy.vittify.presentation.ui.components.AccountSelectionSheet
+import com.reddy.vittify.presentation.ui.components.AttachmentSection
+import com.reddy.vittify.presentation.ui.components.BrandIcon
+import com.reddy.vittify.presentation.ui.components.CategorySelectionSheet
+import com.reddy.vittify.presentation.ui.components.DatePicker
+import com.reddy.vittify.presentation.ui.components.LoadingCircle
+import com.reddy.vittify.presentation.ui.features.accounts.NumberPad
+import com.reddy.vittify.presentation.ui.features.categories.EditSubcategorySheet
+import com.reddy.vittify.presentation.ui.icons.DocumentText2
+import com.reddy.vittify.presentation.ui.icons.Iconax
+import com.reddy.vittify.presentation.ui.icons.VideoPlay
+import com.reddy.vittify.presentation.ui.theme.Dimensions
+import com.reddy.vittify.presentation.ui.theme.Spacing
+import com.reddy.vittify.utils.CurrencyFormatter
+import dev.chrisbanes.haze.HazeState
+import java.time.ZoneId
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import androidx.core.graphics.toColorInt
+import com.reddy.vittify.presentation.effects.BlurredAnimatedVisibility
+import com.reddy.vittify.presentation.ui.components.CustomBillingCycleCard
+import com.reddy.vittify.presentation.ui.icons.Box2
+import com.reddy.vittify.presentation.ui.icons.Calendar
+import com.reddy.vittify.presentation.ui.icons.Information
+import com.reddy.vittify.presentation.ui.icons.VideoTime
+import com.reddy.vittify.utils.IconResolutionUtils
+import java.time.LocalDate
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun SubscriptionTabContent(
+    viewModel: AddViewModel,
+    onSave: () -> Unit,
+    isTransitioning: Boolean = false,
+    blurEffects: Boolean,
+    hazeState: HazeState
+) {
+    val uiState by viewModel.subscriptionUiState.collectAsState()
+    val categories by viewModel.categories.collectAsState()
+    val accounts by viewModel.accounts.collectAsState()
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showCategoryMenu by remember { mutableStateOf(false) }
+    var showBillingCycleMenu by remember { mutableStateOf(false) }
+    var showAccountSheet by remember { mutableStateOf(false) }
+    var showNumberPad by remember { mutableStateOf(false) }
+    var showCustomUnitMenu by remember { mutableStateOf(false) }
+    var showCustomCountPad by remember { mutableStateOf(false) }
+    var showCustomEndDatePicker by remember { mutableStateOf(false) }
+
+    var showAddSubcategorySheet by remember { mutableStateOf(false) }
+    var targetCategoryForSubcategory by remember { mutableStateOf<com.reddy.vittify.data.database.entity.CategoryEntity?>(null) }
+
+
+    val allSubcategories by viewModel.allSubcategories.collectAsState(initial = emptyMap())
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val subscriptionAttachments by viewModel.subscriptionAttachments.collectAsState()
+
+    val selectedCategoryObj = remember(uiState.category, categories) {
+        categories.find { it.name == uiState.category }
+    }
+    val selectedSubcategoryObj = remember(uiState.subcategory, allSubcategories) { 
+        null // Placeholder,
+    }
+    val subcategories by viewModel.subscriptionSubcategories.collectAsState()
+
+    val selectedSubcategoryObj2 = remember(uiState.subcategory, subcategories) {
+        subcategories.find { it.name == uiState.subcategory }
+    }
+
+    val billingCycles = listOf(stringResource(R.string.cycle_monthly), stringResource(R.string.cycle_quarterly), stringResource(R.string.cycle_semi_annual), stringResource(R.string.cycle_annual), stringResource(R.string.cycle_weekly), stringResource(R.string.cycle_custom))
+    val scrollState = rememberScrollState()
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .overScrollVertical()
+                .imePadding() // Handle keyboard properly
+                .verticalScroll(
+                    state = scrollState,
+                    flingBehavior = rememberOverscrollFlingBehavior { scrollState },
+                    enabled = !isTransitioning
+                )
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Error Card
+            uiState.error?.let { errorMessage ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Rounded.Error,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = errorMessage,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+
+            // Info Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Iconax.Information,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.subscription_info),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            // Amount Input
+            AmountInput(
+                amount = uiState.amount.ifEmpty { "0" },
+                currencySymbol = CurrencyFormatter.getCurrencySymbol(
+                    uiState.selectedAccount?.currency ?: "INR"
+                ),
+                onClick = {
+                    showNumberPad = true
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Billing Cycle Dropdown and Date Selection
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth().animateContentSize(),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    // Billing Cycle Dropdown
+                    ExposedDropdownMenuBox(
+                        expanded = showBillingCycleMenu,
+                        onExpandedChange = { showBillingCycleMenu = it },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        TextField(
+                            value = uiState.billingCycle,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(R.string.billing_cycle_label)) },
+                            leadingIcon = {
+                                Icon(
+                                    Iconax.VideoTime,
+                                    contentDescription = null
+                                )
+                            },
+                            shape = VittifyShapes.input,
+                            modifier =
+                                Modifier.weight(1f)
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            isError = uiState.billingCycleError != null,
+                            singleLine = true,
+                            supportingText = uiState.billingCycleError?.let { { Text(it) } },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                unfocusedLabelColor =
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f)
+                            ),
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = showBillingCycleMenu,
+                            onDismissRequest = { showBillingCycleMenu = false },
+                            shape = MaterialTheme.shapes.large,
+                        ) {
+                            billingCycles.forEachIndexed { index, cycle ->
+                                val isFirstItem = index == 0
+                                val isLastItem = index == billingCycles.lastIndex
+                                val isMiddleItem = !isFirstItem && !isLastItem
+                                DropdownMenuItem(
+                                    text = { Text(cycle) },
+                                    onClick = {
+                                        viewModel.updateSubscriptionBillingCycle(cycle)
+                                        showBillingCycleMenu = false
+                                    }
+                                )
+                                // Add a Spacer for middle items
+                                if (isMiddleItem || (isFirstItem && billingCycles.size > 2)) {
+                                    HorizontalDivider(
+                                        thickness = 1.5.dp,
+                                        color = MaterialTheme.colorScheme.surface
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    // Date Button
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                color = VittifySurface.surfaceContainerLowColor(),
+                                shape = VittifyShapes.input
+                            )
+                            .padding(8.dp)
+                            .clickable(
+                                onClick = { showDatePicker = true },
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            val themeColors = MaterialTheme.colorScheme
+                            Icon(
+                                imageVector = Iconax.Calendar,
+                                contentDescription = stringResource(R.string.date_picker_desc),
+                                tint = themeColors.onSurface
+                            )
+                            Spacer(Modifier.size(8.dp))
+
+                            val dateLabel =
+                                uiState.nextPaymentDate.format(DateTimeFormatter.ofPattern("dd MMMM"))
+                            val yearLabel =
+                                uiState.nextPaymentDate.format(DateTimeFormatter.ofPattern("yyyy"))
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                Text(
+                                    text = yearLabel,
+                                    fontSize = 10.sp,
+                                    textAlign = TextAlign.Start,
+                                    color = themeColors.primary,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                                Text(
+                                    text = dateLabel,
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Start,
+                                    color = themeColors.onSurface,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.basicMarquee()
+                                )
+                            }
+
+                        }
+                    }
+                }
+
+                // Custom Billing Cycle Card
+                BlurredAnimatedVisibility(
+                    visible = uiState.isCustomCycle,
+                    enter = fadeIn() + slideInVertically { it },
+                    exit = fadeOut() + slideOutVertically { it }) {
+                    CustomBillingCycleCard(
+                        count = uiState.customCycleCount,
+                        unit = uiState.customCycleUnit,
+                        endDate = uiState.customCycleEndDate,
+                        onCountClick = { showCustomCountPad = true },
+                        onUnitSelected = { viewModel.updateSubscriptionCustomCycleUnit(it) },
+                        onEndDateClick = { showCustomEndDatePicker = true },
+                        onClearEndDate = { viewModel.updateSubscriptionCustomCycleEndDate(null) },
+                        shape = VittifyShapes.input
+                    )
+                }
+            }
+
+            // Accounts Section
+            Column(
+                modifier = Modifier.fillMaxWidth().animateContentSize(),
+                verticalArrangement = Arrangement.spacedBy(1.5.dp)
+            ) {
+                OutlinedCard(
+                    onClick = { showAccountSheet = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = VittifyShapes.scaled(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = 4.dp,
+                        bottomEnd = 4.dp
+                    ),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    ),
+                    border = BorderStroke(0.dp, Color.Transparent)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        BrandIcon(
+                            merchantName = uiState.selectedAccount?.bankName ?: "",
+                            accountIconResId = uiState.selectedAccount?.iconResId ?: 0,
+                            accountIconName = uiState.selectedAccount?.iconName,
+                            size = 24.dp,
+                            showBackground = false
+                        )
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = uiState.selectedAccount?.bankName ?: stringResource(R.string.select_account),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color =
+                                    if (uiState.selectedAccount != null)
+                                        MaterialTheme.colorScheme.onSurface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (uiState.selectedAccount != null) {
+                                Text(
+                                    text = "••${uiState.selectedAccount?.accountLast4}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Icon(
+                            imageVector = Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // Category Selection
+                val categoryInteractionSource = remember { MutableInteractionSource() }
+                TextField(
+                    value = uiState.category,
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.category_label), fontWeight = FontWeight.SemiBold) },
+                    readOnly = true,
+                    singleLine = true,
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .clickable(
+                                interactionSource = categoryInteractionSource,
+                                indication = null
+                            ) {
+                                showCategoryMenu = true
+                            },
+                    shape =
+                        VittifyShapes.scaled(
+                            topStart = 4.dp,
+                            topEnd = 4.dp,
+                            bottomStart = 16.dp,
+                            bottomEnd = 16.dp
+                        ),
+                    leadingIcon = {
+                        val context = LocalContext.current
+                        val resolvedResId = remember(selectedCategoryObj) {
+                            selectedCategoryObj?.let { cat ->
+                                if (!cat.iconName.isNullOrEmpty()) {
+                                    val res = IconResolutionUtils.nameToResId(context, cat.iconName)
+                                    if (res != 0) res else cat.iconResId
+                                } else cat.iconResId
+                            } ?: 0
+                        }
+
+                        if (resolvedResId != 0) {
+                            Icon(
+                                painter = painterResource(id = resolvedResId),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            Icon(Iconax.Box2, contentDescription = null)
+                        }
+                    },
+                    trailingIcon = {
+                        Icon(Icons.Rounded.KeyboardArrowDown, contentDescription = null)
+                    },
+                    isError = uiState.categoryError != null,
+                    supportingText = uiState.categoryError?.let { { Text(it) } },
+                    enabled = false,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f),
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        disabledIndicatorColor = Color.Transparent,
+                        disabledLabelColor = MaterialTheme.colorScheme.primary,
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+
+                // Subcategory Display
+                if (uiState.subcategory != null) {
+                    Spacer(modifier = Modifier.height(Spacing.md))
+                    TextField(
+                        value = uiState.subcategory ?: stringResource(R.string.none_label),
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.subcategory_label)) },
+                        leadingIcon = {
+                                val context = LocalContext.current
+                                val resolvedResId = remember(selectedSubcategoryObj2) {
+                                    selectedSubcategoryObj2?.let { sub ->
+                                        if (!sub.iconName.isNullOrEmpty()) {
+                                            val res = IconResolutionUtils.nameToResId(context, sub.iconName)
+                                            if (res != 0) res else sub.iconResId
+                                        } else sub.iconResId
+                                    } ?: 0
+                                }
+
+                                if (resolvedResId != 0) {
+                                    Icon(
+                                        painter = painterResource(id = resolvedResId),
+                                        contentDescription = null,
+                                        tint = Color.Unspecified,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                } else {
+                                    Icon(
+                                        Icons.Default.SubdirectoryArrowRight,
+                                        contentDescription = null
+                                    )
+                                }
+                        },
+                        shape = VittifyShapes.input,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = false,
+                        colors = if (selectedSubcategoryObj2 != null) {
+                            val color = try {
+                                Color(selectedSubcategoryObj2.color.toColorInt())
+                            } catch (e: Exception) {
+                                MaterialTheme.colorScheme.surfaceContainerLow
+                            }
+                            TextFieldDefaults.colors(
+                                focusedContainerColor = color.copy(alpha = 0.2f),
+                                unfocusedContainerColor = color.copy(alpha = 0.2f),
+                                disabledContainerColor = color.copy(alpha = 0.2f),
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                    0.7f
+                                ),
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        } else {
+                            TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                    0.7f
+                                ),
+                                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                disabledIndicatorColor = Color.Transparent,
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    )
+                }
+            }
+
+            if (showAccountSheet) {
+                com.reddy.vittify.presentation.ui.components.VittifyModalBottomSheet(
+                    onDismissRequest = { showAccountSheet = false },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    dragHandle = { BottomSheetDefaults.DragHandle() }
+                ) {
+                    AccountSelectionSheet(
+                        accounts = accounts,
+                        selectedAccount = uiState.selectedAccount,
+                        onAccountSelected = { account ->
+                            viewModel.updateSubscriptionAccount(account)
+                            showAccountSheet = false
+                        },
+                        isTransitioning = isTransitioning,
+                        showNoneOption = false
+                    )
+                }
+            }
+
+            // NumberPad for Amount Input
+            if (showNumberPad) {
+                com.reddy.vittify.presentation.ui.components.VittifyModalBottomSheet(
+                    onDismissRequest = { showNumberPad = false },
+                    sheetState = sheetState,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    dragHandle = { BottomSheetDefaults.DragHandle() }
+                ) {
+                    NumberPad(
+                        initialValue = uiState.amount.ifEmpty { "0" },
+                        onDone = { newAmount ->
+                            viewModel.updateSubscriptionAmount(newAmount)
+                            showNumberPad = false
+                        },
+                        title = stringResource(R.string.enter_amount)
+                    )
+                }
+            }
+
+            // NumberPad for Custom Cycle Count
+            if (showCustomCountPad) {
+                com.reddy.vittify.presentation.ui.components.VittifyModalBottomSheet(
+                    onDismissRequest = { showCustomCountPad = false },
+                    sheetState = sheetState,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    dragHandle = { BottomSheetDefaults.DragHandle() }
+                ) {
+                    NumberPad(
+                        initialValue = uiState.customCycleCount.toString(),
+                        onDone = { newCount ->
+                            viewModel.updateSubscriptionCustomCycleCount(newCount.toIntOrNull() ?: 1)
+                            showCustomCountPad = false
+                        },
+                        title = stringResource(R.string.enter_interval_title)
+                    )
+                }
+            }
+
+            // Category Selection Sheet
+            if (showCategoryMenu) {
+                val recentSubcategories by viewModel.recentSubcategories.collectAsState(initial = emptyList())
+                com.reddy.vittify.presentation.ui.components.VittifyModalBottomSheet(
+                    onDismissRequest = { showCategoryMenu = false },
+                    dragHandle = { BottomSheetDefaults.DragHandle() },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ) {
+                    CategorySelectionSheet(
+                        categories = categories,
+                        subcategoriesMap = allSubcategories,
+                        recentSubcategories = recentSubcategories,
+                        onSelectionComplete = { category, subcategory ->
+                            viewModel.updateSubscriptionCategory(category.name)
+                            viewModel.updateSubscriptionSubcategory(subcategory?.name)
+                            showCategoryMenu = false
+                        },
+                        onDismiss = { showCategoryMenu = false },
+                        onAddSubcategory = { category ->
+                            targetCategoryForSubcategory = category
+                            showAddSubcategorySheet = true
+                        }
+                    )
+                }
+            }
+
+            // Add Subcategory Sheet
+            if (showAddSubcategorySheet && targetCategoryForSubcategory != null) {
+                com.reddy.vittify.presentation.ui.components.VittifyModalBottomSheet(
+                    onDismissRequest = { showAddSubcategorySheet = false },
+                    dragHandle = { BottomSheetDefaults.DragHandle() },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 0.dp
+                ) {
+                    val context = LocalContext.current
+                    EditSubcategorySheet(
+                        subcategory = null,
+                        categoryColor = targetCategoryForSubcategory?.color ?: "#757575",
+                        categoryIconResId = targetCategoryForSubcategory?.let { cat ->
+                            if (cat.iconName.isNotEmpty()) {
+                                IconResolutionUtils.nameToResId(context, cat.iconName)
+                                    .takeIf { it != 0 } ?: cat.iconResId
+                            } else {
+                                cat.iconResId
+                            }
+                        } ?: R.drawable.type_food_dining,
+                        onDismiss = { showAddSubcategorySheet = false },
+                        onSave = { name, iconResId, iconName, color ->
+                            targetCategoryForSubcategory?.id?.let { categoryId ->
+                                viewModel.saveSubcategory(categoryId, name, iconResId, iconName, color)
+                            }
+                            showAddSubcategorySheet = false
+                        }
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(1.5.dp)
+            ) {
+                // Service Name Input
+                TextField(
+                    value = uiState.serviceName,
+                    onValueChange = viewModel::updateSubscriptionService,
+                    label = { Text(stringResource(R.string.service_name_required)) },
+                    placeholder = { Text(stringResource(R.string.service_name_placeholder)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape =
+                        VittifyShapes.scaled(
+                            topStart = 16.dp,
+                            topEnd = 16.dp,
+                            bottomStart = 4.dp,
+                            bottomEnd = 4.dp
+                        ),
+                    leadingIcon = { Icon(Iconax.VideoPlay, contentDescription = null) },
+                    isError = uiState.serviceError != null,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor =
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f)
+                    ),
+                    supportingText = uiState.serviceError?.let { { Text(it) } },
+                )
+
+                // Notes/Description (Optional)
+                TextField(
+                    value = uiState.notes,
+                    onValueChange = viewModel::updateSubscriptionNotes,
+                    label = { Text(stringResource(R.string.notes_optional)) },
+                    leadingIcon = { Icon(Iconax.DocumentText2, contentDescription = null) },
+                    placeholder = { Text(stringResource(R.string.notes_placeholder)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape =
+                        VittifyShapes.scaled(
+                            topStart = 4.dp,
+                            topEnd = 4.dp,
+                            bottomStart = 16.dp,
+                            bottomEnd = 16.dp
+                        ),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f)
+                    ),
+                )
+            }
+
+            // Attachments Section
+            AttachmentSection(
+                attachments = subscriptionAttachments,
+                attachmentService = viewModel.attachmentService,
+                onAddAttachment = viewModel::addSubscriptionAttachment,
+                onRemoveAttachment = viewModel::removeSubscriptionAttachment,
+                onAttachmentClick = { /* Preview handled internally */ },
+                isEditable = true
+            )
+
+            // Bottom padding for keyboard
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.surface
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Button(
+                onClick = { viewModel.saveSubscription(onSuccess = onSave) },
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(horizontal = Dimensions.Padding.content)
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .height(56.dp),
+                shapes = ButtonDefaults.shapes(),
+                enabled = uiState.isValid && !uiState.isLoading,
+            ) {
+                if (uiState.isLoading) {
+                    LoadingCircle(modifier = Modifier.size(16.dp))
+                } else {
+                    Icon(Icons.Default.Done, contentDescription = null)
+                    Spacer(Modifier.width(Spacing.sm))
+                    Text(stringResource(R.string.action_save), style = MaterialTheme.typography.titleMedium)
+                }
+            }
+        }
+    }
+
+    // Date Picker Dialog
+    if (showDatePicker) {
+        val datePickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis =
+                    uiState.nextPaymentDate
+                        .atStartOfDay()
+                        .toInstant(ZoneOffset.UTC)
+                        .toEpochMilli()
+            )
+
+        DatePicker(
+            onDismiss = { showDatePicker = false },
+            onConfirm = {
+                datePickerState.selectedDateMillis?.let { millis ->
+                    viewModel.updateSubscriptionNextPaymentDate(millis)
+                }
+                showDatePicker = false
+            },
+            datePickerState = datePickerState,
+            blurEffects = blurEffects,
+            hazeState = hazeState
+        )
+    }
+
+    // Custom End Date Picker Dialog
+    if (showCustomEndDatePicker) {
+        val datePickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis =
+                    (uiState.customCycleEndDate ?: LocalDate.now())
+                        .atStartOfDay()
+                        .toInstant(ZoneOffset.UTC)
+                        .toEpochMilli()
+            )
+
+        DatePicker(
+            onDismiss = { showCustomEndDatePicker = false },
+            onConfirm = {
+                datePickerState.selectedDateMillis?.let { millis ->
+                    val localDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                    viewModel.updateSubscriptionCustomCycleEndDate(localDate)
+                }
+                showCustomEndDatePicker = false
+            },
+            datePickerState = datePickerState,
+            blurEffects = blurEffects,
+            hazeState = hazeState,
+            // Add a "Forever" option if the DatePicker supports it, or just use a button elsewhere.
+            // For now, let's assume confirm sets the date. 
+            // I'll add a way to clear it later if needed.
+        )
+    }
+}
