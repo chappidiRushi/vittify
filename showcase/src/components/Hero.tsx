@@ -253,7 +253,7 @@ export function Hero() {
               className="flex flex-wrap gap-3"
             >
               <a
-                href="https://github.com/chappidiRushi/Vittify"
+                href="https://github.com/chappidiRushi/vittify"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold bg-[var(--color-text-primary)] text-[var(--color-bg)] rounded-full hover:opacity-90 transition-opacity"

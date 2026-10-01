@@ -13,19 +13,19 @@ const links = [
   {
     label: 'Developers',
     items: [
-      { label: 'GitHub Repository', href: 'https://github.com/chappidiRushi/Vittify', external: true },
-      { label: 'Contributing Guide', href: 'https://github.com/chappidiRushi/Vittify/blob/main/CONTRIBUTING.md', external: true },
-      { label: 'Parser Standards', href: 'https://github.com/chappidiRushi/Vittify/blob/main/docs/parser-test-standards.md', external: true },
-      { label: 'Open Issues', href: 'https://github.com/chappidiRushi/Vittify/issues', external: true },
+      { label: 'GitHub Repository', href: 'https://github.com/chappidiRushi/vittify', external: true },
+      { label: 'Contributing Guide', href: 'https://github.com/chappidiRushi/vittify/blob/main/CONTRIBUTING.md', external: true },
+      { label: 'Parser Standards', href: 'https://github.com/chappidiRushi/vittify/blob/main/docs/parser-test-standards.md', external: true },
+      { label: 'Open Issues', href: 'https://github.com/chappidiRushi/vittify/issues', external: true },
     ],
   },
   {
     label: 'Legal',
     items: [
-      { label: 'AGPL-3.0 License', href: 'https://github.com/chappidiRushi/Vittify/blob/main/LICENSE', external: true },
-      { label: 'Privacy Policy', href: 'https://github.com/chappidiRushi/Vittify/blob/main/PRIVACY.md', external: true },
-      { label: 'Security Policy', href: 'https://github.com/chappidiRushi/Vittify/blob/main/SECURITY.md', external: true },
-      { label: 'Code of Conduct', href: 'https://github.com/chappidiRushi/Vittify/blob/main/CODE_OF_CONDUCT.md', external: true },
+      { label: 'AGPL-3.0 License', href: 'https://github.com/chappidiRushi/vittify/blob/main/LICENSE', external: true },
+      { label: 'Privacy Policy', href: 'https://github.com/chappidiRushi/vittify/blob/main/PRIVACY.md', external: true },
+      { label: 'Security Policy', href: 'https://github.com/chappidiRushi/vittify/blob/main/SECURITY.md', external: true },
+      { label: 'Code of Conduct', href: 'https://github.com/chappidiRushi/vittify/blob/main/CODE_OF_CONDUCT.md', external: true },
     ],
   },
 ]
@@ -49,14 +49,14 @@ export function Footer() {
               A tiny, smart financial companion that makes tracking money surprisingly delightful.
             </p>
             <a
-              href="https://github.com/chappidiRushi/Vittify"
+              href="https://github.com/chappidiRushi/vittify"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
               aria-label="View Vittify on GitHub"
             >
               <Github size={14} />
-              chappidiRushi/Vittify
+              chappidiRushi/vittify
             </a>
           </div>
 
@@ -89,7 +89,7 @@ export function Footer() {
           <p className="text-xs text-[var(--color-text-tertiary)] text-center sm:text-left">
             © 2026 Vittify. Open source under{' '}
             <a
-              href="https://github.com/chappidiRushi/Vittify/blob/main/LICENSE"
+              href="https://github.com/chappidiRushi/vittify/blob/main/LICENSE"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-[var(--color-text-secondary)] transition-colors"

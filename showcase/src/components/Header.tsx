@@ -53,7 +53,7 @@ export function Header() {
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
           <a
-            href="https://github.com/chappidiRushi/Vittify"
+            href="https://github.com/chappidiRushi/vittify"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-3.5 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface)] transition-all duration-200"
@@ -63,7 +63,7 @@ export function Header() {
             <span>GitHub</span>
           </a>
           <a
-            href="https://github.com/chappidiRushi/Vittify/releases"
+            href="https://github.com/chappidiRushi/vittify/releases"
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2 text-sm font-medium bg-[var(--color-accent-coral)] text-white rounded-full hover:opacity-90 transition-opacity"
@@ -102,7 +102,7 @@ export function Header() {
           ))}
           <div className="mt-2 pt-2 border-t border-[var(--color-border)] flex flex-col gap-2">
             <a
-              href="https://github.com/chappidiRushi/Vittify"
+              href="https://github.com/chappidiRushi/vittify"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-3 py-2.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface)] transition-all"
@@ -111,7 +111,7 @@ export function Header() {
               GitHub
             </a>
             <a
-              href="https://github.com/chappidiRushi/Vittify/releases"
+              href="https://github.com/chappidiRushi/vittify/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="px-3 py-2.5 text-sm font-medium text-center bg-[var(--color-accent-coral)] text-white rounded-full hover:opacity-90 transition-opacity"

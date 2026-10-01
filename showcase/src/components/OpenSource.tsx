@@ -59,7 +59,7 @@ export function OpenSource() {
           className="mt-10 flex flex-col sm:flex-row gap-4 justify-center"
         >
           <a
-            href="https://github.com/chappidiRushi/Vittify"
+            href="https://github.com/chappidiRushi/vittify"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-sm font-semibold bg-[var(--color-text-primary)] text-[var(--color-bg)] rounded-full hover:opacity-90 transition-opacity"
@@ -68,7 +68,7 @@ export function OpenSource() {
             View Repository
           </a>
           <a
-            href="https://github.com/chappidiRushi/Vittify/stargazers"
+            href="https://github.com/chappidiRushi/vittify/stargazers"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full hover:bg-[var(--color-surface-high)] hover:border-white/10 transition-all"
@@ -77,7 +77,7 @@ export function OpenSource() {
             Star on GitHub
           </a>
           <a
-            href="https://github.com/chappidiRushi/Vittify/fork"
+            href="https://github.com/chappidiRushi/vittify/fork"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
@@ -96,7 +96,7 @@ export function OpenSource() {
         >
           Adding a bank parser is a few dozen lines of Kotlin.{' '}
           <a
-            href="https://github.com/chappidiRushi/Vittify/blob/main/CONTRIBUTING.md"
+            href="https://github.com/chappidiRushi/vittify/blob/main/CONTRIBUTING.md"
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-2 hover:text-[var(--color-text-secondary)] transition-colors"

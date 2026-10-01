@@ -8,6 +8,7 @@
   <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Jetpack_Compose-2026.03.01-4285F4.svg?style=flat-square&logo=jetpackcompose" alt="Compose BOM 2026.03.01" /></a>
   <a href="https://m3.material.io/"><img src="https://img.shields.io/badge/Design-Material_3_Expressive-FF7043.svg?style=flat-square" alt="Material 3 Expressive" /></a>
   <a href="#privacy--offline-sovereignty"><img src="https://img.shields.io/badge/Privacy-100%25_On--Device_&_P2P-00BFA5.svg?style=flat-square" alt="100% On-Device & P2P" /></a>
+  <a href="https://chappidirushi.github.io/vittify/"><img src="https://img.shields.io/badge/Live_Demo-Showcase_Site-FF6B50.svg?style=flat-square" alt="Live Showcase Site" /></a>
 </p>
 
 ---
@@ -297,8 +298,8 @@ vittify/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/chappidiRushi/Vittify.git
-   cd Vittify
+   git clone https://github.com/chappidiRushi/vittify.git
+   cd vittify
    ```
 
 2. **Open in Android Studio** or build directly with Gradle:
