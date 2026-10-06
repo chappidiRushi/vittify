@@ -1,13 +1,17 @@
 import { Github, ArrowUp } from 'lucide-react'
 
+interface FooterProps {
+  onNavigate?: (route: 'home' | 'privacy' | 'terms', hash?: string) => void
+}
+
 const links = [
   {
     label: 'Product',
     items: [
-      { label: 'Features', href: '#features' },
-      { label: 'Screenshots', href: '#screenshots' },
-      { label: 'How It Works', href: '#how-it-works' },
-      { label: 'FAQ', href: '#faq' },
+      { label: 'Features', href: '#features', internal: true },
+      { label: 'Screenshots', href: '#screenshots', internal: true },
+      { label: 'How It Works', href: '#how-it-works', internal: true },
+      { label: 'FAQ', href: '#faq', internal: true },
     ],
   },
   {
@@ -22,29 +26,66 @@ const links = [
   {
     label: 'Legal',
     items: [
+      { label: 'Privacy Policy', href: '/privacy', internal: true, route: 'privacy' as const },
+      { label: 'Terms of Service', href: '/terms', internal: true, route: 'terms' as const },
       { label: 'AGPL-3.0 License', href: 'https://github.com/chappidiRushi/vittify/blob/main/LICENSE', external: true },
-      { label: 'Privacy Policy', href: 'https://github.com/chappidiRushi/vittify/blob/main/PRIVACY.md', external: true },
       { label: 'Security Policy', href: 'https://github.com/chappidiRushi/vittify/blob/main/SECURITY.md', external: true },
       { label: 'Code of Conduct', href: 'https://github.com/chappidiRushi/vittify/blob/main/CODE_OF_CONDUCT.md', external: true },
     ],
   },
 ]
 
-export function Footer() {
+export function Footer({ onNavigate }: FooterProps) {
+  const handleLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    item: { href: string; external?: boolean; internal?: boolean; route?: 'privacy' | 'terms' }
+  ) => {
+    if (item.external || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      return
+    }
+
+    if (item.route) {
+      e.preventDefault()
+      onNavigate?.(item.route)
+      return
+    }
+
+    if (item.href.startsWith('#')) {
+      e.preventDefault()
+      onNavigate?.('home', item.href)
+      return
+    }
+
+    if (item.href === '/') {
+      e.preventDefault()
+      onNavigate?.('home')
+      return
+    }
+  }
+
   return (
     <footer className="bg-[var(--color-surface)] border-t border-[var(--color-border)]">
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-xl bg-[var(--color-accent-coral)] flex items-center justify-center text-white font-bold text-sm">
+            <a
+              href="/"
+              onClick={(e) => {
+                if (!e.metaKey && !e.ctrlKey) {
+                  e.preventDefault()
+                  onNavigate?.('home')
+                }
+              }}
+              className="flex items-center gap-2.5 mb-4 group cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-xl bg-[var(--color-accent-coral)] flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:scale-105 transition-transform">
                 V
               </div>
               <span className="font-bold text-[var(--color-text-primary)] text-base tracking-tight">
                 Vittify
               </span>
-            </div>
+            </a>
             <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-5">
               A tiny, smart financial companion that makes tracking money surprisingly delightful.
             </p>
@@ -71,9 +112,10 @@ export function Footer() {
                   <li key={item.label}>
                     <a
                       href={item.href}
+                      onClick={(e) => handleLinkClick(e, item)}
                       target={'external' in item && item.external ? '_blank' : undefined}
                       rel={'external' in item && item.external ? 'noopener noreferrer' : undefined}
-                      className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                      className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
                     >
                       {item.label}
                     </a>
@@ -109,7 +151,7 @@ export function Footer() {
           </p>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
+            className="flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors cursor-pointer"
             aria-label="Back to top"
           >
             <ArrowUp size={12} />

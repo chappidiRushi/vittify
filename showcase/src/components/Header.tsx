@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Github, Menu, X } from 'lucide-react'
 
+interface HeaderProps {
+  currentRoute?: 'home' | 'privacy' | 'terms'
+  onNavigate?: (route: 'home' | 'privacy' | 'terms', hash?: string) => void
+}
+
 const navLinks = [
   { label: 'Features', href: '#features' },
   { label: 'Screenshots', href: '#screenshots' },
@@ -8,7 +13,7 @@ const navLinks = [
   { label: 'FAQ', href: '#faq' },
 ]
 
-export function Header() {
+export function Header({ currentRoute = 'home', onNavigate }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -17,6 +22,23 @@ export function Header() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+
+    e.preventDefault()
+    setMenuOpen(false)
+
+    if (href === '/' || href === '#') {
+      onNavigate?.('home')
+      return
+    }
+
+    if (href.startsWith('#')) {
+      onNavigate?.('home', href)
+      return
+    }
+  }
 
   return (
     <header
@@ -28,7 +50,12 @@ export function Header() {
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2.5 group" aria-label="Vittify home">
+        <a
+          href="/"
+          onClick={(e) => handleNavClick(e, '/')}
+          className="flex items-center gap-2.5 group cursor-pointer"
+          aria-label="Vittify home"
+        >
           <div className="w-8 h-8 rounded-xl bg-[var(--color-accent-coral)] flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-105 transition-transform">
             V
           </div>
@@ -42,12 +69,45 @@ export function Header() {
           {navLinks.map((l) => (
             <a
               key={l.href}
-              href={l.href}
-              className="px-3.5 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface)] transition-all duration-200"
+              href={currentRoute === 'home' ? l.href : `/${l.href}`}
+              onClick={(e) => handleNavClick(e, l.href)}
+              className="px-3.5 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface)] transition-all duration-200 cursor-pointer"
             >
               {l.label}
             </a>
           ))}
+          <a
+            href="/privacy"
+            onClick={(e) => {
+              if (!e.metaKey && !e.ctrlKey) {
+                e.preventDefault()
+                onNavigate?.('privacy')
+              }
+            }}
+            className={`px-3.5 py-2 text-sm rounded-lg transition-all duration-200 cursor-pointer ${
+              currentRoute === 'privacy'
+                ? 'text-[var(--color-accent-teal)] font-medium bg-[var(--color-surface)]'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
+            }`}
+          >
+            Privacy
+          </a>
+          <a
+            href="/terms"
+            onClick={(e) => {
+              if (!e.metaKey && !e.ctrlKey) {
+                e.preventDefault()
+                onNavigate?.('terms')
+              }
+            }}
+            className={`px-3.5 py-2 text-sm rounded-lg transition-all duration-200 cursor-pointer ${
+              currentRoute === 'terms'
+                ? 'text-[var(--color-accent-lavender)] font-medium bg-[var(--color-surface)]'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
+            }`}
+          >
+            Terms
+          </a>
         </nav>
 
         {/* Desktop CTA */}
@@ -74,7 +134,7 @@ export function Header() {
 
         {/* Mobile menu button */}
         <button
-          className="md:hidden p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface)] transition-all"
+          className="md:hidden p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface)] transition-all cursor-pointer"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={menuOpen}
@@ -93,13 +153,47 @@ export function Header() {
           {navLinks.map((l) => (
             <a
               key={l.href}
-              href={l.href}
-              onClick={() => setMenuOpen(false)}
-              className="px-3 py-2.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface)] transition-all"
+              href={currentRoute === 'home' ? l.href : `/${l.href}`}
+              onClick={(e) => handleNavClick(e, l.href)}
+              className="px-3 py-2.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface)] transition-all cursor-pointer"
             >
               {l.label}
             </a>
           ))}
+          <a
+            href="/privacy"
+            onClick={(e) => {
+              if (!e.metaKey && !e.ctrlKey) {
+                e.preventDefault()
+                setMenuOpen(false)
+                onNavigate?.('privacy')
+              }
+            }}
+            className={`px-3 py-2.5 text-sm rounded-lg transition-all cursor-pointer ${
+              currentRoute === 'privacy'
+                ? 'text-[var(--color-accent-teal)] font-medium bg-[var(--color-surface)]'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
+            }`}
+          >
+            Privacy Policy
+          </a>
+          <a
+            href="/terms"
+            onClick={(e) => {
+              if (!e.metaKey && !e.ctrlKey) {
+                e.preventDefault()
+                setMenuOpen(false)
+                onNavigate?.('terms')
+              }
+            }}
+            className={`px-3 py-2.5 text-sm rounded-lg transition-all cursor-pointer ${
+              currentRoute === 'terms'
+                ? 'text-[var(--color-accent-lavender)] font-medium bg-[var(--color-surface)]'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
+            }`}
+          >
+            Terms of Service
+          </a>
           <div className="mt-2 pt-2 border-t border-[var(--color-border)] flex flex-col gap-2">
             <a
               href="https://github.com/chappidiRushi/vittify"

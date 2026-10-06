@@ -360,8 +360,10 @@ Vittify is also made possible thanks to these wonderful open-source libraries an
 
 ---
 
-## 📄 License
+## 📄 License & Legal
 
-This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. See the [LICENSE](LICENSE) file for the full text.
+- **License**: This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. See the [LICENSE](LICENSE) file for the full text.
+- **Privacy Policy**: [PRIVACY.md](PRIVACY.md) (or on web at [vittify.in/privacy](https://vittify.in/privacy))
+- **Terms of Service**: [TERMS.md](TERMS.md) (or on web at [vittify.in/terms](https://vittify.in/terms))
 
 <p align="right"><a href="#top">▲ Back to top</a></p>

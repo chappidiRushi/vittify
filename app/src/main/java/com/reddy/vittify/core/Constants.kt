@@ -71,11 +71,11 @@ object Constants {
     object Links {
         const val DISCORD_URL = "https://discord.gg/6qaYgpJTg"
         const val GITHUB_URL = "https://github.com/chappidiRushi/vittify"
-        const val WEBSITE_URL = "https://ritesh-kanwar.github.io/vittify.showcase"
-        const val PRIVACY_POLICY_URL = "https://ritesh-kanwar.github.io/vittify.showcase/privacy"
-        const val TERMS_OF_SERVICE_URL = "https://ritesh-kanwar.github.io/vittify.showcase/terms"
-        const val FAQ_URL = "https://ritesh-kanwar.github.io/vittify.showcase/faq"
-        const val GUIDE_URL = "https://ritesh-kanwar.github.io/vittify.showcase/guides"
+        const val WEBSITE_URL = "https://vittify.in"
+        const val PRIVACY_POLICY_URL = "https://vittify.in/privacy"
+        const val TERMS_OF_SERVICE_URL = "https://vittify.in/terms"
+        const val FAQ_URL = "https://vittify.in/#faq"
+        const val GUIDE_URL = "https://vittify.in/#how-it-works"
         const val REPORT_BUG_URL = "https://github.com/chappidiRushi/vittify/issues"
     }
 }

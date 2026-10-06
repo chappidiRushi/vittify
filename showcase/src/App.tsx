@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useRouter } from './hooks/useRouter'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { TrustBar } from './components/TrustBar'
@@ -12,6 +13,8 @@ import { FAQ } from './components/FAQ'
 import { OpenSource } from './components/OpenSource'
 import { CTABanner } from './components/CTABanner'
 import { Footer } from './components/Footer'
+import { PrivacyPolicyPage } from './components/PrivacyPolicyPage'
+import { TermsOfServicePage } from './components/TermsOfServicePage'
 
 function ScrollProgress() {
   const [progress, setProgress] = useState(0)
@@ -43,24 +46,40 @@ function ScrollProgress() {
 }
 
 export default function App() {
+  const { route, navigate } = useRouter()
+
+  useEffect(() => {
+    if (route === 'home') {
+      document.title = 'Vittify — Smart Expense Tracker'
+    }
+  }, [route])
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
       <ScrollProgress />
-      <Header />
+      <Header currentRoute={route} onNavigate={navigate} />
+
       <main>
-        <Hero />
-        <TrustBar />
-        <Features />
-        <Screenshots />
-        <HowItWorks />
-        <BankTicker />
-        <PrivacyPledge />
-        <TechStack />
-        <FAQ />
-        <OpenSource />
-        <CTABanner />
+        {route === 'privacy' && <PrivacyPolicyPage onNavigate={navigate} />}
+        {route === 'terms' && <TermsOfServicePage onNavigate={navigate} />}
+        {route === 'home' && (
+          <>
+            <Hero />
+            <TrustBar />
+            <Features />
+            <Screenshots />
+            <HowItWorks />
+            <BankTicker />
+            <PrivacyPledge onNavigate={navigate} />
+            <TechStack />
+            <FAQ />
+            <OpenSource />
+            <CTABanner />
+          </>
+        )}
       </main>
-      <Footer />
+
+      <Footer onNavigate={navigate} />
     </div>
   )
 }

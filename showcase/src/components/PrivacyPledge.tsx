@@ -40,7 +40,11 @@ const pillars = [
   },
 ]
 
-export function PrivacyPledge() {
+interface PrivacyPledgeProps {
+  onNavigate?: (route: 'home' | 'privacy' | 'terms') => void
+}
+
+export function PrivacyPledge({ onNavigate }: PrivacyPledgeProps) {
   const { ref, inView } = useInView(0.08)
 
   return (
@@ -98,6 +102,21 @@ export function PrivacyPledge() {
             <blockquote className="border-l-2 pl-4 italic text-[var(--color-text-secondary)]" style={{ borderColor: 'var(--color-accent-teal)' }}>
               "Your phone. Your data. Your rules."
             </blockquote>
+
+            <div className="pt-1">
+              <a
+                href="/privacy"
+                onClick={(e) => {
+                  if (!e.metaKey && !e.ctrlKey) {
+                    e.preventDefault()
+                    onNavigate?.('privacy')
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-accent-teal)] hover:underline cursor-pointer"
+              >
+                Read our full Privacy Policy & Manifesto →
+              </a>
+            </div>
           </motion.div>
         </div>
 
