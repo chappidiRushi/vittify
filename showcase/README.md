@@ -2,7 +2,7 @@
 
 A minimal, stunning showcase website for [Vittify](https://github.com/chappidiRushi/vittify) — deployed via GitHub Pages.
 
-**Live site:** [chappidiRushi.github.io/vittify](https://chappidiRushi.github.io/vittify/)
+**Live site:** [vittify.in](https://vittify.in)
 
 ## Tech Stack
 
@@ -22,7 +22,7 @@ A minimal, stunning showcase website for [Vittify](https://github.com/chappidiRu
 cd showcase
 npm install
 npm run dev
-# → http://localhost:5173/vittify/
+# → http://localhost:5173/
 ```
 
 ## Production Build
@@ -48,6 +48,7 @@ showcase/
 │   ├── screenshots/     ← All 17 app screenshots
 │   ├── banner.png
 │   ├── favicon.svg
+│   ├── CNAME
 │   └── .nojekyll
 ├── src/
 │   ├── components/      ← 12 page sections + CTABanner
@@ -56,6 +57,6 @@ showcase/
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css        ← Design tokens + Tailwind
-├── vite.config.ts       ← base: '/vittify/'
+├── vite.config.ts       ← base: '/'
 └── package.json
 ```

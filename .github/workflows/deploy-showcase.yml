@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'showcase/**'
+      - '.github/workflows/deploy-showcase.yml'
   workflow_dispatch:
 
 permissions:
@@ -41,4 +42,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: showcase/dist
           publish_branch: gh-pages
+          cname: vittify.in
           commit_message: 'deploy: showcase build ${{ github.sha }}'
