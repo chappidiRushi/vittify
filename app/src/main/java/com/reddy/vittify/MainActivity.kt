@@ -39,6 +39,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.getValue
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -111,6 +112,10 @@ class MainActivity : AppCompatActivity() {
     var nlpCategory by mutableStateOf<String?>(null)
         private set
     var nlpSubcategory by mutableStateOf<String?>(null)
+        private set
+
+    // Pending deep link settings destination
+    var pendingSettingsDestination by mutableStateOf<Any?>(null)
         private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -189,6 +194,8 @@ class MainActivity : AppCompatActivity() {
                     nlpCategory = null
                     nlpSubcategory = null
                 },
+                pendingSettingsDestination = pendingSettingsDestination,
+                onSettingsDestinationHandled = { pendingSettingsDestination = null },
                 appLockViewModel = appLockViewModel,
                 themeViewModel = themeViewModel,
             )
@@ -207,6 +214,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
+        // Deep link URI parsing for settings and in-app navigation
+        val data = intent?.data
+        if (data != null) {
+            val target = SettingsDeepLink.parse(data)
+            if (target != null) {
+                pendingSettingsDestination = target.destination
+            }
+        } else {
+            val linkExtra = intent?.getStringExtra("deep_link") ?: intent?.getStringExtra("settings_link")
+            if (!linkExtra.isNullOrBlank()) {
+                val target = SettingsDeepLink.parse(linkExtra)
+                if (target != null) {
+                    pendingSettingsDestination = target.destination
+                }
+            }
+        }
+
         when (intent?.action) {
             SmsBroadcastReceiver.ACTION_EDIT_TRANSACTION -> {
                 val transactionId = intent.getLongExtra(SmsBroadcastReceiver.EXTRA_TRANSACTION_ID, -1)

@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,10 +61,16 @@ import com.reddy.vittify.utils.bottomFade
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import kotlinx.coroutines.delay
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CurrencySettingsScreen(
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     currencySettingsViewModel: CurrencySettingsViewModel = hiltViewModel(),
     currencyViewModel: CurrencyViewModel = hiltViewModel()
 ) {
@@ -73,6 +80,32 @@ fun CurrencySettingsScreen(
     var showExchangeRateSheet by remember { mutableStateOf(false) }
     var showUnifiedCurrencyPicker by remember { mutableStateOf(false) }
     var showDefaultCurrencyPicker by remember { mutableStateOf(false) }
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "unified-currency" to BringIntoViewRequester(),
+            "currency-picker" to BringIntoViewRequester(),
+            "exchange-rates" to BringIntoViewRequester()
+        )
+    }
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("currency", rawId)
+            if (id == "exchange-rates") {
+                currencyViewModel.loadConversions(
+                    ratesUiState.selectedCurrency?.code ?: "INR"
+                )
+                showExchangeRateSheet = true
+            }
+            delay(300)
+            bringIntoViewRequesters[id]?.bringIntoView()
+            highlightedOptionId = id
+            delay(2500)
+            highlightedOptionId = null
+        }
+    }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scrollBehaviorSmall = TopAppBarDefaults.pinnedScrollBehavior()
@@ -110,13 +143,28 @@ fun CurrencySettingsScreen(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
                 SettingsGridCard(
+                    modifier = Modifier
+                        .weight(1f)
+                        .settingOptionHighlight(
+                            id = "currency-picker",
+                            requester = bringIntoViewRequesters["currency-picker"],
+                            highlightedId = highlightedOptionId,
+                            shape = VittifyShapes.large
+                        ),
                     title = stringResource(R.string.currency),
                     subtitle = uiState.unifiedCurrencyCode ?: stringResource(R.string.select_currency),
                     icon = Icons.Rounded.AttachMoney,
-                    onClick = { showUnifiedCurrencyPicker = true },
-                    modifier = Modifier.weight(1f)
+                    onClick = { showUnifiedCurrencyPicker = true }
                 )
                 SettingsGridCard(
+                    modifier = Modifier
+                        .weight(1f)
+                        .settingOptionHighlight(
+                            id = "exchange-rates",
+                            requester = bringIntoViewRequesters["exchange-rates"],
+                            highlightedId = highlightedOptionId,
+                            shape = VittifyShapes.large
+                        ),
                     title = stringResource(R.string.exchange_rates),
                     subtitle = stringResource(R.string.rates_info_subtitle),
                     icon = Icons.AutoMirrored.Filled.ShowChart,
@@ -125,8 +173,7 @@ fun CurrencySettingsScreen(
                             ratesUiState.selectedCurrency?.code ?: "INR"
                         )
                         showExchangeRateSheet = true
-                    },
-                    modifier = Modifier.weight(1f)
+                    }
                 )
             }
 
@@ -134,6 +181,12 @@ fun CurrencySettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(1.5.dp)
             ) {
                 PreferenceSwitch(
+                    modifier = Modifier.settingOptionHighlight(
+                        id = "unified-currency",
+                        requester = bringIntoViewRequesters["unified-currency"],
+                        highlightedId = highlightedOptionId,
+                        shape = VittifyShapes.scaled(topStart = 16.dp, topEnd = 16.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
+                    ),
                     title = stringResource(R.string.unified_currency),
                     subtitle = stringResource(R.string.unified_currency_subtitle),
                     checked = uiState.unifiedCurrencyEnabled,

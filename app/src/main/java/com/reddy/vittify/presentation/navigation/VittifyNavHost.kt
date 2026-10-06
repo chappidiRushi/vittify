@@ -358,23 +358,23 @@ fun VittifyNavHost(
                         onNavigateToCategories = { navController.safeNavigate(Categories) },
                         onNavigateToManageAccounts = { navController.safeNavigate(ManageAccounts) },
                         onNavigateToRules = { navController.safeNavigate(Rules) },
-                        onNavigateToAppearance = { navController.safeNavigate(Appearance) },
+                        onNavigateToAppearance = { navController.safeNavigate(Appearance()) },
                         onNavigateToProfile = { navController.safeNavigate(Profile) },
-                        onNavigateToCustomization = { navController.safeNavigate(Customization) },
-                        onNavigateToSms = { navController.safeNavigate(SmsSettings) },
-                        onNavigateToNotifications = { navController.safeNavigate(NotificationSettings) },
+                        onNavigateToCustomization = { navController.safeNavigate(Customization()) },
+                        onNavigateToSms = { navController.safeNavigate(SmsSettings()) },
+                        onNavigateToNotifications = { navController.safeNavigate(NotificationSettings()) },
                         onNavigateToWebhooks = { navController.safeNavigate(Webhooks) },
                         onNavigateToBudgets = { navController.safeNavigate(Budgets()) },
-                        onNavigateToDataPrivacy = { navController.safeNavigate(DataPrivacy) },
+                        onNavigateToDataPrivacy = { navController.safeNavigate(DataPrivacy()) },
                         onNavigateToCloudBackup = { navController.safeNavigate(CloudBackup()) },
                         onNavigateToP2pSync = { navController.safeNavigate(P2pDeviceSync) },
                         onNavigateToCoupleTracker = { navController.safeNavigate(CoupleTracker) },
                         onNavigateToAbout = { navController.safeNavigate(About) },
-                        onNavigateToCurrency = { navController.safeNavigate(CurrencySettings) },
+                        onNavigateToCurrency = { navController.safeNavigate(CurrencySettings()) },
                         onNavigateToPdfReport = { navController.safeNavigate(PdfReport) },
-                        onNavigateToAi = { navController.safeNavigate(AiSettings) },
+                        onNavigateToAi = { navController.safeNavigate(AiSettings()) },
                         onNavigateToManageArchivedTransactions = { navController.safeNavigate(DataSanitization(initialTab = "archived")) },
-                        onNavigateToTransactionSettings = { navController.safeNavigate(TransactionSettings) },
+                        onNavigateToTransactionSettings = { navController.safeNavigate(TransactionSettings()) },
                         onNavigateToDeveloper = { navController.safeNavigate(DeveloperOptions) },
                         blurEffects = themeUiState.blurEffects
                     )
@@ -385,8 +385,10 @@ fun VittifyNavHost(
                     exitTransition = VittifyTransitions.horizontalSlideExit,
                     popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
                     popExitTransition = VittifyTransitions.horizontalSlidePopExit
-                ) {
+                ) { backStackEntry ->
+                    val args = backStackEntry.toRoute<Customization>()
                     CustomizationScreen(
+                        targetOptionId = args.targetOptionId,
                         onNavigateBack = { navController.safePopBackStack() }
                     )
                 }
@@ -396,8 +398,10 @@ fun VittifyNavHost(
                     exitTransition = VittifyTransitions.horizontalSlideExit,
                     popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
                     popExitTransition = VittifyTransitions.horizontalSlidePopExit
-                ) {
+                ) { backStackEntry ->
+                    val args = backStackEntry.toRoute<AiSettings>()
                     AiSettingsScreen(
+                        targetOptionId = args.targetOptionId,
                         onNavigateBack = { navController.safePopBackStack() },
                         blurEffects = themeUiState.blurEffects
                     )
@@ -543,8 +547,10 @@ fun VittifyNavHost(
                     exitTransition = VittifyTransitions.horizontalSlideExit,
                     popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
                     popExitTransition = VittifyTransitions.horizontalSlidePopExit
-                ) {
+                ) { backStackEntry ->
+                    val args = backStackEntry.toRoute<DataPrivacy>()
                     DataPrivacyScreen(
+                        targetOptionId = args.targetOptionId,
                         onNavigateBack = { navController.safePopBackStack() },
                         onNavigateToAccounts = { navController.safeNavigate(ManageAccounts) },
                         onNavigateToDataSanitization = { tab ->
@@ -647,8 +653,10 @@ fun VittifyNavHost(
                     exitTransition = VittifyTransitions.horizontalSlideExit,
                     popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
                     popExitTransition = VittifyTransitions.horizontalSlidePopExit
-                ) {
+                ) { backStackEntry ->
+                    val args = backStackEntry.toRoute<SmsSettings>()
                     SMSScreen(
+                        targetOptionId = args.targetOptionId,
                         onNavigateBack = { navController.safePopBackStack() },
                         onNavigateToUnrecognizedSms = { navController.safeNavigate(UnrecognizedSms) },
                         blurEffects = themeUiState.blurEffects
@@ -660,8 +668,10 @@ fun VittifyNavHost(
                     exitTransition = VittifyTransitions.horizontalSlideExit,
                     popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
                     popExitTransition = VittifyTransitions.horizontalSlidePopExit
-                ) {
+                ) { backStackEntry ->
+                    val args = backStackEntry.toRoute<TransactionSettings>()
                     TransactionSettingsScreen(
+                        targetOptionId = args.targetOptionId,
                         onNavigateBack = { navController.safePopBackStack() }
                     )
                 }
@@ -671,8 +681,10 @@ fun VittifyNavHost(
                     exitTransition = VittifyTransitions.horizontalSlideExit,
                     popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
                     popExitTransition = VittifyTransitions.horizontalSlidePopExit
-                ) {
+                ) { backStackEntry ->
+                    val args = backStackEntry.toRoute<CurrencySettings>()
                     CurrencySettingsScreen(
+                        targetOptionId = args.targetOptionId,
                         onNavigateBack = { navController.safePopBackStack() }
                     )
                 }
@@ -693,8 +705,10 @@ fun VittifyNavHost(
                     exitTransition = VittifyTransitions.horizontalSlideExit,
                     popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
                     popExitTransition = VittifyTransitions.horizontalSlidePopExit
-                ) {
+                ) { backStackEntry ->
+                    val args = backStackEntry.toRoute<Appearance>()
                     AppearanceScreen(
+                        targetOptionId = args.targetOptionId,
                         onNavigateBack = { navController.safePopBackStack() }
                     )
                 }
@@ -704,8 +718,10 @@ fun VittifyNavHost(
                     exitTransition = VittifyTransitions.horizontalSlideExit,
                     popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
                     popExitTransition = VittifyTransitions.horizontalSlidePopExit
-                ) {
+                ) { backStackEntry ->
+                    val args = backStackEntry.toRoute<NotificationSettings>()
                     NotificationScreen(
+                        targetOptionId = args.targetOptionId,
                         onNavigateBack = { navController.safePopBackStack() },
                         blurEffects = themeUiState.blurEffects,
                     )
@@ -1189,7 +1205,7 @@ fun VittifyNavHost(
                     nlpNotes = addTransaction.nlpNotes,
                     nlpCategory = addTransaction.nlpCategory,
                     nlpSubcategory = addTransaction.nlpSubcategory,
-                    onNavigateToTransactionSettings = { navController.safeNavigate(TransactionSettings) },
+                    onNavigateToTransactionSettings = { navController.safeNavigate(TransactionSettings()) },
                     blurEffects = themeUiState.blurEffects,
                 )
             }

@@ -70,6 +70,7 @@ class GlobalSearchViewModel @Inject constructor(
                 GlobalSearchIndex.allSettings.filter { setting ->
                     setting.title.contains(trimmed, ignoreCase = true) ||
                             setting.subtitle.contains(trimmed, ignoreCase = true) ||
+                            (setting.parentSection?.contains(trimmed, ignoreCase = true) == true) ||
                             setting.keywords.any { it.contains(trimmed, ignoreCase = true) }
                 }.take(prefs.resultsPerType)
             } else emptyList()

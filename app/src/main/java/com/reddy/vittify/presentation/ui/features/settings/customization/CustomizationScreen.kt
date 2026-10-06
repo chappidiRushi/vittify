@@ -29,12 +29,17 @@ import com.reddy.vittify.presentation.ui.features.globalsearch.GlobalSearchViewM
 import com.reddy.vittify.presentation.ui.theme.*
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomizationScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     globalSearchViewModel: GlobalSearchViewModel = hiltViewModel(),
     blurEffects: Boolean = true
 ) {
@@ -42,6 +47,27 @@ fun CustomizationScreen(
     val scrollBehaviorSmall = TopAppBarDefaults.pinnedScrollBehavior()
     val hazeState = remember { HazeState() }
     var showGlobalSearchSettings by remember { mutableStateOf(false) }
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "global-search" to BringIntoViewRequester()
+        )
+    }
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("customization", rawId)
+            if (id == "global-search") {
+                showGlobalSearchSettings = true
+            }
+            delay(300)
+            bringIntoViewRequesters[id]?.bringIntoView()
+            highlightedOptionId = id
+            delay(2500)
+            highlightedOptionId = null
+        }
+    }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -75,6 +101,12 @@ fun CustomizationScreen(
             ) {
                 // Global Search Settings Item
                 ListItem(
+                    modifier = Modifier.settingOptionHighlight(
+                        id = "global-search",
+                        requester = bringIntoViewRequesters["global-search"],
+                        highlightedId = highlightedOptionId,
+                        shape = ListItemPosition.Single.toShape()
+                    ),
                     headline = {
                         Text(
                             text = stringResource(R.string.global_search_settings),

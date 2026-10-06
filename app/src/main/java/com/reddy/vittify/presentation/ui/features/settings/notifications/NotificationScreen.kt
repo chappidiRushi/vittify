@@ -50,6 +50,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -97,10 +98,16 @@ import dev.chrisbanes.haze.hazeSource
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import kotlinx.coroutines.delay
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationScreen(
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     notificationViewModel: NotificationViewModel = hiltViewModel(),
     blurEffects: Boolean,
 ) {
@@ -108,6 +115,27 @@ fun NotificationScreen(
     val alertTimeMinutes by notificationViewModel.scanNewTransactionsAlertTime.collectAsStateWithLifecycle()
     val upcomingEnabled by notificationViewModel.upcomingNotificationsEnabled.collectAsStateWithLifecycle()
     val subscriptions by notificationViewModel.subscriptions.collectAsStateWithLifecycle()
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "bank-push-notifications" to BringIntoViewRequester(),
+            "remind-transactions" to BringIntoViewRequester(),
+            "alert-time" to BringIntoViewRequester(),
+            "upcoming-alerts" to BringIntoViewRequester()
+        )
+    }
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("notifications", rawId)
+            delay(300)
+            bringIntoViewRequesters[id]?.bringIntoView()
+            highlightedOptionId = id
+            delay(2500)
+            highlightedOptionId = null
+        }
+    }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scrollBehaviorSmall = TopAppBarDefaults.pinnedScrollBehavior()
@@ -283,6 +311,12 @@ fun NotificationScreen(
                 // Notification Access
                 SectionHeader(title = stringResource(R.string.notification_access), modifier = Modifier.padding(start = Spacing.md))
                 PreferenceSwitch(
+                    modifier = Modifier.settingOptionHighlight(
+                        id = "bank-push-notifications",
+                        requester = bringIntoViewRequesters["bank-push-notifications"],
+                        highlightedId = highlightedOptionId,
+                        shape = ListItemPosition.Single.toShape()
+                    ),
                     visible = true,
                     title = stringResource(R.string.bank_push_notifications),
                     subtitle = if (isNotificationAccessGranted) stringResource(R.string.notification_access_active)
@@ -325,6 +359,12 @@ fun NotificationScreen(
                     verticalArrangement = Arrangement.spacedBy(1.5.dp)
                 ) {
                     PreferenceSwitch(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "remind-transactions",
+                            requester = bringIntoViewRequesters["remind-transactions"],
+                            highlightedId = highlightedOptionId,
+                            shape = if (scanEnabled) ListItemPosition.Top.toShape() else ListItemPosition.Single.toShape()
+                        ),
                         title = stringResource(R.string.remind_transactions),
                         subtitle = stringResource(R.string.remind_transactions_desc),
                         checked = scanEnabled,
@@ -357,6 +397,12 @@ fun NotificationScreen(
                         val time = LocalTime.of((alertTimeMinutes / 60).toInt(), (alertTimeMinutes % 60).toInt())
                         
                         ListItem(
+                            modifier = Modifier.settingOptionHighlight(
+                                id = "alert-time",
+                                requester = bringIntoViewRequesters["alert-time"],
+                                highlightedId = highlightedOptionId,
+                                shape = ListItemPosition.Bottom.toShape()
+                            ),
                             headline = { Text(stringResource(R.string.alert_time)) },
                             trailing = {
                                 Box(
@@ -459,6 +505,12 @@ fun NotificationScreen(
 
                     val itemsCount = subscriptions.size
                     PreferenceSwitch(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "upcoming-alerts",
+                            requester = bringIntoViewRequesters["upcoming-alerts"],
+                            highlightedId = highlightedOptionId,
+                            shape = if (!upcomingEnabled || itemsCount == 0) ListItemPosition.Single.toShape() else ListItemPosition.Top.toShape()
+                        ),
                         title = stringResource(R.string.upcoming_transactions_section),
                         subtitle = stringResource(R.string.upcoming_transactions_desc),
                         checked = upcomingEnabled,

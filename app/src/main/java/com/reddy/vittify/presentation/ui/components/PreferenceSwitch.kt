@@ -19,6 +19,7 @@ import com.reddy.vittify.presentation.effects.BlurredAnimatedVisibility
 
 @Composable
 fun PreferenceSwitch(
+    modifier: Modifier = Modifier,
     visible: Boolean = true,
     title: String,
     subtitle: String = "",
@@ -39,6 +40,7 @@ fun PreferenceSwitch(
         exit = fadeOut()
     ) {
         ListItem(
+            modifier = modifier,
             headline = { Text(title) },
             supporting = { if (subtitle.isNotEmpty())Text(subtitle) },
             leading = {

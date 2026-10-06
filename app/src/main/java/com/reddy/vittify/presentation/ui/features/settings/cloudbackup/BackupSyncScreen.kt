@@ -151,11 +151,16 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalHazeApi::class)
 @Composable
 fun BackupSyncScreen(
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     onNavigateToAccounts: () -> Unit = {},
     onRestoreSuccess: () -> Unit = {},
     viewModel: BackupSyncViewModel = hiltViewModel(),
@@ -170,6 +175,16 @@ fun BackupSyncScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scrollBehaviorSmall = TopAppBarDefaults.pinnedScrollBehavior()
     val hazeState = remember { HazeState() }
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "google-drive" to BringIntoViewRequester(),
+            "webdav" to BringIntoViewRequester(),
+            "auto-backup-schedule" to BringIntoViewRequester(),
+            "backup-passphrase" to BringIntoViewRequester()
+        )
+    }
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
 
     var webDavUrl by remember(uiState.webDavConfig.url) { mutableStateOf(uiState.webDavConfig.url) }
     var webDavUser by remember(uiState.webDavConfig.username) { mutableStateOf(uiState.webDavConfig.username) }
@@ -271,6 +286,34 @@ fun BackupSyncScreen(
     LaunchedEffect(uiState.recoverableAuthIntent) {
         uiState.recoverableAuthIntent?.let { intent ->
             recoverableAuthLauncher.launch(intent)
+        }
+    }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("backup", rawId)
+            when (id) {
+                "import-backup" -> {
+                    selectedTab = 1
+                    importLauncher.launch("*/*")
+                }
+                "import-pdf" -> {
+                    selectedTab = 1
+                    pdfImportLauncher.launch("application/pdf")
+                }
+                "export-backup" -> {
+                    selectedTab = 0
+                    showExportDialog = true
+                }
+                else -> {
+                    selectedTab = 0
+                    delay(300)
+                    bringIntoViewRequesters[id]?.bringIntoView()
+                    highlightedOptionId = id
+                    delay(2500)
+                    highlightedOptionId = null
+                }
+            }
         }
     }
 
@@ -416,6 +459,12 @@ fun BackupSyncScreen(
                                     onClick = { viewModel.setActiveProviderType(CloudProviderType.LOCAL_ONLY) }
                                 )
                                 ProviderOptionItem(
+                                    modifier = Modifier.settingOptionHighlight(
+                                        id = "webdav",
+                                        requester = bringIntoViewRequesters["webdav"],
+                                        highlightedId = highlightedOptionId,
+                                        shape = ListItemPosition.Middle.toShape()
+                                    ),
                                     title = CloudProviderType.WEBDAV.getLocalizedDisplayName(),
                                     subtitle = stringResource(R.string.webdav_provider_desc),
                                     providerType = CloudProviderType.WEBDAV,
@@ -424,6 +473,12 @@ fun BackupSyncScreen(
                                     onClick = { viewModel.setActiveProviderType(CloudProviderType.WEBDAV) }
                                 )
                                 ProviderOptionItem(
+                                    modifier = Modifier.settingOptionHighlight(
+                                        id = "google-drive",
+                                        requester = bringIntoViewRequesters["google-drive"],
+                                        highlightedId = highlightedOptionId,
+                                        shape = ListItemPosition.Bottom.toShape()
+                                    ),
                                     title = CloudProviderType.GOOGLE_DRIVE.getLocalizedDisplayName(),
                                     subtitle = stringResource(R.string.google_drive_provider_desc),
                                     providerType = CloudProviderType.GOOGLE_DRIVE,
@@ -749,6 +804,12 @@ fun BackupSyncScreen(
                                     verticalArrangement = Arrangement.spacedBy(1.5.dp)
                                 ) {
                                     PreferenceSwitch(
+                                        modifier = Modifier.settingOptionHighlight(
+                                            id = "backup-passphrase",
+                                            requester = bringIntoViewRequesters["backup-passphrase"],
+                                            highlightedId = highlightedOptionId,
+                                            shape = ListItemPosition.Top.toShape()
+                                        ),
                                         title = stringResource(R.string.e2e_encryption),
                                         subtitle = if (uiState.isE2eEnabled) stringResource(R.string.e2e_enabled_desc) else stringResource(
                                             R.string.e2e_disabled_desc
@@ -781,6 +842,12 @@ fun BackupSyncScreen(
                                     )
 
                                     ListItem(
+                                        modifier = Modifier.settingOptionHighlight(
+                                            id = "auto-backup-schedule",
+                                            requester = bringIntoViewRequesters["auto-backup-schedule"],
+                                            highlightedId = highlightedOptionId,
+                                            shape = ListItemPosition.Middle.toShape()
+                                        ),
                                         headline = { Text(stringResource(R.string.automatic_backup_schedule)) },
                                         supporting = { Text(uiState.backupSchedule.getLocalizedDisplayName()) },
                                         leading = {
@@ -1648,9 +1715,11 @@ fun ProviderOptionItem(
     providerType: CloudProviderType,
     isSelected: Boolean,
     position: ListItemPosition,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     ListItem(
+        modifier = modifier,
         headline = { Text(title, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
         supporting = { Text(subtitle) },
         leading = {

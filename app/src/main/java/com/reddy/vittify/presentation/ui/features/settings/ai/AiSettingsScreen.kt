@@ -68,6 +68,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -108,12 +109,17 @@ import dev.chrisbanes.haze.hazeSource
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun AiSettingsScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     viewModel: AiSettingsViewModel = hiltViewModel(),
     blurEffects: Boolean = true
 ) {
@@ -125,6 +131,29 @@ fun AiSettingsScreen(
     val view = LocalView.current
     val clipboardManager = LocalClipboardManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "enable-ai" to BringIntoViewRequester(),
+            "api-key" to BringIntoViewRequester(),
+            "ai-model" to BringIntoViewRequester()
+        )
+    }
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("ai", rawId)
+            if (id in listOf("api-key", "ai-model") && !uiState.isAiEnabled) {
+                viewModel.onToggleAiEnabled(true)
+            }
+            delay(350)
+            bringIntoViewRequesters[id]?.bringIntoView()
+            highlightedOptionId = id
+            delay(2500)
+            highlightedOptionId = null
+        }
+    }
 
     var showApiKeyVisible by remember { mutableStateOf(false) }
 
@@ -159,7 +188,13 @@ fun AiSettingsScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow)),
+                    .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                    .settingOptionHighlight(
+                        id = "enable-ai",
+                        requester = bringIntoViewRequesters["enable-ai"],
+                        highlightedId = highlightedOptionId,
+                        shape = VittifyShapes.large
+                    ),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
                 ),
@@ -332,7 +367,17 @@ fun AiSettingsScreen(
                             }
 
                             // API Key Outlined Input
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .settingOptionHighlight(
+                                        id = "api-key",
+                                        requester = bringIntoViewRequesters["api-key"],
+                                        highlightedId = highlightedOptionId,
+                                        shape = VittifyShapes.input
+                                    ),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
                                 Text(
                                     text = stringResource(R.string.api_key_label),
                                     style = MaterialTheme.typography.labelMedium,
@@ -419,7 +464,17 @@ fun AiSettingsScreen(
                             }
 
                             // Model Selection Section (Dynamically Loaded)
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .settingOptionHighlight(
+                                        id = "ai-model",
+                                        requester = bringIntoViewRequesters["ai-model"],
+                                        highlightedId = highlightedOptionId,
+                                        shape = VittifyShapes.medium
+                                    ),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,

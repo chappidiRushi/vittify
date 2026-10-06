@@ -77,7 +77,7 @@ import java.time.format.DateTimeFormatter
 fun GlobalSearchResultsOverlay(
     uiState: GlobalSearchUiState,
     onAccountClick: (bankName: String, accountLast4: String) -> Unit,
-    onSettingClick: (settingId: String) -> Unit,
+    onSettingClick: (setting: GlobalSearchSettingItem) -> Unit,
     onTransactionClick: (transactionId: Long) -> Unit,
     onPageClick: (destination: Any) -> Unit,
     modifier: Modifier = Modifier,
@@ -152,7 +152,7 @@ fun GlobalSearchResultsOverlay(
 private fun SearchResultsList(
     results: GlobalSearchGroupedResults,
     onAccountClick: (bankName: String, accountLast4: String) -> Unit,
-    onSettingClick: (settingId: String) -> Unit,
+    onSettingClick: (setting: GlobalSearchSettingItem) -> Unit,
     onTransactionClick: (transactionId: Long) -> Unit,
     onPageClick: (destination: Any) -> Unit,
     modifier: Modifier = Modifier
@@ -217,7 +217,7 @@ private fun SearchResultsList(
                 GlobalSearchSettingRow(
                     setting = setting,
                     position = ListItemPosition.from(index, results.settings.size),
-                    onClick = { onSettingClick(setting.id) }
+                    onClick = { onSettingClick(setting) }
                 )
             }
         }
@@ -377,8 +377,13 @@ private fun GlobalSearchSettingRow(
             )
         },
         supporting = {
+            val subtitleText = if (!setting.parentSection.isNullOrBlank()) {
+                "${setting.parentSection} • ${setting.subtitle}"
+            } else {
+                setting.subtitle
+            }
             Text(
-                text = setting.subtitle,
+                text = subtitleText,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
