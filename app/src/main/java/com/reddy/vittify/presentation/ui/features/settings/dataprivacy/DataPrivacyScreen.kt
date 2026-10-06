@@ -95,12 +95,18 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import kotlinx.coroutines.delay
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalHazeApi::class
 )
 @Composable
 fun DataPrivacyScreen(
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     onNavigateToAccounts: () -> Unit = {},
     onNavigateToDataSanitization: (String?) -> Unit = {},
     onNavigateToArchivedTransactions: () -> Unit = {},
@@ -121,6 +127,16 @@ fun DataPrivacyScreen(
     var showTimeoutDialog by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
     var showDeleteAllDataDialog by remember { mutableStateOf(false) }
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "app-lock" to BringIntoViewRequester(),
+            "lock-timeout" to BringIntoViewRequester(),
+            "data-sanitization" to BringIntoViewRequester(),
+            "delete-all-data" to BringIntoViewRequester()
+        )
+    }
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
 
     // Launcher for selecting a backup file to import
     val importLauncher = rememberLauncherForActivityResult(
@@ -168,6 +184,30 @@ fun DataPrivacyScreen(
     LaunchedEffect(uiState.exportedBackupFile) {
         uiState.exportedBackupFile?.let {
             exportLauncher.launch("vittify_backup_${System.currentTimeMillis()}.zip")
+        }
+    }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("dataprivacy", rawId)
+            when (id) {
+                "export-backup" -> {
+                    showExportDialog = true
+                }
+                "import-backup" -> {
+                    importLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*"))
+                }
+                "import-pdf" -> {
+                    pdfLauncher.launch(arrayOf("application/pdf"))
+                }
+                else -> {
+                    delay(300)
+                    bringIntoViewRequesters[id]?.bringIntoView()
+                    highlightedOptionId = id
+                    delay(2500)
+                    highlightedOptionId = null
+                }
+            }
         }
     }
 
@@ -219,6 +259,12 @@ fun DataPrivacyScreen(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     PreferenceSwitch(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "app-lock",
+                            requester = bringIntoViewRequesters["app-lock"],
+                            highlightedId = highlightedOptionId,
+                            shape = if (!appLockUiState.isLockEnabled) ListItemPosition.Single.toShape() else ListItemPosition.Top.toShape()
+                        ),
                         title = stringResource(R.string.app_lock),
                         subtitle =
                         if (appLockUiState.canUseBiometric) {
@@ -259,6 +305,12 @@ fun DataPrivacyScreen(
                     // Lock Timeout Setting
                     AnimatedVisibility(visible = appLockUiState.isLockEnabled) {
                         ListItem(
+                            modifier = Modifier.settingOptionHighlight(
+                                id = "lock-timeout",
+                                requester = bringIntoViewRequesters["lock-timeout"],
+                                highlightedId = highlightedOptionId,
+                                shape = ListItemPosition.Bottom.toShape()
+                            ),
                             headline = { Text(stringResource(R.string.lock_timeout)) },
                             supporting = {
                                 Text(
@@ -293,6 +345,12 @@ fun DataPrivacyScreen(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     ListItem(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "data-sanitization",
+                            requester = bringIntoViewRequesters["data-sanitization"],
+                            highlightedId = highlightedOptionId,
+                            shape = ListItemPosition.Top.toShape()
+                        ),
                         headline = {
                             Text(
                                 text = stringResource(R.string.data_sanitization_title),
@@ -375,6 +433,12 @@ fun DataPrivacyScreen(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     ListItem(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "delete-all-data",
+                            requester = bringIntoViewRequesters["delete-all-data"],
+                            highlightedId = highlightedOptionId,
+                            shape = ListItemPosition.Single.toShape()
+                        ),
                         headline = {
                             Text(
                                 text = stringResource(R.string.delete_all_data),

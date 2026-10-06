@@ -37,6 +37,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,6 +75,10 @@ import dev.chrisbanes.haze.HazeEffectScope
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalHazeApi::class
@@ -81,6 +86,7 @@ import dev.chrisbanes.haze.hazeSource
 @Composable
 fun SMSScreen(
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     onNavigateToUnrecognizedSms: () -> Unit = {},
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     blurEffects: Boolean
@@ -93,6 +99,46 @@ fun SMSScreen(
     var showSmsScanDialog by remember { mutableStateOf(false) }
     var syncSectionExpanded by remember { mutableStateOf(true) }
     var diagnosticsSectionExpanded by remember { mutableStateOf(true) }
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "rescan-sms" to BringIntoViewRequester(),
+            "scan-range" to BringIntoViewRequester(),
+            "scan-all-time" to BringIntoViewRequester(),
+            "unrecognized" to BringIntoViewRequester()
+        )
+    }
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("sms", rawId)
+            when (id) {
+                "scan-range", "scan-all-time" -> {
+                    showSmsScanDialog = true
+                    delay(300)
+                    bringIntoViewRequesters["scan-range"]?.bringIntoView()
+                    highlightedOptionId = "scan-range"
+                    delay(2500)
+                    highlightedOptionId = null
+                }
+                "unrecognized" -> {
+                    delay(300)
+                    bringIntoViewRequesters["unrecognized"]?.bringIntoView()
+                    highlightedOptionId = "unrecognized"
+                    delay(2500)
+                    highlightedOptionId = null
+                }
+                else -> {
+                    delay(300)
+                    bringIntoViewRequesters[id]?.bringIntoView()
+                    highlightedOptionId = id
+                    delay(2500)
+                    highlightedOptionId = null
+                }
+            }
+        }
+    }
 
     val haptic = LocalHapticFeedback.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -142,6 +188,12 @@ fun SMSScreen(
                     ) {
                         // Rescan SMS Messages
                         ListItem(
+                            modifier = Modifier.settingOptionHighlight(
+                                id = "rescan-sms",
+                                requester = bringIntoViewRequesters["rescan-sms"],
+                                highlightedId = highlightedOptionId,
+                                shape = ListItemPosition.Top.toShape()
+                            ),
                             headline = {
                                 Text(
                                     text = stringResource(R.string.rescan_sms_title),
@@ -215,6 +267,12 @@ fun SMSScreen(
 
                         // SMS Scan Period
                         ListItem(
+                            modifier = Modifier.settingOptionHighlight(
+                                id = "scan-range",
+                                requester = bringIntoViewRequesters["scan-range"],
+                                highlightedId = highlightedOptionId,
+                                shape = ListItemPosition.Bottom.toShape()
+                            ),
                             headline = {
                                 Text(
                                     text = stringResource(R.string.sms_scan_period),
@@ -290,6 +348,12 @@ fun SMSScreen(
                     ) {
                         // Unrecognized Bank Messages
                         ListItem(
+                            modifier = Modifier.settingOptionHighlight(
+                                id = "unrecognized",
+                                requester = bringIntoViewRequesters["unrecognized"],
+                                highlightedId = highlightedOptionId,
+                                shape = ListItemPosition.Single.toShape()
+                            ),
                             headline = {
                                 Text(
                                     text = stringResource(R.string.unrecognized_bank_messages),

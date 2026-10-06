@@ -55,6 +55,10 @@ import com.reddy.vittify.presentation.ui.components.toShape
 import com.reddy.vittify.presentation.ui.features.categories.NavigationContent
 import com.reddy.vittify.presentation.ui.theme.*
 import com.reddy.vittify.utils.IconSwitchingUtils
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import kotlinx.coroutines.delay
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
@@ -62,6 +66,7 @@ import dev.chrisbanes.haze.hazeSource
 @Composable
 fun AppearanceScreen(
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     themeViewModel: ThemeViewModel = hiltViewModel()
 ) {
     val themeUiState by themeViewModel.themeUiState.collectAsStateWithLifecycle()
@@ -74,6 +79,50 @@ fun AppearanceScreen(
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("Themes & Colors", "Navigation & Icons", "Effects & Geometry")
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "dynamic-theme" to BringIntoViewRequester(),
+            "theme-mode" to BringIntoViewRequester(),
+            "amoled-black" to BringIntoViewRequester(),
+            "curated-palette" to BringIntoViewRequester(),
+            "custom-seed" to BringIntoViewRequester(),
+            "navigation-style" to BringIntoViewRequester(),
+            "hide-nav-labels" to BringIntoViewRequester(),
+            "hide-pill-indicator" to BringIntoViewRequester(),
+            "profile-switcher-footer" to BringIntoViewRequester(),
+            "app-logo" to BringIntoViewRequester(),
+            "blur-effects" to BringIntoViewRequester(),
+            "playful-animation" to BringIntoViewRequester(),
+            "background-effects" to BringIntoViewRequester(),
+            "app-font" to BringIntoViewRequester(),
+            "surface-geometry" to BringIntoViewRequester()
+        )
+    }
+
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("appearance", rawId)
+            when (id) {
+                "dynamic-theme", "theme-mode", "amoled-black", "curated-palette", "custom-seed" -> {
+                    selectedTabIndex = 0
+                }
+                "navigation-style", "hide-nav-labels", "hide-pill-indicator", "profile-switcher-footer", "app-logo" -> {
+                    selectedTabIndex = 1
+                }
+                "blur-effects", "playful-animation", "background-effects", "app-font", "surface-geometry" -> {
+                    selectedTabIndex = 2
+                }
+            }
+            delay(400)
+            bringIntoViewRequesters[id]?.bringIntoView()
+            highlightedOptionId = id
+            delay(2500)
+            highlightedOptionId = null
+        }
+    }
 
     // Bottom Sheet States
     var showCuratedPalettesSheet by remember { mutableStateOf(false) }
@@ -231,19 +280,25 @@ fun AppearanceScreen(
                             isDark = isDark,
                             themeViewModel = themeViewModel,
                             onOpenColorPicker = { showColorPicker = true },
-                            onOpenCuratedPalettesSheet = { showCuratedPalettesSheet = true }
+                            onOpenCuratedPalettesSheet = { showCuratedPalettesSheet = true },
+                            bringIntoViewRequesters = bringIntoViewRequesters,
+                            highlightedOptionId = highlightedOptionId
                         )
                         1 -> NavigationAndIconsTab(
                             themeUiState = themeUiState,
                             themeViewModel = themeViewModel,
-                            context = context
+                            context = context,
+                            bringIntoViewRequesters = bringIntoViewRequesters,
+                            highlightedOptionId = highlightedOptionId
                         )
                         2 -> EffectsAndGeometryTab(
                             themeUiState = themeUiState,
                             themeViewModel = themeViewModel,
                             onOpenBackgroundEffectsSheet = { showBackgroundEffectsSheet = true },
                             onOpenSurfaceGeometrySheet = { showSurfaceGeometrySheet = true },
-                            onPickFontFromDevice = { fontPickerLauncher.launch(arrayOf("*/*")) }
+                            onPickFontFromDevice = { fontPickerLauncher.launch(arrayOf("*/*")) },
+                            bringIntoViewRequesters = bringIntoViewRequesters,
+                            highlightedOptionId = highlightedOptionId
                         )
                     }
                 }
@@ -367,7 +422,9 @@ private fun ThemesAndColorsTab(
     isDark: Boolean,
     themeViewModel: ThemeViewModel,
     onOpenColorPicker: () -> Unit,
-    onOpenCuratedPalettesSheet: () -> Unit
+    onOpenCuratedPalettesSheet: () -> Unit,
+    bringIntoViewRequesters: Map<String, BringIntoViewRequester>,
+    highlightedOptionId: String?
 ) {
     val haptic = rememberAppHapticFeedback()
 
@@ -378,7 +435,13 @@ private fun ThemesAndColorsTab(
         // Platter 1: Theme Mode
         AppearancePlatter(
             title = "Theme Mode",
-            subtitle = "Choose light, dark, or follow system setting"
+            subtitle = "Choose light, dark, or follow system setting",
+            modifier = Modifier.settingOptionHighlight(
+                id = "theme-mode",
+                requester = bringIntoViewRequesters["theme-mode"],
+                highlightedId = highlightedOptionId,
+                shape = VittifyShapes.hero
+            )
         ) {
             ThemeModeSegmentedControl(
                 selectedMode = themeUiState.isDarkTheme,
@@ -393,6 +456,12 @@ private fun ThemesAndColorsTab(
                 )
                 Spacer(modifier = Modifier.height(Spacing.xs))
                 PreferenceSwitch(
+                    modifier = Modifier.settingOptionHighlight(
+                        id = "amoled-black",
+                        requester = bringIntoViewRequesters["amoled-black"],
+                        highlightedId = highlightedOptionId,
+                        shape = RoundedCornerShape(12.dp)
+                    ),
                     title = stringResource(R.string.amoled_black),
                     subtitle = stringResource(R.string.amoled_black_desc),
                     checked = themeUiState.isAmoledMode,
@@ -425,7 +494,13 @@ private fun ThemesAndColorsTab(
         AppearancePlatter(
             title = "Color Palette",
             subtitle = if (isDynamic) "Material You wallpaper or seed palette"
-            else "Curated theme: ${getAccentThemeName(themeUiState.accentColor)}"
+            else "Curated theme: ${getAccentThemeName(themeUiState.accentColor)}",
+            modifier = Modifier.settingOptionHighlight(
+                id = if (isDynamic) "dynamic-theme" else "curated-palette",
+                requester = if (isDynamic) bringIntoViewRequesters["dynamic-theme"] else bringIntoViewRequesters["curated-palette"],
+                highlightedId = highlightedOptionId,
+                shape = VittifyShapes.hero
+            )
         ) {
             TwoWaySegmentedPill(
                 firstOption = stringResource(R.string.style_dynamic),
@@ -485,6 +560,12 @@ private fun ThemesAndColorsTab(
                             },
                             modifier = Modifier
                                 .weight(1f)
+                                .settingOptionHighlight(
+                                    id = "custom-seed",
+                                    requester = bringIntoViewRequesters["custom-seed"],
+                                    highlightedId = highlightedOptionId,
+                                    shape = VittifyShapes.input
+                                )
                                 .springPress(0.95f),
                             shape = VittifyShapes.input,
                             border = if (!isCustomSeed) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)) else null,
@@ -631,7 +712,9 @@ private fun ThemesAndColorsTab(
 private fun NavigationAndIconsTab(
     themeUiState: ThemeUiState,
     themeViewModel: ThemeViewModel,
-    context: android.content.Context
+    context: android.content.Context,
+    bringIntoViewRequesters: Map<String, BringIntoViewRequester>,
+    highlightedOptionId: String?
 ) {
     val haptic = rememberAppHapticFeedback()
 
@@ -645,7 +728,13 @@ private fun NavigationAndIconsTab(
             title = stringResource(R.string.navigation_style),
             subtitle = "Switch between floating bar and docked M3 navigation",
             contentPadding = PaddingValues(0.dp),
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.settingOptionHighlight(
+                id = "navigation-style",
+                requester = bringIntoViewRequesters["navigation-style"],
+                highlightedId = highlightedOptionId,
+                shape = VittifyShapes.hero
+            )
         ) {
             Box(
                 modifier = Modifier
@@ -670,6 +759,12 @@ private fun NavigationAndIconsTab(
 
             if (!isFloating) {
                 PreferenceSwitch(
+                    modifier = Modifier.settingOptionHighlight(
+                        id = "hide-nav-labels",
+                        requester = bringIntoViewRequesters["hide-nav-labels"],
+                        highlightedId = highlightedOptionId,
+                        shape = RoundedCornerShape(12.dp)
+                    ),
                     title = stringResource(R.string.hide_nav_labels),
                     subtitle = stringResource(R.string.hide_nav_labels_desc),
                     checked = themeUiState.hideNavigationLabels,
@@ -683,6 +778,12 @@ private fun NavigationAndIconsTab(
                     thickness = 1.dp
                 )
                 PreferenceSwitch(
+                    modifier = Modifier.settingOptionHighlight(
+                        id = "hide-pill-indicator",
+                        requester = bringIntoViewRequesters["hide-pill-indicator"],
+                        highlightedId = highlightedOptionId,
+                        shape = RoundedCornerShape(12.dp)
+                    ),
                     title = stringResource(R.string.hide_pill_indicator),
                     subtitle = stringResource(R.string.hide_pill_indicator_desc),
                     checked = themeUiState.hidePillIndicator,
@@ -698,6 +799,12 @@ private fun NavigationAndIconsTab(
             }
 
             PreferenceSwitch(
+                modifier = Modifier.settingOptionHighlight(
+                    id = "profile-switcher-footer",
+                    requester = bringIntoViewRequesters["profile-switcher-footer"],
+                    highlightedId = highlightedOptionId,
+                    shape = RoundedCornerShape(12.dp)
+                ),
                 title = stringResource(R.string.move_profile_switcher_to_footer),
                 subtitle = stringResource(R.string.move_profile_switcher_to_footer_desc),
                 checked = themeUiState.profileSwitcherInFooter,
@@ -711,7 +818,13 @@ private fun NavigationAndIconsTab(
         // Platter 2: App Logo
         AppearancePlatter(
             title = "App Logo",
-            subtitle = "Customize the home screen launcher icon"
+            subtitle = "Customize the home screen launcher icon",
+            modifier = Modifier.settingOptionHighlight(
+                id = "app-logo",
+                requester = bringIntoViewRequesters["app-logo"],
+                highlightedId = highlightedOptionId,
+                shape = VittifyShapes.hero
+            )
         ) {
             val appIcons = listOf(
                 Pair(stringResource(R.string.logo_original), AppIcon.ORIGINAL to R.drawable.vittify_original),
@@ -752,7 +865,9 @@ private fun EffectsAndGeometryTab(
     themeViewModel: ThemeViewModel,
     onOpenBackgroundEffectsSheet: () -> Unit,
     onOpenSurfaceGeometrySheet: () -> Unit,
-    onPickFontFromDevice: () -> Unit
+    onPickFontFromDevice: () -> Unit,
+    bringIntoViewRequesters: Map<String, BringIntoViewRequester>,
+    highlightedOptionId: String?
 ) {
     val haptic = rememberAppHapticFeedback()
 
@@ -767,6 +882,12 @@ private fun EffectsAndGeometryTab(
         ) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 PreferenceSwitch(
+                    modifier = Modifier.settingOptionHighlight(
+                        id = "blur-effects",
+                        requester = bringIntoViewRequesters["blur-effects"],
+                        highlightedId = highlightedOptionId,
+                        shape = RoundedCornerShape(12.dp)
+                    ),
                     title = stringResource(R.string.blur_effects),
                     subtitle = stringResource(R.string.blur_effects_desc),
                     checked = themeUiState.blurEffects,
@@ -782,6 +903,12 @@ private fun EffectsAndGeometryTab(
             }
 
             PreferenceSwitch(
+                modifier = Modifier.settingOptionHighlight(
+                    id = "playful-animation",
+                    requester = bringIntoViewRequesters["playful-animation"],
+                    highlightedId = highlightedOptionId,
+                    shape = RoundedCornerShape(12.dp)
+                ),
                 title = stringResource(R.string.playful_animation),
                 subtitle = stringResource(R.string.playful_animation_desc),
                 checked = themeUiState.isPlayfulAnimationEnabled,
@@ -800,6 +927,12 @@ private fun EffectsAndGeometryTab(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
+                        .settingOptionHighlight(
+                            id = "background-effects",
+                            requester = bringIntoViewRequesters["background-effects"],
+                            highlightedId = highlightedOptionId,
+                            shape = VittifyShapes.button
+                        )
                         .springPress(0.96f),
                     shape = VittifyShapes.button,
                     colors = ButtonDefaults.filledTonalButtonColors()
@@ -816,7 +949,13 @@ private fun EffectsAndGeometryTab(
         // Platter 2: Typography
         AppearancePlatter(
             title = stringResource(R.string.fonts_title),
-            subtitle = "Select app font or load custom typeface"
+            subtitle = "Select app font or load custom typeface",
+            modifier = Modifier.settingOptionHighlight(
+                id = "app-font",
+                requester = bringIntoViewRequesters["app-font"],
+                highlightedId = highlightedOptionId,
+                shape = VittifyShapes.hero
+            )
         ) {
             val availableFonts = remember {
                 listOf(
@@ -924,7 +1063,13 @@ private fun EffectsAndGeometryTab(
         // Platter 3: Surface & Geometry
         AppearancePlatter(
             title = "Surface & Geometry",
-            subtitle = "Live platter preview and custom token tuning"
+            subtitle = "Live platter preview and custom token tuning",
+            modifier = Modifier.settingOptionHighlight(
+                id = "surface-geometry",
+                requester = bringIntoViewRequesters["surface-geometry"],
+                highlightedId = highlightedOptionId,
+                shape = VittifyShapes.hero
+            )
         ) {
             // Live Sample Platter Card
             Box(

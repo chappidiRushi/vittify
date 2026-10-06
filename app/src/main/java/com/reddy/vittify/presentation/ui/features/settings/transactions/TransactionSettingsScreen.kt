@@ -38,6 +38,8 @@ import com.reddy.vittify.R
 import com.reddy.vittify.presentation.effects.overScrollVertical
 import com.reddy.vittify.presentation.navigation.LocalBottomNavPadding
 import com.reddy.vittify.presentation.ui.components.CustomTitleTopAppBar
+import com.reddy.vittify.presentation.ui.components.ListItemPosition
+import com.reddy.vittify.presentation.ui.components.toShape
 import com.reddy.vittify.presentation.ui.components.PreferenceSwitch
 import com.reddy.vittify.presentation.ui.features.categories.NavigationContent
 import com.reddy.vittify.presentation.ui.theme.Dimensions
@@ -45,10 +47,20 @@ import com.reddy.vittify.presentation.ui.theme.Spacing
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
+import kotlinx.coroutines.delay
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionSettingsScreen(
     onNavigateBack: () -> Unit,
+    targetOptionId: String? = null,
     viewModel: TransactionSettingsViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
@@ -56,6 +68,27 @@ fun TransactionSettingsScreen(
     val scrollBehaviorSmall = TopAppBarDefaults.pinnedScrollBehavior()
     val hazeState = dev.chrisbanes.haze.HazeState()
     val bottomNavPadding = LocalBottomNavPadding.current
+
+    val bringIntoViewRequesters = remember {
+        mapOf(
+            "use-category-as-merchant" to BringIntoViewRequester(),
+            "use-category-as-merchant-sms" to BringIntoViewRequester(),
+            "preserve-account-order" to BringIntoViewRequester(),
+            "direct-field-editing" to BringIntoViewRequester()
+        )
+    }
+    var highlightedOptionId by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(targetOptionId) {
+        targetOptionId?.let { rawId ->
+            val id = SettingsDeepLink.normalizeOptionSlug("transactions", rawId)
+            delay(300)
+            bringIntoViewRequesters[id]?.bringIntoView()
+            highlightedOptionId = id
+            delay(2500)
+            highlightedOptionId = null
+        }
+    }
 
     val useCategoryAsMerchant by viewModel.useCategoryAsMerchant.collectAsState()
     val useCategoryAsMerchantSms by viewModel.useCategoryAsMerchantSms.collectAsState()
@@ -105,6 +138,12 @@ fun TransactionSettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(1.5.dp)
                 ) {
                     PreferenceSwitch(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "use-category-as-merchant",
+                            requester = bringIntoViewRequesters["use-category-as-merchant"],
+                            highlightedId = highlightedOptionId,
+                            shape = ListItemPosition.Top.toShape()
+                        ),
                         title = stringResource(R.string.use_category_as_merchant),
                         subtitle = stringResource(R.string.use_category_as_merchant_desc),
                         checked = useCategoryAsMerchant,
@@ -132,6 +171,12 @@ fun TransactionSettingsScreen(
                     )
 
                     PreferenceSwitch(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "use-category-as-merchant-sms",
+                            requester = bringIntoViewRequesters["use-category-as-merchant-sms"],
+                            highlightedId = highlightedOptionId,
+                            shape = ListItemPosition.Middle.toShape()
+                        ),
                         title = stringResource(R.string.use_category_as_merchant_sms),
                         subtitle = stringResource(R.string.use_category_as_merchant_sms_desc),
                         checked = useCategoryAsMerchantSms,
@@ -159,6 +204,12 @@ fun TransactionSettingsScreen(
                     )
 
                     PreferenceSwitch(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "preserve-account-order",
+                            requester = bringIntoViewRequesters["preserve-account-order"],
+                            highlightedId = highlightedOptionId,
+                            shape = ListItemPosition.Middle.toShape()
+                        ),
                         title = stringResource(R.string.preserve_account_order),
                         subtitle = stringResource(R.string.preserve_account_order_desc),
                         checked = preserveAccountOrder,
@@ -186,6 +237,12 @@ fun TransactionSettingsScreen(
                     )
 
                     PreferenceSwitch(
+                        modifier = Modifier.settingOptionHighlight(
+                            id = "direct-field-editing",
+                            requester = bringIntoViewRequesters["direct-field-editing"],
+                            highlightedId = highlightedOptionId,
+                            shape = ListItemPosition.Bottom.toShape()
+                        ),
                         title = stringResource(R.string.direct_field_editing),
                         subtitle = stringResource(R.string.direct_field_editing_desc),
                         checked = directFieldEditing,

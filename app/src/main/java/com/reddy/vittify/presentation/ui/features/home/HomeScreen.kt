@@ -376,7 +376,7 @@ fun SharedTransitionScope.HomeScreen(
                         onProfileClick = onNavigateToSettings,
                         showAvatar = false,
                         showMoreOption = isNormalNav,
-                        onNotificationClick = { navController.safeNavigate(NotificationSettings) },
+                        onNotificationClick = { navController.safeNavigate(NotificationSettings()) },
                         onUpdatesClick = { navController.safeNavigate(UnrecognizedSms) },
                         onMoreClick = { homeViewModel.openMoreBottomSheet() },
                         coupleViewModeContent = if (uiState.isCoupleTrackingEnabled) {
@@ -873,7 +873,7 @@ fun SharedTransitionScope.HomeScreen(
                                                 HomeShortcutItem.BUDGETS -> onNavigateToBudgets(null)
                                                 HomeShortcutItem.RULES -> navController.safeNavigate(Rules)
                                                 HomeShortcutItem.ANALYTICS -> navController.safeNavigate(Analytics)
-                                                HomeShortcutItem.SMS -> navController.safeNavigate(SmsSettings)
+                                                HomeShortcutItem.SMS -> navController.safeNavigate(SmsSettings())
                                                 HomeShortcutItem.REPORTS -> navController.safeNavigate(PdfReport)
                                                 HomeShortcutItem.COUPLE -> navController.safeNavigate(CoupleTracker)
                                             }
@@ -911,14 +911,18 @@ fun SharedTransitionScope.HomeScreen(
                             AccountDetail(bankName = bankName, accountLast4 = accountLast4)
                         )
                     },
-                    onSettingClick = { settingId ->
+                    onSettingClick = { setting ->
                         isSearchActive = false
                         focusManager.clearFocus(force = true)
                         keyboardController?.hide()
                         globalSearchViewModel.clearSearch()
-                        navController.safeNavigate(
-                            Settings(targetSettingId = settingId)
-                        )
+                        if (setting.destination != null) {
+                            navController.safeNavigate(setting.destination)
+                        } else {
+                            navController.safeNavigate(
+                                Settings(targetSettingId = setting.targetSettingId)
+                            )
+                        }
                     },
                     onTransactionClick = { transactionId ->
                         isSearchActive = false

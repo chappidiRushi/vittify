@@ -47,7 +47,9 @@ fun VittifyApp(
     nlpNotes: String? = null,
     nlpCategory: String? = null,
     nlpSubcategory: String? = null,
-    onAddComplete: () -> Unit = {}
+    onAddComplete: () -> Unit = {},
+    pendingSettingsDestination: Any? = null,
+    onSettingsDestinationHandled: () -> Unit = {}
 ) {
     val themeUiState by themeViewModel.themeUiState.collectAsStateWithLifecycle()
     val appLockUiState by appLockViewModel.uiState.collectAsStateWithLifecycle()
@@ -77,7 +79,7 @@ fun VittifyApp(
 
     // Determine initial destination based on intent or splash
     val startDestination = remember {
-        if (editTransactionId != null || addTransactionTab != null) {
+        if (editTransactionId != null || addTransactionTab != null || pendingSettingsDestination != null) {
             if (themeUiState.isOnboardingFinished) Home else OnBoarding
         } else {
             Splash
@@ -121,6 +123,14 @@ fun VittifyApp(
                 )
             )
             onAddComplete()
+        }
+    }
+
+    // Navigate to settings destination when deep link is received
+    LaunchedEffect(pendingSettingsDestination) {
+        pendingSettingsDestination?.let { destination ->
+            navController.navigate(destination)
+            onSettingsDestinationHandled()
         }
     }
 

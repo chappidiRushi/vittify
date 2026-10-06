@@ -263,9 +263,9 @@ data class Transactions(
 )
 
 @Serializable data class Settings(val targetSettingId: String? = null)
-@Serializable object Customization
-@Serializable object AiSettings
-@Serializable object CurrencySettings
+@Serializable data class Customization(val targetOptionId: String? = null)
+@Serializable data class AiSettings(val targetOptionId: String? = null)
+@Serializable data class CurrencySettings(val targetOptionId: String? = null)
 @Serializable object Subscriptions
 @Serializable object Categories
 
@@ -307,22 +307,22 @@ data class Transactions(
 
 @Serializable data class CreateRule(val ruleId: String? = null)
 
-@Serializable object Appearance
+@Serializable data class Appearance(val targetOptionId: String? = null)
 
 @Serializable object ManageAccounts
 
 @Serializable object Profile
 
-@Serializable object SmsSettings
+@Serializable data class SmsSettings(val targetOptionId: String? = null)
 
-@Serializable object DataPrivacy
+@Serializable data class DataPrivacy(val targetOptionId: String? = null)
 @Serializable data class DataSanitization(val initialTab: String? = null)
 @Serializable object ManageArchivedTransactions
-@Serializable data class CloudBackup(val fromOnboarding: Boolean = false)
+@Serializable data class CloudBackup(val fromOnboarding: Boolean = false, val targetOptionId: String? = null)
 @Serializable object P2pDeviceSync
 @Serializable object CoupleTracker
 
-@Serializable object NotificationSettings
+@Serializable data class NotificationSettings(val targetOptionId: String? = null)
 @Serializable object Webhooks
 @Serializable data class WebhookEditor(val profileId: String? = null)
 
@@ -351,7 +351,7 @@ data class Transactions(
 
 @Serializable data class SyncSms(val forceResync: Boolean = false)
 
-@Serializable object TransactionSettings
+@Serializable data class TransactionSettings(val targetOptionId: String? = null)
 
 // Routes where bottom navigation should be visible
 val BOTTOM_NAV_ROUTES = setOf(
