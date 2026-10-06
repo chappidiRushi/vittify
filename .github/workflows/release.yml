@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
     tags:
       - 'v*'
   workflow_dispatch:  # Manual trigger from GitHub UI
@@ -110,23 +111,81 @@ jobs:
           echo "code=$CODE" >> $GITHUB_OUTPUT
           echo "Release version: $VERSION (code: $CODE)"
       
+      - name: Configure Release Type
+        id: release_config
+        run: |
+          VERSION="${{ steps.next_version.outputs.version }}"
+          BRANCH="${{ github.ref_name }}"
+          
+          if [ "$BRANCH" = "dev" ]; then
+            echo "is_dev=true" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+            echo "tag_name=pre-release" >> $GITHUB_OUTPUT
+            echo "release_name=Vittify Pre-Release (v$VERSION)" >> $GITHUB_OUTPUT
+            echo "make_latest=false" >> $GITHUB_OUTPUT
+            echo "Mode: Rolling Pre-Release for dev branch (updating tag 'pre-release')"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.prerelease }}" ]; then
+            IS_PRE="${{ inputs.prerelease }}"
+            echo "is_dev=false" >> $GITHUB_OUTPUT
+            echo "prerelease=$IS_PRE" >> $GITHUB_OUTPUT
+            echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
+            echo "release_name=Vittify v$VERSION" >> $GITHUB_OUTPUT
+            if [ "$IS_PRE" = "true" ]; then
+              echo "make_latest=false" >> $GITHUB_OUTPUT
+            else
+              echo "make_latest=true" >> $GITHUB_OUTPUT
+            fi
+            echo "Mode: Manual trigger (prerelease=$IS_PRE)"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "is_dev=false" >> $GITHUB_OUTPUT
+            echo "tag_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "release_name=Vittify v$VERSION" >> $GITHUB_OUTPUT
+            if echo "${{ github.ref_name }}" | grep -qiE "beta|alpha|rc|preview"; then
+              echo "prerelease=true" >> $GITHUB_OUTPUT
+              echo "make_latest=false" >> $GITHUB_OUTPUT
+            else
+              echo "prerelease=false" >> $GITHUB_OUTPUT
+              echo "make_latest=true" >> $GITHUB_OUTPUT
+            fi
+            echo "Mode: Tagged release (${{ github.ref_name }})"
+          else
+            # Push to main branch -> Always standard Release
+            echo "is_dev=false" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+            echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
+            echo "release_name=Vittify v$VERSION" >> $GITHUB_OUTPUT
+            echo "make_latest=true" >> $GITHUB_OUTPUT
+            echo "Mode: Stable Release for main branch"
+          fi
+      
       - name: Generate changelog
         id: changelog
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           NEXT_VERSION="${{ steps.next_version.outputs.version }}"
+          IS_DEV="${{ steps.release_config.outputs.is_dev }}"
           
-          echo "# Release v$NEXT_VERSION" > RELEASE_NOTES.md
-          echo "" >> RELEASE_NOTES.md
-          
-          if [ -n "$LAST_TAG" ]; then
-            echo "## Changes since $LAST_TAG" >> RELEASE_NOTES.md
+          if [ "$IS_DEV" = "true" ]; then
+            echo "# Vittify Pre-Release (v$NEXT_VERSION)" > RELEASE_NOTES.md
             echo "" >> RELEASE_NOTES.md
-            git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
-          else
-            echo "## Release v$NEXT_VERSION" >> RELEASE_NOTES.md
+            echo "> ⚠️ **Pre-Release Build**: Automatically updated from the \`dev\` branch." >> RELEASE_NOTES.md
+            echo "> **Commit**: [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})" >> RELEASE_NOTES.md
             echo "" >> RELEASE_NOTES.md
+            echo "### Recent Commits" >> RELEASE_NOTES.md
             git log -n 10 --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+          else
+            LAST_TAG=$(git describe --tags --abbrev=0 --exclude="*pre-release*" 2>/dev/null || echo "")
+            echo "# Release v$NEXT_VERSION" > RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            
+            if [ -n "$LAST_TAG" ]; then
+              echo "## Changes since $LAST_TAG" >> RELEASE_NOTES.md
+              echo "" >> RELEASE_NOTES.md
+              git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+            else
+              echo "## Release v$NEXT_VERSION" >> RELEASE_NOTES.md
+              echo "" >> RELEASE_NOTES.md
+              git log -n 10 --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+            fi
           fi
           
           echo "" >> RELEASE_NOTES.md
@@ -157,13 +216,25 @@ jobs:
         if: ${{ !inputs.dry_run }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          echo -n "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          # Strip any linebreaks, carriage returns, or whitespace that can corrupt base64 decoding
+          echo "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 -di > app/release.keystore
           if [ ! -s app/release.keystore ]; then
             echo "::error::Decoded keystore is empty"
             exit 1
           fi
-          echo "✅ Release keystore created ($(stat -c%s app/release.keystore) bytes)"
+          KEYSTORE_SIZE=$(stat -c%s app/release.keystore)
+          echo "✅ Release keystore created ($KEYSTORE_SIZE bytes)"
+          if [ "$KEYSTORE_SIZE" -lt 500 ]; then
+            echo "::error::Decoded keystore is suspiciously small ($KEYSTORE_SIZE bytes). Please verify the KEYSTORE_BASE64 repository secret."
+            exit 1
+          fi
+          # Early verification of keystore and alias before starting Gradle build
+          echo "Verifying keystore credentials..."
+          keytool -list -keystore app/release.keystore -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" > /dev/null
+          echo "✅ Keystore verified successfully with alias '$KEY_ALIAS'"
 
       - name: Restore Google Services JSON
         env:
@@ -276,32 +347,34 @@ jobs:
             app/build/outputs/apk/standard/release/*.sha256
           retention-days: 30
       
-      - name: Determine prerelease status
-        id: prerelease
+      - name: Clean up old pre-release assets
+        if: ${{ !inputs.dry_run && steps.release_config.outputs.is_dev == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ steps.next_version.outputs.version }}"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.prerelease }}" ]; then
-            echo "value=${{ inputs.prerelease }}" >> $GITHUB_OUTPUT
-          elif echo "$VERSION" | grep -qiE "beta|alpha|rc|preview"; then
-            echo "value=true" >> $GITHUB_OUTPUT
-          elif echo "${{ github.ref_name }}" | grep -qiE "beta|alpha|rc|preview"; then
-            echo "value=true" >> $GITHUB_OUTPUT
-          else
-            echo "value=false" >> $GITHUB_OUTPUT
-          fi
+          TAG="${{ steps.release_config.outputs.tag_name }}"
+          echo "Cleaning up existing assets from rolling pre-release '$TAG'..."
+          gh release view "$TAG" --json assets -q '.assets[].name' 2>/dev/null | while read -r asset; do
+            if [ -n "$asset" ]; then
+              echo "Deleting old asset: $asset"
+              gh release delete-asset "$TAG" "$asset" -y || true
+            fi
+          done || true
 
       - name: Create or Update GitHub Release
         if: ${{ !inputs.dry_run }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', steps.next_version.outputs.version) }}
-          name: Vittify v${{ steps.next_version.outputs.version }}
+          tag_name: ${{ steps.release_config.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.release_config.outputs.release_name }}
           body_path: RELEASE_NOTES.md
           files: |
             app/build/outputs/apk/standard/release/Vittify-*.apk
             app/build/outputs/apk/standard/release/*.sha256
           draft: false
-          prerelease: ${{ steps.prerelease.outputs.value }}
+          prerelease: ${{ steps.release_config.outputs.prerelease == 'true' }}
+          make_latest: ${{ steps.release_config.outputs.make_latest }}
       
       - name: Dry Run Summary
         if: ${{ inputs.dry_run }}
