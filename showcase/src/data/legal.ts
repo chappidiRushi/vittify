@@ -19,7 +19,7 @@ export interface LegalDocument {
 export const privacyPolicyData: LegalDocument = {
   title: 'Privacy Policy',
   shortTitle: 'Privacy',
-  effectiveDate: 'September 2026',
+  effectiveDate: 'October 2026',
   manifesto:
     'Your money is your business. Vittify runs 100% on your device, contains zero ads, zero trackers, and never uploads your personal data to remote servers.',
   summaryPills: [
@@ -37,7 +37,7 @@ export const privacyPolicyData: LegalDocument = {
         'Vittify is fundamentally engineered as a local-first, privacy-focused financial companion.',
         'All transaction parsing, financial calculations, categorization, and account balance computations occur exclusively on your phone hardware.',
         'We do not operate backend user databases, tracking endpoints, or cloud analytics pipelines. Your financial reality remains yours alone.',
-        'AI insights and on-device natural language models run locally via MediaPipe LLM Inference without sending prompts to remote servers.',
+        'All core features work completely offline without transmitting your financial records to remote servers.',
       ],
     },
     {
@@ -62,14 +62,16 @@ export const privacyPolicyData: LegalDocument = {
       ],
     },
     {
-      id: 'cloud-backup-webdav',
-      title: '4. Cloud Backup & WebDAV (Client-Side Encryption)',
-      subtitle: 'End-to-end encrypted backups where only you hold the keys.',
+      id: 'cloud-backup-drive',
+      title: '4. Optional Cloud Backup (Google Drive & WebDAV)',
+      subtitle: 'Optional client-side encrypted backups with strict limited scope.',
       points: [
-        'Cloud backups are strictly opt-in and controlled entirely by you.',
-        'If you choose to enable Google Drive or WebDAV sync, backups are packaged as encrypted JSON archives using AES-256 encryption with your private secret passphrase before leaving your device.',
-        'The app communicates directly with your personal cloud account; Vittify does not intermediate, relay, or retain any keys, credentials, or tokens.',
-        'The cloud storage provider sees only opaque ciphertext and cannot inspect your transactions or account balances.',
+        'Cloud backups are strictly opt-in, optional, and controlled entirely by you.',
+        'Google Drive Integration: Vittify requests access strictly to its own hidden Application Data folder (drive.appdata). The app cannot view, access, or modify any other files in your Google Drive.',
+        'Client-Side Encryption: Backups are packaged as encrypted archives using AES-256 encryption with your chosen secret passphrase before leaving your device.',
+        'Direct Communication: The app connects directly to Google Drive or your private WebDAV endpoint; Vittify does not run intermediary servers and never stores your credentials or data.',
+        'Google API Limited Use Disclosure: Vittify’s use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including Limited Use requirements. Your data is never sold, transferred to third parties, used for advertising, or used to train AI models.',
+        'Full Control: You can disconnect Google Drive or delete your stored backup snapshots at any time directly in the app settings.',
       ],
     },
     {
@@ -104,11 +106,13 @@ export const privacyPolicyData: LegalDocument = {
     },
     {
       id: 'ai-features',
-      title: '8. Artificial Intelligence Features',
-      subtitle: 'On-device intelligence by default, with optional bring-your-own-key cloud AI.',
+      title: '8. Optional Gemini AI Integration (Beta)',
+      subtitle: 'Experimental AI assistance available strictly on an opt-in basis.',
       points: [
-        'On-Device LLM (Default): Runs 100% locally via MediaPipe LLM Inference (Qwen 2.5). After the one-time model download, AI works completely offline with zero data transmission.',
-        'Bring-Your-Own-Key Cloud AI (Optional): If you configure a personal Google Gemini API key, queries are dispatched directly from your device to the Google Gemini API. Your API key is encrypted and stored in Android Keystore / EncryptedSharedPreferences. No intermediary proxy is used.',
+        'Vittify includes an optional Google Gemini integration that is currently in beta.',
+        'AI features are completely optional and disabled by default; all core parsing, financial management, and analytics operate fully offline without AI.',
+        'If you choose to use the Gemini beta (such as for natural language transaction quick-add), only the text you explicitly enter is processed via the Gemini API.',
+        'Your API key is stored securely on your device using Android Keystore / EncryptedSharedPreferences, with no intermediary servers or telemetry tracking.',
       ],
     },
     {

@@ -63,11 +63,14 @@ private val POLICY_SECTIONS = listOf(
         )
     ),
     PolicySection(
-        title = "4. Cloud Backup & WebDAV (Client-Side Encryption)",
+        title = "4. Optional Cloud Backup (Google Drive & WebDAV)",
         points = listOf(
-            "Cloud backups are strictly opt-in and controlled entirely by you.",
-            "If you choose to enable Google Drive or WebDAV sync, backups are packaged as encrypted JSON archives using standard AES encryption and your chosen secret passphrase.",
-            "The app communicates directly with your personal cloud account; Vittify does not intermediate or retain any keys or tokens."
+            "Cloud backups are strictly opt-in, optional, and controlled entirely by you.",
+            "Google Drive Integration: Access is strictly limited to Vittify's hidden Application Data folder (drive.appdata). The app cannot view, access, or modify any other files in your Google Drive.",
+            "Client-Side Encryption: Backups are packaged as encrypted archives using AES-256 encryption with your chosen secret passphrase before leaving your device.",
+            "Direct Communication: The app connects directly to Google Drive or your private WebDAV endpoint; Vittify does not run intermediary servers and never stores your credentials or data.",
+            "Google API Limited Use: Vittify's use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including Limited Use requirements.",
+            "Full Control: You can disconnect Google Drive or delete your stored backup snapshots at any time directly in the app settings."
         )
     ),
     PolicySection(
@@ -89,6 +92,14 @@ private val POLICY_SECTIONS = listOf(
         points = listOf(
             "Export Anytime: You can export your full transaction database in JSON or CSV format, or generate a PDF statement whenever you desire.",
             "Delete All Data: A single tap in Settings > Data Privacy allows you to wipe all databases, accounts, preferences, and cached records completely and permanently from your phone."
+        )
+    ),
+    PolicySection(
+        title = "8. Optional Gemini AI Integration (Beta)",
+        points = listOf(
+            "Vittify includes an optional Google Gemini integration that is currently in beta.",
+            "AI features are completely optional and disabled by default; all core parsing and expense tracking functions operate fully offline without AI.",
+            "If you choose to use the Gemini beta, only the text you explicitly enter is processed via the Gemini API without third-party telemetry."
         )
     )
 )
@@ -170,7 +181,7 @@ fun PrivacyPolicyScreen(
                         )
 
                         Text(
-                            text = "Last updated: September 2026",
+                            text = "Last updated: October 2026",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.65f),
                             modifier = Modifier.padding(top = 4.dp)
