@@ -75,3 +75,6 @@ bugs/
 showcase/node_modules/
 showcase/dist/
 *.tsbuildinfo
+
+# Gradle daemon JVM properties (local IDE specific)
+gradle/gradle-daemon-jvm.properties
