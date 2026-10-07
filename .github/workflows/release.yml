@@ -346,6 +346,25 @@ jobs:
                     "other_platform_oauth_client": []
                   }
                 }
+              },
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:123456789012:android:abcdef1234567891",
+                  "android_client_info": {
+                    "package_name": "com.reddy.vittify.debug"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "dummy_api_key"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
               }
             ],
             "configuration_version": "1"
@@ -364,17 +383,20 @@ jobs:
           IS_DEV="${{ steps.release_config.outputs.is_dev }}"
           APP_NAME="@string/app_name"
           IS_BETA="false"
+          BUILD_TASK="assembleStandardRelease"
           if [ "$IS_DEV" = "true" ]; then
             APP_NAME="Vittify Beta"
             IS_BETA="true"
+            BUILD_TASK="assembleStandardDebug"
           fi
 
-          echo "Building signed standard APKs (version: ${{ steps.next_version.outputs.version }}, code: ${{ steps.next_version.outputs.code }}, isBeta: $IS_BETA)..."
-          ./gradlew assembleStandardRelease \
+          echo "Building signed standard APKs ($BUILD_TASK, version: ${{ steps.next_version.outputs.version }}, code: ${{ steps.next_version.outputs.code }}, isBeta: $IS_BETA)..."
+          ./gradlew "$BUILD_TASK" \
             -Papp.versionName="${{ steps.next_version.outputs.version }}" \
             -Papp.versionCode="${{ steps.next_version.outputs.code }}" \
             -Papp.appName="$APP_NAME" \
             -Papp.isBeta="$IS_BETA" \
+            -Papp.optimizeDebug="true" \
             -Papp.commitHash="${{ github.sha }}" \
             -Pandroid.injected.signing.store.file=${{ github.workspace }}/app/release.keystore \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
@@ -386,37 +408,44 @@ jobs:
         run: |
           VERSION="${{ steps.next_version.outputs.version }}"
           IS_DEV="${{ steps.release_config.outputs.is_dev }}"
-          STANDARD_PATH="app/build/outputs/apk/standard/release"
-          
+          BUILD_TYPE="release"
           PREFIX="Vittify"
           if [ "$IS_DEV" = "true" ]; then
+            BUILD_TYPE="debug"
             PREFIX="Vittify-beta"
           fi
           
+          STANDARD_PATH="app/build/outputs/apk/standard/$BUILD_TYPE"
+          
           # Rename universal APK (contains all architectures)
-          if [ -f "$STANDARD_PATH/app-standard-universal-release.apk" ]; then
-            mv "$STANDARD_PATH/app-standard-universal-release.apk" \
+          if [ -f "$STANDARD_PATH/app-standard-universal-${BUILD_TYPE}.apk" ]; then
+            mv "$STANDARD_PATH/app-standard-universal-${BUILD_TYPE}.apk" \
                "$STANDARD_PATH/${PREFIX}-v${VERSION}-universal.apk"
-          elif [ -f "$STANDARD_PATH/app-standard-release.apk" ]; then
-            mv "$STANDARD_PATH/app-standard-release.apk" \
+          elif [ -f "$STANDARD_PATH/app-standard-${BUILD_TYPE}.apk" ]; then
+            mv "$STANDARD_PATH/app-standard-${BUILD_TYPE}.apk" \
                "$STANDARD_PATH/${PREFIX}-v${VERSION}-universal.apk"
           fi
           
           # Rename architecture-specific APKs
           for arch in armeabi-v7a arm64-v8a x86 x86_64; do
-            if [ -f "$STANDARD_PATH/app-standard-${arch}-release.apk" ]; then
-              mv "$STANDARD_PATH/app-standard-${arch}-release.apk" \
+            if [ -f "$STANDARD_PATH/app-standard-${arch}-${BUILD_TYPE}.apk" ]; then
+              mv "$STANDARD_PATH/app-standard-${arch}-${BUILD_TYPE}.apk" \
                  "$STANDARD_PATH/${PREFIX}-v${VERSION}-${arch}.apk"
             fi
           done
           
-          echo "Generated APKs:"
+          echo "Generated APKs in $STANDARD_PATH:"
           ls -la "$STANDARD_PATH/"
       
       - name: Calculate SHA256
         if: ${{ !inputs.dry_run }}
         run: |
-          cd app/build/outputs/apk/standard/release/
+          IS_DEV="${{ steps.release_config.outputs.is_dev }}"
+          BUILD_TYPE="release"
+          if [ "$IS_DEV" = "true" ]; then
+            BUILD_TYPE="debug"
+          fi
+          cd "app/build/outputs/apk/standard/$BUILD_TYPE/"
           for apk in Vittify-*.apk; do
             if [ -f "$apk" ]; then
               sha256sum "$apk" > "${apk}.sha256"
@@ -431,8 +460,8 @@ jobs:
         with:
           name: Vittify-v${{ steps.next_version.outputs.version }}-apks
           path: |
-            app/build/outputs/apk/standard/release/Vittify-*.apk
-            app/build/outputs/apk/standard/release/*.sha256
+            app/build/outputs/apk/standard/**/Vittify-*.apk
+            app/build/outputs/apk/standard/**/*.sha256
           retention-days: 30
       
       - name: Clean up old pre-release assets
@@ -458,8 +487,8 @@ jobs:
           name: ${{ steps.release_config.outputs.release_name }}
           body_path: RELEASE_NOTES.md
           files: |
-            app/build/outputs/apk/standard/release/Vittify-*.apk
-            app/build/outputs/apk/standard/release/*.sha256
+            app/build/outputs/apk/standard/**/Vittify-*.apk
+            app/build/outputs/apk/standard/**/*.sha256
           draft: false
           prerelease: ${{ steps.release_config.outputs.prerelease == 'true' }}
           make_latest: ${{ steps.release_config.outputs.make_latest }}

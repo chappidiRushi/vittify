@@ -7,7 +7,7 @@
         android:shortcutShortLabel="@string/add_transaction">
         <intent
             android:action="com.reddy.vittify.action.ADD_TRANSACTION"
-            android:targetPackage="com.reddy.vittify"
+            android:targetPackage="@string/app_package_name"
             android:targetClass="com.reddy.vittify.MainActivity" />
     </shortcut>
     <shortcut
@@ -17,7 +17,7 @@
         android:shortcutShortLabel="@string/add_subscription">
         <intent
             android:action="com.reddy.vittify.action.ADD_SUBSCRIPTION"
-            android:targetPackage="com.reddy.vittify"
+            android:targetPackage="@string/app_package_name"
             android:targetClass="com.reddy.vittify.MainActivity" />
     </shortcut>
     <shortcut
@@ -27,7 +27,7 @@
         android:shortcutShortLabel="@string/add_transfer">
         <intent
             android:action="com.reddy.vittify.action.ADD_TRANSFER"
-            android:targetPackage="com.reddy.vittify"
+            android:targetPackage="@string/app_package_name"
             android:targetClass="com.reddy.vittify.MainActivity" />
     </shortcut>
 
@@ -35,7 +35,7 @@
     <capability android:name="actions.intent.RECORD_EXPENSE">
         <intent
             android:action="com.reddy.vittify.action.ADD_TRANSACTION"
-            android:targetPackage="com.reddy.vittify"
+            android:targetPackage="@string/app_package_name"
             android:targetClass="com.reddy.vittify.MainActivity">
             <parameter
                 android:name="expense.price"
@@ -52,7 +52,7 @@
     <capability android:name="actions.intent.CREATE_MONEY_TRANSFER">
         <intent
             android:action="com.reddy.vittify.action.ADD_TRANSACTION"
-            android:targetPackage="com.reddy.vittify"
+            android:targetPackage="@string/app_package_name"
             android:targetClass="com.reddy.vittify.MainActivity">
             <parameter
                 android:name="moneyTransfer.price"

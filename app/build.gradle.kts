@@ -123,11 +123,36 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
-            manifestPlaceholders["appName"] = "vittify beta"
+            manifestPlaceholders["appName"] = "Vittify Beta"
+            resValue("string", "app_package_name", "com.reddy.vittify.debug")
+            buildConfigField("Boolean", "IS_BETA", "true")
+
+            val optimizeDebug = (project.findProperty("app.optimizeDebug") as? String)?.toBoolean()
+                ?: (project.findProperty("app.isBeta") as? String)?.toBoolean()
+                ?: false
+
+            if (optimizeDebug) {
+                isMinifyEnabled = true
+                isShrinkResources = true
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                versionNameSuffix = "-debug"
+            }
         }
         release {
-            manifestPlaceholders["appName"] = "@string/app_name"
+            val isBeta = (project.findProperty("app.isBeta") as? String)?.toBoolean() ?: false
+            if (isBeta) {
+                applicationIdSuffix = ".debug"
+                manifestPlaceholders["appName"] = "Vittify Beta"
+                resValue("string", "app_package_name", "com.reddy.vittify.debug")
+            } else {
+                manifestPlaceholders["appName"] = "@string/app_name"
+                resValue("string", "app_package_name", "com.reddy.vittify")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
