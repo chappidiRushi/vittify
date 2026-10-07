@@ -1099,6 +1099,16 @@
 
     <!-- AttachmentSection -->
     <string name="add_attachment_cd">Add attachment</string>
+    <string name="scan_receipt">Scan Receipt</string>
+    <string name="scan_receipt_cd">Scan receipt</string>
+    <string name="scan_receipt_desc">Auto-crop, straighten, and enhance receipts</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="take_photo_cd">Take photo with camera</string>
+    <string name="take_photo_desc">Capture a raw photo directly</string>
+    <string name="browse_files">Browse Files</string>
+    <string name="browse_files_cd">Browse files</string>
+    <string name="browse_files_desc">Choose images, PDFs, or spreadsheets</string>
+    <string name="camera_unavailable">Camera is not available on this device</string>
     <string name="remove_cd">Remove</string>
 
     <!-- TransactionDetailScreen -->

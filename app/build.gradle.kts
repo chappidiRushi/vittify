@@ -280,6 +280,7 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.play.services.nearby)
     implementation(libs.play.services.code.scanner)
+    implementation(libs.play.services.mlkit.document.scanner)
     implementation(libs.zxing.core)
     implementation(libs.stream.webrtc.android)
 
