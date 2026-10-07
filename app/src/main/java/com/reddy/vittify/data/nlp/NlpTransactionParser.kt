@@ -8,6 +8,7 @@ import com.reddy.vittify.data.repository.SubcategoryRepository
 import com.reddy.vittify.data.ai.AiPreferencesRepository
 import com.reddy.vittify.data.ai.GeminiAiProvider
 import kotlinx.coroutines.flow.first
+import com.reddy.vittify.domain.catalogue.CategoryItemCatalogue
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -521,18 +522,20 @@ Return ONLY a raw JSON object with no code blocks or markdown, using this exact 
             }
         }
 
-        // 1c. Check subcategory keywords from SUBCATEGORY_KEYWORD_MAP
+        // 1c. Check subcategory keywords from SUBCATEGORY_KEYWORD_MAP & CategoryItemCatalogue
         for (sub in sortedSubcategories) {
-            val keywords = SUBCATEGORY_KEYWORD_MAP[sub.name]
+            val parentCat = userCategories.find { it.id == sub.categoryId }
+            val catalogueKeywords = CategoryItemCatalogue.getItemsForSubcategory(parentCat?.name, sub.name)
+            val legacyKeywords = SUBCATEGORY_KEYWORD_MAP[sub.name]
                 ?: SUBCATEGORY_KEYWORD_MAP.entries.find { it.key.equals(sub.name, ignoreCase = true) }?.value
-            if (keywords != null) {
-                for (kw in keywords) {
-                    val pattern = Regex("""\b${Regex.escape(kw.lowercase())}\b""", RegexOption.IGNORE_CASE)
-                    if (pattern.containsMatchIn(lower)) {
-                        val parentCat = userCategories.find { it.id == sub.categoryId }
-                        if (parentCat != null) {
-                            return Pair(parentCat.name, sub.name)
-                        }
+                ?: emptyList()
+            val allKeywords = (catalogueKeywords + legacyKeywords).distinct()
+
+            for (kw in allKeywords) {
+                val pattern = Regex("""\b${Regex.escape(kw.lowercase())}\b""", RegexOption.IGNORE_CASE)
+                if (pattern.containsMatchIn(lower)) {
+                    if (parentCat != null) {
+                        return Pair(parentCat.name, sub.name)
                     }
                 }
             }
@@ -553,9 +556,12 @@ Return ONLY a raw JSON object with no code blocks or markdown, using this exact 
                         return Pair(matchedCatEntity.name, sub.name)
                     }
                 }
-                val keywords = SUBCATEGORY_KEYWORD_MAP[sub.name]
+                val catalogueKeywords = CategoryItemCatalogue.getItemsForSubcategory(matchedCatEntity.name, sub.name)
+                val legacyKeywords = SUBCATEGORY_KEYWORD_MAP[sub.name]
                     ?: SUBCATEGORY_KEYWORD_MAP.entries.find { it.key.equals(sub.name, ignoreCase = true) }?.value
-                if (keywords != null && keywords.any { Regex("""\b${Regex.escape(it.lowercase())}\b""", RegexOption.IGNORE_CASE).containsMatchIn(lower) }) {
+                    ?: emptyList()
+                val allKeywords = (catalogueKeywords + legacyKeywords).distinct()
+                if (allKeywords.any { Regex("""\b${Regex.escape(it.lowercase())}\b""", RegexOption.IGNORE_CASE).containsMatchIn(lower) }) {
                     return Pair(matchedCatEntity.name, sub.name)
                 }
             }
