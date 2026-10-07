@@ -431,12 +431,16 @@ fun CategoriesScreen(
                                     val categorySubcategories = subcategories[category.id] ?: emptyList()
                                     val q = searchQuery.trim()
                                     val displayedSubs = if (q.isNotBlank()) {
-                                        val catMatches = category.name.contains(q, ignoreCase = true) ||
-                                                CategoryItemCatalogue.matchesCategory(category.name, q)
-                                        if (catMatches) categorySubcategories
-                                        else categorySubcategories.filter { sub ->
+                                        val matchingSubs = categorySubcategories.filter { sub ->
                                             sub.name.contains(q, ignoreCase = true) ||
                                             CategoryItemCatalogue.matchesSubcategory(category.name, sub.name, q)
+                                        }
+                                        if (matchingSubs.isNotEmpty()) {
+                                            matchingSubs
+                                        } else {
+                                            val catMatches = category.name.contains(q, ignoreCase = true) ||
+                                                    CategoryItemCatalogue.matchesCategory(category.name, q)
+                                            if (catMatches) categorySubcategories else emptyList()
                                         }
                                     } else {
                                         categorySubcategories

@@ -4,6 +4,7 @@ import com.reddy.vittify.data.database.entity.CategoryEntity
 import com.reddy.vittify.data.database.entity.CategoryType
 import com.reddy.vittify.data.database.entity.SubcategoryEntity
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -171,6 +172,82 @@ class CategoryItemCatalogueTest {
         assertTrue(CategoryItemCatalogue.matchesSubcategory("Groceries", "Fruits", "banana"))
         assertTrue(CategoryItemCatalogue.matchesSubcategory("Transport", "Fuel", "petrol"))
         assertTrue(CategoryItemCatalogue.matchesSubcategory("Transport", "Fuel", "diesel"))
+    }
+
+    @Test
+    fun `searching coke suggests Beverages under Food & Drinks and suppresses Food & Drinks category alone`() {
+        val foodCategory = CategoryEntity(
+            id = 4L,
+            name = "Food & Drinks",
+            color = "#FF5722",
+            iconResId = 0,
+            iconName = "",
+            description = "Food",
+            isIncome = false,
+            categoryType = CategoryType.EXPENSE,
+            displayOrder = 4
+        )
+        val beveragesSubcategory = SubcategoryEntity(
+            id = 401L,
+            categoryId = 4L,
+            name = "Beverages",
+            iconResId = 0,
+            iconName = "",
+            color = "#FF5722"
+        )
+        val testCategories = categories + foodCategory
+        val testSubsMap = subcategoriesMap + (4L to listOf(beveragesSubcategory))
+
+        val matches = CategoryItemCatalogue.searchSuggestions(
+            categories = testCategories,
+            subcategoriesMap = testSubsMap,
+            query = "coke"
+        )
+
+        assertTrue(matches.isNotEmpty())
+        assertTrue("Expected Beverages to be suggested", matches.any { it.subcategory?.name == "Beverages" })
+        assertTrue(
+            "Expected Food & Drinks category alone NOT to be suggested",
+            matches.none { it.category.name == "Food & Drinks" && it.subcategory == null }
+        )
+    }
+
+    @Test
+    fun `searching milk does not suggest Groceries category alone`() {
+        val matches = CategoryItemCatalogue.searchSuggestions(
+            categories = categories,
+            subcategoriesMap = subcategoriesMap,
+            query = "milk"
+        )
+
+        assertTrue("Expected Dairy to be suggested", matches.any { it.subcategory?.name == "Dairy" })
+        assertTrue(
+            "Expected Groceries category alone NOT to be suggested",
+            matches.none { it.category.name == "Groceries" && it.subcategory == null }
+        )
+    }
+
+    @Test
+    fun `searching carrot does not suggest Groceries category alone`() {
+        val matches = CategoryItemCatalogue.searchSuggestions(
+            categories = categories,
+            subcategoriesMap = subcategoriesMap,
+            query = "carrot"
+        )
+
+        assertTrue("Expected Vegetables to be suggested", matches.any { it.subcategory?.name == "Vegetables" })
+        assertTrue(
+            "Expected Groceries category alone NOT to be suggested",
+            matches.none { it.category.name == "Groceries" && it.subcategory == null }
+        )
+    }
+
+    @Test
+    fun `matchesCategory returns false for subcategory items of non-standalone categories`() {
+        assertFalse(CategoryItemCatalogue.matchesCategory("Food & Drinks", "coke"))
+        assertFalse(CategoryItemCatalogue.matchesCategory("Groceries", "milk"))
+        assertFalse(CategoryItemCatalogue.matchesCategory("Groceries", "carrot"))
+        assertFalse(CategoryItemCatalogue.matchesCategory("Transport", "petrol"))
     }
 }
 

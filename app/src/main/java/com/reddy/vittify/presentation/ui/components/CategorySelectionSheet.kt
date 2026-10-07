@@ -276,16 +276,18 @@ fun CategorySelectionSheet(
                     
                     val query = searchQuery.text.trim()
                     val displayedSubcategories = if (query.isNotBlank()) {
-                        // When searching, show only matching subcategories OR all if category matches
-                        val categoryMatches = category.name.contains(query, ignoreCase = true) ||
-                                CategoryItemCatalogue.matchesCategory(category.name, query)
-                        if (categoryMatches) {
-                            subs
+                        // When searching, show matching subcategories if any match;
+                        // otherwise show all if category matches
+                        val matchingSubs = subs.filter { sub ->
+                            sub.name.contains(query, ignoreCase = true) ||
+                            CategoryItemCatalogue.matchesSubcategory(category.name, sub.name, query)
+                        }
+                        if (matchingSubs.isNotEmpty()) {
+                            matchingSubs
                         } else {
-                            subs.filter { sub ->
-                                sub.name.contains(query, ignoreCase = true) ||
-                                CategoryItemCatalogue.matchesSubcategory(category.name, sub.name, query)
-                            }
+                            val categoryMatches = category.name.contains(query, ignoreCase = true) ||
+                                    CategoryItemCatalogue.matchesCategory(category.name, query)
+                            if (categoryMatches) subs else emptyList()
                         }
                     } else if (isExpanded) {
                         subs
@@ -305,10 +307,13 @@ fun CategorySelectionSheet(
                             category = animatedCategory,
                             subcategories = displayedSubcategories,
                             onClick = {
-                                if (subs.isNotEmpty()) {
+                                if (query.isNotBlank() && displayedSubcategories.size == 1) {
+                                    onSelectionComplete(animatedCategory, displayedSubcategories.first())
+                                } else if (subs.isNotEmpty()) {
                                     if (isExpanded) {
-                                        // If already expanded, select the category itself
-                                        onSelectionComplete(animatedCategory, null)
+                                        if (query.isBlank()) {
+                                            onSelectionComplete(animatedCategory, null)
+                                        }
                                     } else {
                                         // Otherwise, expand to show subcategories
                                         expandedStates[animatedCategory.id] = true
