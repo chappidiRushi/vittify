@@ -15,6 +15,11 @@
         name="crash_logs"
         path="." />
 
+    <!-- Cache directory for apk updates -->
+    <cache-path
+        name="updates"
+        path="updates/" />
+
     <!-- Files directory for attachments -->
     <files-path 
         name="attachments" 

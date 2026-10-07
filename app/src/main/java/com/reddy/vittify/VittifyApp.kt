@@ -32,10 +32,14 @@ import com.reddy.vittify.presentation.ui.features.settings.applock.AppLockViewMo
 import com.reddy.vittify.presentation.ui.features.settings.appearance.ThemeViewModel
 import com.reddy.vittify.presentation.ui.components.GlobalToastHost
 
+import com.reddy.vittify.presentation.ui.features.update.UpdateViewModel
+import com.reddy.vittify.presentation.ui.features.update.UpdateDialog
+
 @Composable
 fun VittifyApp(
     themeViewModel: ThemeViewModel = hiltViewModel(),
     appLockViewModel: AppLockViewModel = hiltViewModel(),
+    updateViewModel: UpdateViewModel = hiltViewModel(),
     editTransactionId: Long? = null,
     onEditComplete: () -> Unit = {},
     addTransactionTab: Int? = null,
@@ -53,7 +57,12 @@ fun VittifyApp(
 ) {
     val themeUiState by themeViewModel.themeUiState.collectAsStateWithLifecycle()
     val appLockUiState by appLockViewModel.uiState.collectAsStateWithLifecycle()
+    val updateUiState by updateViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        updateViewModel.checkForUpdate(isManualCheck = false)
+    }
 
     val darkTheme = themeUiState.isDarkTheme ?: isSystemInDarkTheme()
 
@@ -158,6 +167,18 @@ fun VittifyApp(
                 onEditComplete = onEditComplete
             )
             GlobalToastHost()
+
+            updateUiState.availableUpdate?.let { updateInfo ->
+                UpdateDialog(
+                    updateInfo = updateInfo,
+                    isDownloading = updateUiState.isDownloading,
+                    downloadProgress = updateUiState.downloadProgress,
+                    onUpdateClick = { updateViewModel.startUpdate() },
+                    onSkipClick = { updateViewModel.dismissForNow() },
+                    onSkipThisUpdateClick = { updateViewModel.skipThisUpdate() },
+                    onDismissRequest = { updateViewModel.dismissForNow() }
+                )
+            }
         }
     }
 }

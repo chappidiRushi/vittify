@@ -42,6 +42,11 @@ on:
         required: false
         default: false
         type: boolean
+      version_name:
+        description: 'Override release version name (e.g. 3.0.0). Leave empty for auto-update.'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   release:
@@ -87,24 +92,90 @@ jobs:
       - name: Get current version
         id: current_version
         run: |
-          CURRENT_VERSION=$(grep "versionName = " app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
-          CURRENT_CODE=$(grep "versionCode = " app/build.gradle.kts | sed 's/[^0-9]*//g')
+          CURRENT_VERSION=$(grep "versionName" app/build.gradle.kts | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          CURRENT_CODE=$(grep "versionCode" app/build.gradle.kts | head -1 | sed 's/[^0-9]*//g')
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "code=$CURRENT_CODE" >> $GITHUB_OUTPUT
-          echo "Current version: $CURRENT_VERSION (code: $CURRENT_CODE)"
+          echo "Current base version: $CURRENT_VERSION (code: $CURRENT_CODE)"
       
       - name: Parse release version
         id: next_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+          CURRENT_CODE="${{ steps.current_version.outputs.code }}"
+          BRANCH="${{ github.ref_name }}"
+          
+          # Ensure git tags are fetched
+          git fetch --tags --force 2>/dev/null || true
+          
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            # Tag-based release: use the tag name without 'v'
+            # Tag-based release: use tag name without 'v'
             VERSION="${{ github.ref_name }}"
             VERSION="${VERSION#v}"
-            CODE="${{ steps.current_version.outputs.code }}"
+            CLEAN_V="${VERSION%%-*}"
+            IFS='.' read -r M N P <<< "$CLEAN_V"
+            CODE=$(( ${M:-1} * 10000 + ${N:-0} * 100 + ${P:-0} ))
+            echo "Mode: Tagged release ($VERSION, code: $CODE)"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version_name }}" ]; then
+            # Manual trigger override
+            VERSION="${{ inputs.version_name }}"
+            VERSION="${VERSION#v}"
+            CLEAN_V="${VERSION%%-*}"
+            IFS='.' read -r M N P <<< "$CLEAN_V"
+            CODE=$(( ${M:-1} * 10000 + ${N:-0} * 100 + ${P:-0} ))
+            echo "Mode: Manual version override ($VERSION, code: $CODE)"
+          elif [ "$BRANCH" = "dev" ]; then
+            # Dev branch: beta release -> only update the patch version
+            PREV_VER=$(gh release view pre-release -R "${{ github.repository }}" --json name -q '.name' 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "")
+            LATEST_STABLE_TAG=$(git tag -l "v*" | grep -v "beta\|alpha\|rc\|pre" | sort -V | tail -n 1 | sed 's/^v//' || echo "")
+            
+            BASE="${CURRENT_VERSION%%-*}"
+            if [ -n "$LATEST_STABLE_TAG" ]; then
+              if [ "$(printf '%s\n%s' "$BASE" "$LATEST_STABLE_TAG" | sort -V | tail -n 1)" = "$LATEST_STABLE_TAG" ]; then
+                BASE="$LATEST_STABLE_TAG"
+              fi
+            fi
+            if [ -n "$PREV_VER" ]; then
+              if [ "$(printf '%s\n%s' "$BASE" "$PREV_VER" | sort -V | tail -n 1)" = "$PREV_VER" ]; then
+                BASE="$PREV_VER"
+              fi
+            fi
+            
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE"
+            MAJOR="${MAJOR:-2}"
+            MINOR="${MINOR:-0}"
+            PATCH="${PATCH:-0}"
+            PATCH=$((PATCH + 1))
+            CODE=$(( MAJOR * 10000 + MINOR * 100 + PATCH ))
+            VERSION="${MAJOR}.${MINOR}.${PATCH}-beta"
+            echo "Mode: Dev branch beta release -> updated patch to $VERSION (code: $CODE)"
           else
-            # Push to main or manual trigger: use version from build.gradle.kts
-            VERSION="${{ steps.current_version.outputs.version }}"
-            CODE="${{ steps.current_version.outputs.code }}"
+            # Main branch: stable release -> update the major version, NO beta tag
+            CLEAN_VERSION="${CURRENT_VERSION%%-*}"
+            IFS='.' read -r BASE_MAJOR BASE_MINOR BASE_PATCH <<< "$CLEAN_VERSION"
+            BASE_MAJOR="${BASE_MAJOR:-2}"
+            
+            LATEST_STABLE_TAG=$(git tag -l "v*" | grep -v "beta\|alpha\|rc\|pre" | sort -V | tail -n 1 | sed 's/^v//' || echo "")
+            if [ -n "$LATEST_STABLE_TAG" ]; then
+              TAG_MAJOR=$(echo "$LATEST_STABLE_TAG" | cut -d. -f1)
+              if [ "$TAG_MAJOR" -ge "$BASE_MAJOR" ]; then
+                MAJOR=$((TAG_MAJOR + 1))
+              else
+                MAJOR=$((BASE_MAJOR + 1))
+              fi
+            else
+              MAJOR=$((BASE_MAJOR + 1))
+            fi
+            
+            while git rev-parse "refs/tags/v${MAJOR}.0.0" >/dev/null 2>&1; do
+              MAJOR=$((MAJOR + 1))
+            done
+            
+            VERSION="${MAJOR}.0.0"
+            CODE=$(( MAJOR * 10000 ))
+            echo "Mode: Main branch stable release -> updated major to $VERSION (code: $CODE)"
           fi
           
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -149,13 +220,13 @@ jobs:
             fi
             echo "Mode: Tagged release (${{ github.ref_name }})"
           else
-            # Push to main branch -> Always standard Release
+            # Push to main branch -> Always standard Release, NO beta tag
             echo "is_dev=false" >> $GITHUB_OUTPUT
             echo "prerelease=false" >> $GITHUB_OUTPUT
             echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
             echo "release_name=Vittify v$VERSION" >> $GITHUB_OUTPUT
             echo "make_latest=true" >> $GITHUB_OUTPUT
-            echo "Mode: Stable Release for main branch"
+            echo "Mode: Stable Release for main branch (tag: v$VERSION)"
           fi
       
       - name: Generate changelog
@@ -290,8 +361,21 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx6G"
         run: |
-          echo "Building signed standard release APKs..."
+          IS_DEV="${{ steps.release_config.outputs.is_dev }}"
+          APP_NAME="@string/app_name"
+          IS_BETA="false"
+          if [ "$IS_DEV" = "true" ]; then
+            APP_NAME="Vittify Beta"
+            IS_BETA="true"
+          fi
+
+          echo "Building signed standard APKs (version: ${{ steps.next_version.outputs.version }}, code: ${{ steps.next_version.outputs.code }}, isBeta: $IS_BETA)..."
           ./gradlew assembleStandardRelease \
+            -Papp.versionName="${{ steps.next_version.outputs.version }}" \
+            -Papp.versionCode="${{ steps.next_version.outputs.code }}" \
+            -Papp.appName="$APP_NAME" \
+            -Papp.isBeta="$IS_BETA" \
+            -Papp.commitHash="${{ github.sha }}" \
             -Pandroid.injected.signing.store.file=${{ github.workspace }}/app/release.keystore \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
@@ -301,22 +385,28 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: |
           VERSION="${{ steps.next_version.outputs.version }}"
+          IS_DEV="${{ steps.release_config.outputs.is_dev }}"
           STANDARD_PATH="app/build/outputs/apk/standard/release"
+          
+          PREFIX="Vittify"
+          if [ "$IS_DEV" = "true" ]; then
+            PREFIX="Vittify-beta"
+          fi
           
           # Rename universal APK (contains all architectures)
           if [ -f "$STANDARD_PATH/app-standard-universal-release.apk" ]; then
             mv "$STANDARD_PATH/app-standard-universal-release.apk" \
-               "$STANDARD_PATH/Vittify-v${VERSION}-universal.apk"
+               "$STANDARD_PATH/${PREFIX}-v${VERSION}-universal.apk"
           elif [ -f "$STANDARD_PATH/app-standard-release.apk" ]; then
             mv "$STANDARD_PATH/app-standard-release.apk" \
-               "$STANDARD_PATH/Vittify-v${VERSION}-universal.apk"
+               "$STANDARD_PATH/${PREFIX}-v${VERSION}-universal.apk"
           fi
           
           # Rename architecture-specific APKs
           for arch in armeabi-v7a arm64-v8a x86 x86_64; do
             if [ -f "$STANDARD_PATH/app-standard-${arch}-release.apk" ]; then
               mv "$STANDARD_PATH/app-standard-${arch}-release.apk" \
-                 "$STANDARD_PATH/Vittify-v${VERSION}-${arch}.apk"
+                 "$STANDARD_PATH/${PREFIX}-v${VERSION}-${arch}.apk"
             fi
           done
           
@@ -326,10 +416,8 @@ jobs:
       - name: Calculate SHA256
         if: ${{ !inputs.dry_run }}
         run: |
-          VERSION="${{ steps.next_version.outputs.version }}"
-          
           cd app/build/outputs/apk/standard/release/
-          for apk in Vittify-v${VERSION}*.apk; do
+          for apk in Vittify-*.apk; do
             if [ -f "$apk" ]; then
               sha256sum "$apk" > "${apk}.sha256"
               echo "SHA256 for $apk:"
@@ -354,10 +442,10 @@ jobs:
         run: |
           TAG="${{ steps.release_config.outputs.tag_name }}"
           echo "Cleaning up existing assets from rolling pre-release '$TAG'..."
-          gh release view "$TAG" --json assets -q '.assets[].name' 2>/dev/null | while read -r asset; do
+          gh release view "$TAG" -R "${{ github.repository }}" --json assets -q '.assets[].name' 2>/dev/null | while read -r asset; do
             if [ -n "$asset" ]; then
               echo "Deleting old asset: $asset"
-              gh release delete-asset "$TAG" "$asset" -y || true
+              gh release delete-asset "$TAG" "$asset" -R "${{ github.repository }}" -y || true
             fi
           done || true
 
@@ -396,6 +484,11 @@ jobs:
         run: |
           echo "Building signed App Bundle for Play Store..."
           ./gradlew bundleStandardRelease \
+            -Papp.versionName="${{ steps.next_version.outputs.version }}" \
+            -Papp.versionCode="${{ steps.next_version.outputs.code }}" \
+            -Papp.appName="@string/app_name" \
+            -Papp.isBeta="false" \
+            -Papp.commitHash="${{ github.sha }}" \
             -Pandroid.injected.signing.store.file=${{ github.workspace }}/app/release.keystore \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \

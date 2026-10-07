@@ -134,6 +134,7 @@ constructor(@ApplicationContext private val context: Context) {
         val BACKGROUND_STYLE = stringPreferencesKey("background_style")
         val BACKGROUND_OPACITY = androidx.datastore.preferences.core.floatPreferencesKey("background_opacity")
         val ENABLED_HOME_SHORTCUTS = androidx.datastore.preferences.core.stringSetPreferencesKey("enabled_home_shortcuts")
+        val SKIPPED_UPDATE_VERSION = stringPreferencesKey("skipped_update_version")
     }
 
     val userPreferences: Flow<UserPreferences> =
@@ -1110,6 +1111,23 @@ constructor(@ApplicationContext private val context: Context) {
     suspend fun updateHomeShortcuts(shortcuts: Set<String>) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.ENABLED_HOME_SHORTCUTS] = shortcuts
+        }
+    }
+
+    val skippedUpdateVersion: Flow<String?> =
+        context.dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SKIPPED_UPDATE_VERSION]
+        }
+
+    suspend fun setSkippedUpdateVersion(version: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SKIPPED_UPDATE_VERSION] = version
+        }
+    }
+
+    suspend fun clearSkippedUpdateVersion() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(PreferencesKeys.SKIPPED_UPDATE_VERSION)
         }
     }
 }
