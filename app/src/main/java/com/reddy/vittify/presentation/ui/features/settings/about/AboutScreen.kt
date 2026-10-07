@@ -57,6 +57,7 @@ fun AboutScreen(
     onNavigateToTermsOfService: () -> Unit,
     onNavigateToCredits: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
+    updateViewModel: com.reddy.vittify.presentation.ui.features.update.UpdateViewModel = hiltViewModel(),
     blurEffects: Boolean
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -170,6 +171,21 @@ fun AboutScreen(
                         )
                     }
                 },
+            )
+
+            // Check for Updates Item
+            val updateUiState by updateViewModel.uiState.collectAsState()
+            AboutListItem(
+                title = if (updateUiState.isChecking) "Checking for updates..." else "Check for updates",
+                subtitle = if (BuildConfig.IS_BETA) "Beta track • v${BuildConfig.VERSION_NAME}" else "Stable track • v${BuildConfig.VERSION_NAME}",
+                icon = if (BuildConfig.IS_BETA) androidx.compose.material.icons.Icons.Rounded.RocketLaunch else androidx.compose.material.icons.Icons.Rounded.SystemUpdate,
+                iconColor = if (BuildConfig.IS_BETA) purple_dark else blue_dark,
+                iconBackground = if (BuildConfig.IS_BETA) purple_light else blue_light,
+                iconShape = VittifySvgShape.SUNNY.composeShape,
+                onClick = {
+                    updateViewModel.checkForUpdate(isManualCheck = true)
+                },
+                position = ListItemPosition.Single
             )
 
             // Connect Section (Website and Discord disabled for now; GitHub to current repo)

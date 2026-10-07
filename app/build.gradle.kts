@@ -23,9 +23,20 @@ android {
         applicationId = "com.reddy.vittify"
         minSdk = 26
         targetSdk = 36
-        versionCode = 94
-        versionName = "2.1.61-beta"
-        manifestPlaceholders["appName"] = "@string/app_name"
+        versionCode = (project.findProperty("app.versionCode") as? String)?.toIntOrNull() ?: 94
+        versionName = (project.findProperty("app.versionName") as? String) ?: "2.1.61"
+
+        val isBeta = (project.findProperty("app.isBeta") as? String)?.toBoolean()
+            ?: (project.findProperty("app.versionName") as? String)?.contains("beta", ignoreCase = true)
+            ?: false
+        buildConfigField("Boolean", "IS_BETA", "$isBeta")
+
+        val commitHash = (project.findProperty("app.commitHash") as? String) ?: ""
+        buildConfigField("String", "GIT_COMMIT_HASH", "\"$commitHash\"")
+
+        val appLabel = (project.findProperty("app.appName") as? String)
+            ?: if (isBeta) "Vittify Beta" else "@string/app_name"
+        manifestPlaceholders["appName"] = appLabel
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
