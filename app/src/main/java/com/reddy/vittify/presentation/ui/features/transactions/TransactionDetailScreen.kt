@@ -3051,20 +3051,7 @@ private fun TransactionReceipt(
                                 attachmentService = attachmentService,
                                 onAddAttachment = {},
                                 onRemoveAttachment = {},
-                                onAttachmentClick = { path ->
-                                    val uri = attachmentService.getAttachmentUri(path)
-                                    if (uri != null) {
-                                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                                            setDataAndType(uri, attachmentService.getAttachmentMimeType(path))
-                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                        }
-                                        try {
-                                            context.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            // Handle error
-                                        }
-                                    }
-                                },
+                                onAttachmentClick = {},
                                 isEditable = false
                             )
                         }

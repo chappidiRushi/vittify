@@ -1,12 +1,19 @@
 package com.reddy.vittify.presentation.ui.components
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,47 +30,60 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.TableChart
-import androidx.compose.material.icons.outlined.AttachFile
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.reddy.vittify.data.service.AttachmentService
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.reddy.vittify.R
+import com.reddy.vittify.data.service.AttachmentService
+import com.reddy.vittify.presentation.ui.icons.Camera
+import com.reddy.vittify.presentation.ui.icons.Folder2
 import com.reddy.vittify.presentation.ui.icons.Iconax
 import com.reddy.vittify.presentation.ui.icons.Paperclip2
 import com.reddy.vittify.presentation.ui.theme.Dimensions
 import com.reddy.vittify.presentation.ui.theme.Spacing
+import com.reddy.vittify.presentation.ui.theme.VittifyShapes
+import com.reddy.vittify.presentation.ui.theme.VittifySurface
+import com.reddy.vittify.presentation.ui.theme.rememberAppHapticFeedback
+import java.io.File
 
 /**
- * A composable for picking and displaying attachments.
- * 
+ * A composable for picking, scanning, capturing, and displaying attachments.
+ * Supports on-device ML Kit document scanning with automatic fallback to standard camera capture.
+ *
  * @param attachments List of attachment relative paths
  * @param attachmentService The AttachmentService for file operations
  * @param onAddAttachment Callback when a new attachment is added (receives relative path)
@@ -72,33 +92,163 @@ import com.reddy.vittify.presentation.ui.theme.Spacing
  * @param modifier Modifier for the composable
  * @param isEditable Whether attachments can be added/removed
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AttachmentSection(
     attachments: List<String>,
     attachmentService: AttachmentService,
     onAddAttachment: (String) -> Unit,
     onRemoveAttachment: (String) -> Unit,
-    onAttachmentClick: (String) -> Unit,
+    onAttachmentClick: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     isEditable: Boolean = true
 ) {
     val context = LocalContext.current
-    
+    val haptic = rememberAppHapticFeedback()
+    var pendingCameraCapture by remember { mutableStateOf<Pair<Uri, File>?>(null) }
+    var showOptionsSheet by remember { mutableStateOf(false) }
+
+    // Unified preview handler
+    val handleAttachmentClick: (String) -> Unit = { path ->
+        onAttachmentClick(path)
+        val uri = attachmentService.getAttachmentUri(path)
+        if (uri != null) {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, attachmentService.getAttachmentMimeType(path))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            try {
+                context.startActivity(intent)
+            } catch (_: Exception) {}
+        }
+    }
+
+    // 1. Storage file picker launcher
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
-            // Take persistable URI permission
-            context.contentResolver.takePersistableUriPermission(
-                it,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-            // Save file to internal storage (use 0L as placeholder, will be updated on save)
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: Exception) {}
             attachmentService.saveAttachment(it, 0L)?.let { path ->
+                haptic.click()
                 onAddAttachment(path)
             }
         }
+    }
+
+    // 2. Camera capture fallback launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        val capture = pendingCameraCapture
+        if (success && capture != null) {
+            haptic.click()
+            attachmentService.saveAttachment(capture.first, 0L)?.let { path ->
+                onAddAttachment(path)
+            }
+        }
+        capture?.second?.delete()
+        pendingCameraCapture = null
+    }
+
+    val launchCamera: () -> Unit = {
+        val capturePair = attachmentService.createTempCaptureUri()
+        if (capturePair != null) {
+            pendingCameraCapture = capturePair
+            try {
+                cameraLauncher.launch(capturePair.first)
+            } catch (e: Exception) {
+                capturePair.second.delete()
+                pendingCameraCapture = null
+                Toast.makeText(context, R.string.camera_unavailable, Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, R.string.camera_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 3. ML Kit Document Scanner launcher
+    val scannerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            if (data != null) {
+                try {
+                    val scanResult = GmsDocumentScanningResult.fromActivityResultIntent(data)
+                    if (scanResult != null) {
+                        haptic.click()
+                        val pages = scanResult.pages
+                        if (!pages.isNullOrEmpty()) {
+                            pages.forEach { page ->
+                                attachmentService.saveAttachment(page.imageUri, 0L)?.let { path ->
+                                    onAddAttachment(path)
+                                }
+                            }
+                        } else {
+                            scanResult.pdf?.uri?.let { pdfUri ->
+                                attachmentService.saveAttachment(pdfUri, 0L)?.let { path ->
+                                    onAddAttachment(path)
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    val launchScanner: () -> Unit = {
+        val activity = context.findActivity()
+        if (activity != null) {
+            try {
+                val options = GmsDocumentScannerOptions.Builder()
+                    .setGalleryImportAllowed(false)
+                    .setPageLimit(1)
+                    .setResultFormats(
+                        GmsDocumentScannerOptions.RESULT_FORMAT_JPEG,
+                        GmsDocumentScannerOptions.RESULT_FORMAT_PDF
+                    )
+                    .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
+                    .build()
+
+                val scanner = GmsDocumentScanning.getClient(options)
+                scanner.getStartScanIntent(activity)
+                    .addOnSuccessListener { intentSender ->
+                        scannerLauncher.launch(
+                            IntentSenderRequest.Builder(intentSender).build()
+                        )
+                    }
+                    .addOnFailureListener {
+                        // ML Kit unavailable: fallback to standard camera
+                        launchCamera()
+                    }
+            } catch (e: Exception) {
+                // If client init fails: fallback to camera
+                launchCamera()
+            }
+        } else {
+            launchCamera()
+        }
+    }
+
+    val launchFilePicker: () -> Unit = {
+        filePicker.launch(
+            arrayOf(
+                "image/*",
+                "application/pdf",
+                "text/csv",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        )
     }
 
     Column(
@@ -107,7 +257,7 @@ fun AttachmentSection(
             .animateContentSize(),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)
     ) {
-        // Header with Add button
+        // Header with tactile dual-action group
         ListItem(
             headline = {
                 Text(
@@ -133,25 +283,28 @@ fun AttachmentSection(
             },
             trailing = if (isEditable) {
                 {
-                    FilledTonalIconButton(
-                        onClick = {
-                            filePicker.launch(arrayOf(
-                                "image/*",
-                                "application/pdf",
-                                "text/csv",
-                                "application/vnd.ms-excel",
-                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                            ))
-                        },
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Primary tactile action: Scan receipt / Camera capture
+                        AttachmentActionButton(
+                            onClick = launchScanner,
+                            onLongClick = { showOptionsSheet = true },
+                            icon = Iconax.Camera,
+                            contentDescription = stringResource(R.string.scan_receipt_cd),
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-                        shape = MaterialTheme.shapes.largeIncreased
-                    ) {
-                        Icon(
-                            Icons.Rounded.Add,
-                            contentDescription = stringResource(R.string.add_attachment_cd)
+                        )
+
+                        // Secondary action: Browse storage files
+                        AttachmentActionButton(
+                            onClick = launchFilePicker,
+                            onLongClick = { showOptionsSheet = true },
+                            icon = Iconax.Folder2,
+                            contentDescription = stringResource(R.string.browse_files_cd),
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -177,7 +330,7 @@ fun AttachmentSection(
                         AttachmentPreviewItem(
                             attachmentPath = attachment,
                             attachmentService = attachmentService,
-                            onClick = { onAttachmentClick(attachment) },
+                            onClick = { handleAttachmentClick(attachment) },
                             onRemove = if (isEditable) {
                                 { onRemoveAttachment(attachment) }
                             } else null,
@@ -193,12 +346,11 @@ fun AttachmentSection(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
                     contentPadding = PaddingValues(horizontal = Spacing.md)
                 ) {
-
                     items(attachments) { attachment ->
                         AttachmentPreviewItem(
                             attachmentPath = attachment,
                             attachmentService = attachmentService,
-                            onClick = { onAttachmentClick(attachment) },
+                            onClick = { handleAttachmentClick(attachment) },
                             onRemove = if (isEditable) {
                                 { onRemoveAttachment(attachment) }
                             } else null,
@@ -209,6 +361,134 @@ fun AttachmentSection(
             }
         }
     }
+
+    // Modal options bottom sheet (accessible via long-press on action buttons)
+    if (showOptionsSheet) {
+        VittifyModalBottomSheet(
+            onDismissRequest = { showOptionsSheet = false },
+            shape = VittifyShapes.bottomSheet,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.md)
+                    .padding(bottom = Spacing.xl),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+            ) {
+                Text(
+                    text = stringResource(R.string.add_attachment),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = Spacing.sm, vertical = Spacing.xs)
+                )
+
+                ListItem(
+                    headline = { Text(stringResource(R.string.scan_receipt)) },
+                    supporting = { Text(stringResource(R.string.scan_receipt_desc)) },
+                    leading = {
+                        Icon(
+                            Iconax.Camera,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
+                    onClick = {
+                        showOptionsSheet = false
+                        launchScanner()
+                    },
+                    listColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+
+                ListItem(
+                    headline = { Text(stringResource(R.string.take_photo)) },
+                    supporting = { Text(stringResource(R.string.take_photo_desc)) },
+                    leading = {
+                        Icon(
+                            Icons.Rounded.CameraAlt,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
+                    onClick = {
+                        showOptionsSheet = false
+                        launchCamera()
+                    },
+                    listColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+
+                ListItem(
+                    headline = { Text(stringResource(R.string.browse_files)) },
+                    supporting = { Text(stringResource(R.string.browse_files_desc)) },
+                    leading = {
+                        Icon(
+                            Iconax.Folder2,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
+                    onClick = {
+                        showOptionsSheet = false
+                        launchFilePicker()
+                    },
+                    listColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun AttachmentActionButton(
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    icon: ImageVector,
+    contentDescription: String,
+    containerColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    val haptic = rememberAppHapticFeedback()
+    Box(
+        modifier = modifier
+            .size(44.dp)
+            .clip(MaterialTheme.shapes.largeIncreased)
+            .background(containerColor)
+            .combinedClickable(
+                role = Role.Button,
+                onClick = {
+                    haptic.click()
+                    onClick()
+                },
+                onLongClick = if (onLongClick != null) {
+                    {
+                        haptic.longClick()
+                        onLongClick()
+                    }
+                } else null
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = contentColor,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+private fun Context.findActivity(): Activity? {
+    var current = this
+    while (current is ContextWrapper) {
+        if (current is Activity) return current
+        current = current.baseContext
+    }
+    return null
 }
 
 @Composable
@@ -233,10 +513,10 @@ private fun AttachmentPreviewItem(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             ),
-        shape = com.reddy.vittify.presentation.ui.theme.VittifyShapes.scaled(Dimensions.Radius.md),
-        border = com.reddy.vittify.presentation.ui.theme.VittifySurface.platterBorder(),
+        shape = VittifyShapes.scaled(Dimensions.Radius.md),
+        border = VittifySurface.platterBorder(),
         colors = CardDefaults.cardColors(
-            containerColor = if (isFileExists) com.reddy.vittify.presentation.ui.theme.VittifySurface.surfaceContainerHighColor() 
+            containerColor = if (isFileExists) VittifySurface.surfaceContainerHighColor() 
                            else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
         )
     ) {
