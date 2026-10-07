@@ -12,6 +12,8 @@ import com.reddy.vittify.presentation.navigation.LocalBottomNavPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.RocketLaunch
+import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -178,10 +180,10 @@ fun AboutScreen(
             AboutListItem(
                 title = if (updateUiState.isChecking) "Checking for updates..." else "Check for updates",
                 subtitle = if (BuildConfig.IS_BETA) "Beta track • v${BuildConfig.VERSION_NAME}" else "Stable track • v${BuildConfig.VERSION_NAME}",
-                icon = if (BuildConfig.IS_BETA) androidx.compose.material.icons.Icons.Rounded.RocketLaunch else androidx.compose.material.icons.Icons.Rounded.SystemUpdate,
+                icon = if (BuildConfig.IS_BETA) Icons.Rounded.RocketLaunch else Icons.Rounded.SystemUpdate,
                 iconColor = if (BuildConfig.IS_BETA) purple_dark else blue_dark,
                 iconBackground = if (BuildConfig.IS_BETA) purple_light else blue_light,
-                iconShape = VittifySvgShape.SUNNY.composeShape,
+                iconShape = VittifySvgShape.STAR_8.composeShape,
                 onClick = {
                     updateViewModel.checkForUpdate(isManualCheck = true)
                 },
