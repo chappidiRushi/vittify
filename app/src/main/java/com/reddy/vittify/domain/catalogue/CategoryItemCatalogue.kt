@@ -2075,7 +2075,11 @@ object CategoryItemCatalogue {
             catMap.getOrPut(catKey) { mutableListOf() }.add(entry)
             compMap[compKey] = entry
 
-            catItems.getOrPut(catKey) { mutableSetOf() }.addAll(entry.items.map { it.lowercase(Locale.ROOT) })
+            // Only add items to categoryItemsMap if this entry represents a standalone category
+            // (i.e. categories without distinct subcategories like Savings, Donation, Cash Withdrawal)
+            if (entry.category.equals(entry.subcategory, ignoreCase = true)) {
+                catItems.getOrPut(catKey) { mutableSetOf() }.addAll(entry.items.map { it.lowercase(Locale.ROOT) })
+            }
         }
 
         subcategoryIndex = subMap
@@ -2146,7 +2150,12 @@ object CategoryItemCatalogue {
      * Gets all keywords/items associated with a category.
      */
     fun getItemsForCategory(categoryName: String): Set<String> {
-        return categoryItemsMap[categoryName.lowercase(Locale.ROOT)] ?: emptySet()
+        val catKey = categoryName.lowercase(Locale.ROOT)
+        val standaloneItems = categoryItemsMap[catKey]
+        if (!standaloneItems.isNullOrEmpty()) {
+            return standaloneItems
+        }
+        return categoryIndex[catKey]?.flatMap { it.items }?.toSet() ?: emptySet()
     }
 
     /**
@@ -2216,11 +2225,22 @@ object CategoryItemCatalogue {
         }
 
         // 2. Score category-level matches (if not already included)
+        // If a result exists in a subcategory, don't show the category
+        val categoriesWithSubMatches = results.mapNotNull { match ->
+            match.subcategory?.let { match.category.id }
+        }.toSet()
+
         for (category in categories) {
             val key = "${category.id}_null"
             if (seenKeys.contains(key)) continue
 
             val catNameLower = category.name.lowercase(Locale.ROOT)
+
+            // If a result exists in the subcategory, don't show the category
+            // (unless the user explicitly typed the exact category name)
+            if (categoriesWithSubMatches.contains(category.id) && catNameLower != q) {
+                continue
+            }
             var catScore = 0
             var matchedKeyword: String? = null
 
