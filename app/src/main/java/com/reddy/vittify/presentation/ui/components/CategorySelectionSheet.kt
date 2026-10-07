@@ -33,6 +33,8 @@ import com.reddy.vittify.presentation.ui.icons.Iconax
 import com.reddy.vittify.presentation.ui.theme.Dimensions
 import com.reddy.vittify.presentation.ui.theme.Spacing
 import kotlinx.coroutines.delay
+import com.reddy.vittify.domain.catalogue.CategoryItemCatalogue
+import com.reddy.vittify.domain.catalogue.QuickSuggestionMatch
 
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.ui.graphics.Color
@@ -86,13 +88,16 @@ fun CategorySelectionSheet(
     
     // Filter categories based on search
     val filteredCategories = remember(categories, subcategoriesMap, searchQuery.text) {
-        if (searchQuery.text.isBlank()) {
+        val query = searchQuery.text.trim()
+        if (query.isBlank()) {
             categories
         } else {
             categories.filter { category ->
-                val categoryMatches = category.name.contains(searchQuery.text, ignoreCase = true)
-                val subcategoriesMatch = subcategoriesMap[category.id]?.any {
-                    it.name.contains(searchQuery.text, ignoreCase = true)
+                val categoryMatches = category.name.contains(query, ignoreCase = true) ||
+                        CategoryItemCatalogue.matchesCategory(category.name, query)
+                val subcategoriesMatch = subcategoriesMap[category.id]?.any { sub ->
+                    sub.name.contains(query, ignoreCase = true) ||
+                    CategoryItemCatalogue.matchesSubcategory(category.name, sub.name, query)
                 } == true
                 categoryMatches || subcategoriesMatch
             }
@@ -103,10 +108,12 @@ fun CategorySelectionSheet(
 
     // Auto-expand categories that have matching subcategories when searching
     LaunchedEffect(searchQuery.text) {
-        if (searchQuery.text.isNotBlank()) {
+        val query = searchQuery.text.trim()
+        if (query.isNotBlank()) {
             filteredCategories.forEach { category ->
-                val hasMatchingSubcategory = subcategoriesMap[category.id]?.any {
-                    it.name.contains(searchQuery.text, ignoreCase = true)
+                val hasMatchingSubcategory = subcategoriesMap[category.id]?.any { sub ->
+                    sub.name.contains(query, ignoreCase = true) ||
+                    CategoryItemCatalogue.matchesSubcategory(category.name, sub.name, query)
                 } == true
                 if (hasMatchingSubcategory) {
                     expandedStates[category.id] = true
@@ -175,26 +182,14 @@ fun CategorySelectionSheet(
         val isSearching = searchQuery.text.isNotBlank()
         val matchingSuggestions = remember(categories, subcategoriesMap, searchQuery.text) {
             if (!isSearching) {
-                emptyList()
+                emptyList<QuickSuggestionMatch>()
             } else {
-                val query = searchQuery.text.trim().lowercase()
-                val list = mutableListOf<Pair<CategoryEntity, SubcategoryEntity?>>()
-                // First: matching subcategories
-                for (cat in categories) {
-                    val subs = subcategoriesMap[cat.id] ?: emptyList()
-                    for (sub in subs) {
-                        if (sub.name.lowercase().contains(query)) {
-                            list.add(Pair(cat, sub))
-                        }
-                    }
-                }
-                // Second: matching categories (if not already included)
-                for (cat in categories) {
-                    if (cat.name.lowercase().contains(query) && list.none { it.first.id == cat.id }) {
-                        list.add(Pair(cat, null))
-                    }
-                }
-                list.take(12)
+                CategoryItemCatalogue.searchSuggestions(
+                    categories = categories,
+                    subcategoriesMap = subcategoriesMap,
+                    query = searchQuery.text,
+                    limit = 12
+                )
             }
         }
 
@@ -228,18 +223,20 @@ fun CategorySelectionSheet(
                             QuickSuggestionChip(
                                 category = category,
                                 subcategory = subcategory,
+                                matchedItem = null,
                                 onClick = { onSelectionComplete(category, subcategory) }
                             )
                         }
                     } else {
                         items(
                             items = matchingSuggestions,
-                            key = { "match_${it.first.id}_${it.second?.id ?: -1}" }
-                        ) { (category, subcategory) ->
+                            key = { "match_${it.category.id}_${it.subcategory?.id ?: -1}" }
+                        ) { match ->
                             QuickSuggestionChip(
-                                category = category,
-                                subcategory = subcategory,
-                                onClick = { onSelectionComplete(category, subcategory) }
+                                category = match.category,
+                                subcategory = match.subcategory,
+                                matchedItem = match.matchedItem,
+                                onClick = { onSelectionComplete(match.category, match.subcategory) }
                             )
                         }
                     }
@@ -277,13 +274,18 @@ fun CategorySelectionSheet(
                     
                     val isExpanded = expandedStates[category.id] == true
                     
-                    val displayedSubcategories = if (searchQuery.text.isNotBlank()) {
+                    val query = searchQuery.text.trim()
+                    val displayedSubcategories = if (query.isNotBlank()) {
                         // When searching, show only matching subcategories OR all if category matches
-                        val categoryMatches = category.name.contains(searchQuery.text, ignoreCase = true)
+                        val categoryMatches = category.name.contains(query, ignoreCase = true) ||
+                                CategoryItemCatalogue.matchesCategory(category.name, query)
                         if (categoryMatches) {
                             subs
                         } else {
-                            subs.filter { it.name.contains(searchQuery.text, ignoreCase = true) }
+                            subs.filter { sub ->
+                                sub.name.contains(query, ignoreCase = true) ||
+                                CategoryItemCatalogue.matchesSubcategory(category.name, sub.name, query)
+                            }
                         }
                     } else if (isExpanded) {
                         subs
@@ -337,6 +339,7 @@ fun CategorySelectionSheet(
 private fun QuickSuggestionChip(
     category: CategoryEntity,
     subcategory: SubcategoryEntity?,
+    matchedItem: String? = null,
     onClick: () -> Unit
 ) {
     val backgroundColor = remember(subcategory?.color, category.color) {
@@ -362,6 +365,11 @@ private fun QuickSuggestionChip(
         }
     }
 
+    val primaryLabel = subcategory?.name ?: category.name
+    val showItemHint = matchedItem != null &&
+            !matchedItem.equals(primaryLabel, ignoreCase = true) &&
+            !matchedItem.equals(category.name, ignoreCase = true)
+
     Surface(
         onClick = onClick,
         shape = com.reddy.vittify.presentation.ui.theme.VittifyShapes.pill,
@@ -381,11 +389,19 @@ private fun QuickSuggestionChip(
                 )
             }
             Text(
-                text = subcategory?.name ?: category.name,
+                text = primaryLabel,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            if (showItemHint) {
+                Text(
+                    text = "· $matchedItem",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }

@@ -89,6 +89,7 @@ import com.reddy.vittify.R
 import com.reddy.vittify.data.database.entity.CategoryEntity
 import com.reddy.vittify.data.database.entity.CategoryType
 import com.reddy.vittify.data.database.entity.SubcategoryEntity
+import com.reddy.vittify.domain.catalogue.CategoryItemCatalogue
 import com.reddy.vittify.presentation.effects.overScrollVertical
 import com.reddy.vittify.presentation.effects.rememberOverscrollFlingBehavior
 import com.reddy.vittify.presentation.ui.components.CategoryItem
@@ -428,10 +429,15 @@ fun CategoriesScreen(
                             ) {
                                 categories.forEachIndexed { index, category ->
                                     val categorySubcategories = subcategories[category.id] ?: emptyList()
-                                    val displayedSubs = if (searchQuery.isNotBlank()) {
-                                        val catMatches = category.name.contains(searchQuery, ignoreCase = true)
+                                    val q = searchQuery.trim()
+                                    val displayedSubs = if (q.isNotBlank()) {
+                                        val catMatches = category.name.contains(q, ignoreCase = true) ||
+                                                CategoryItemCatalogue.matchesCategory(category.name, q)
                                         if (catMatches) categorySubcategories
-                                        else categorySubcategories.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                                        else categorySubcategories.filter { sub ->
+                                            sub.name.contains(q, ignoreCase = true) ||
+                                            CategoryItemCatalogue.matchesSubcategory(category.name, sub.name, q)
+                                        }
                                     } else {
                                         categorySubcategories
                                     }

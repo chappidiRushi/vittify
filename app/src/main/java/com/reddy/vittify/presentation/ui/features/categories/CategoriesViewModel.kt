@@ -8,6 +8,7 @@ import com.reddy.vittify.data.database.entity.SubcategoryEntity
 import com.reddy.vittify.data.repository.CategoryRepository
 import com.reddy.vittify.data.repository.SubcategoryRepository
 import com.reddy.vittify.data.repository.TransactionRepository
+import com.reddy.vittify.domain.catalogue.CategoryItemCatalogue
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.*
@@ -83,13 +84,16 @@ constructor(
         _selectedTab
     ) { categories, subcategoriesMap, query, tab ->
         val byTab = categories.filter { it.categoryType == tab }
-        if (query.isBlank()) {
+        val q = query.trim()
+        if (q.isBlank()) {
             byTab
         } else {
             byTab.filter { category ->
-                val categoryMatches = category.name.contains(query, ignoreCase = true)
-                val subcategoriesMatch = subcategoriesMap[category.id]?.any {
-                    it.name.contains(query, ignoreCase = true)
+                val categoryMatches = category.name.contains(q, ignoreCase = true) ||
+                        CategoryItemCatalogue.matchesCategory(category.name, q)
+                val subcategoriesMatch = subcategoriesMap[category.id]?.any { sub ->
+                    sub.name.contains(q, ignoreCase = true) ||
+                    CategoryItemCatalogue.matchesSubcategory(category.name, sub.name, q)
                 } == true
                 categoryMatches || subcategoriesMatch
             }
