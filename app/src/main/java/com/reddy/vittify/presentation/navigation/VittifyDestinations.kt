@@ -287,6 +287,7 @@ data class Transactions(
     val nlpNotes: String? = null,
     val nlpCategory: String? = null,
     val nlpSubcategory: String? = null,
+    val nlpDate: String? = null,
 )
 
 @Serializable data class AccountDetail(val bankName: String, val accountLast4: String)

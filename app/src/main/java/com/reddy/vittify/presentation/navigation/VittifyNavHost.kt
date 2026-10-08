@@ -1205,6 +1205,7 @@ fun VittifyNavHost(
                     nlpNotes = addTransaction.nlpNotes,
                     nlpCategory = addTransaction.nlpCategory,
                     nlpSubcategory = addTransaction.nlpSubcategory,
+                    nlpDate = addTransaction.nlpDate,
                     onNavigateToTransactionSettings = { navController.safeNavigate(TransactionSettings()) },
                     blurEffects = themeUiState.blurEffects,
                 )

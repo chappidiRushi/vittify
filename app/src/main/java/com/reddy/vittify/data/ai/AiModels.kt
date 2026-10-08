@@ -8,14 +8,10 @@ enum class AiProviderType(
     val description: String,
     val isSupported: Boolean = true
 ) {
-    GEMINI("gemini", "Google Gemini AI", "Fast, multimodal & intelligent Google AI", isSupported = true),
-    OPENAI("openai", "OpenAI (ChatGPT)", "GPT-4o & GPT-4o-mini models", isSupported = false),
-    CLAUDE("claude", "Anthropic Claude", "Claude 3.5 Sonnet & Haiku models", isSupported = false),
-    DEEPSEEK("deepseek", "DeepSeek AI", "Reasoning & coding models", isSupported = false);
+    GEMINI("gemini", "Google Gemini", "Fast, multimodal & intelligent Google AI", isSupported = true);
 
     companion object {
-        fun fromId(id: String?): AiProviderType =
-            entries.find { it.id.equals(id, ignoreCase = true) } ?: GEMINI
+        fun fromId(id: String?): AiProviderType = GEMINI
     }
 }
 
@@ -43,26 +39,45 @@ data class GeminiModelDto(
     val supportedGenerationMethods: List<String> = emptyList()
 )
 
+@Serializable
+data class GeminiGenerateRequest(
+    val contents: List<GeminiRequestContent>,
+    val generationConfig: GeminiGenerationConfig? = null
+)
+
+@Serializable
+data class GeminiRequestContent(
+    val parts: List<GeminiRequestPart>
+)
+
+@Serializable
+data class GeminiRequestPart(
+    val text: String
+)
+
+@Serializable
+data class GeminiGenerationConfig(
+    val responseMimeType: String? = null,
+    val temperature: Float? = null
+)
+
 data class GeminiConfig(
     val apiKey: String = "",
-    val selectedModel: String = "gemini-2.5-flash",
-    val availableModels: List<String> = DEFAULT_GEMINI_MODELS,
+    val selectedModel: String = "",
+    val availableModels: List<String> = emptyList(),
     val isEnabled: Boolean = true,
     val isConfigured: Boolean = false,
     val totalRequests: Int = 0,
     val totalTokens: Long = 0L,
     val lastTestedAt: Long = 0L,
     val lastTestSuccess: Boolean? = null,
-    val lastTestMessage: String? = null
+    val lastTestMessage: String? = null,
+    val includeCategories: Boolean = true,
+    val includeBankAccounts: Boolean = true,
+    val customRules: String = ""
 )
 
-val DEFAULT_GEMINI_MODELS = listOf(
-    "gemini-2.5-flash",
-    "gemini-2.5-pro",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro"
-)
+val DEFAULT_GEMINI_MODELS: List<String> = emptyList()
 
 data class AiUsageMetrics(
     val totalRequests: Int = 0,

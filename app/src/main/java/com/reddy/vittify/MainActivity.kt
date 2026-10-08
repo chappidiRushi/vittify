@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         const val EXTRA_NLP_NOTES = "extra_nlp_notes"
         const val EXTRA_NLP_CATEGORY = "extra_nlp_category"
         const val EXTRA_NLP_SUBCATEGORY = "extra_nlp_subcategory"
+        const val EXTRA_NLP_DATE = "extra_nlp_date"
     }
 
     private val themeViewModel: ThemeViewModel by viewModels()
@@ -112,6 +113,8 @@ class MainActivity : AppCompatActivity() {
     var nlpCategory by mutableStateOf<String?>(null)
         private set
     var nlpSubcategory by mutableStateOf<String?>(null)
+        private set
+    var nlpDate by mutableStateOf<String?>(null)
         private set
 
     // Pending deep link settings destination
@@ -183,6 +186,7 @@ class MainActivity : AppCompatActivity() {
                 nlpNotes = nlpNotes,
                 nlpCategory = nlpCategory,
                 nlpSubcategory = nlpSubcategory,
+                nlpDate = nlpDate,
                 onAddComplete = { 
                     addTransactionTab = null
                     addTransactionType = null
@@ -193,6 +197,7 @@ class MainActivity : AppCompatActivity() {
                     nlpNotes = null
                     nlpCategory = null
                     nlpSubcategory = null
+                    nlpDate = null
                 },
                 pendingSettingsDestination = pendingSettingsDestination,
                 onSettingsDestinationHandled = { pendingSettingsDestination = null },
@@ -263,6 +268,7 @@ class MainActivity : AppCompatActivity() {
                 nlpNotes = intent.getStringExtra(EXTRA_NLP_NOTES)
                 nlpCategory = intent.getStringExtra(EXTRA_NLP_CATEGORY)
                 nlpSubcategory = intent.getStringExtra(EXTRA_NLP_SUBCATEGORY)
+                nlpDate = intent.getStringExtra(EXTRA_NLP_DATE)
             }
         }
     }
