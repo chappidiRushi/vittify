@@ -228,9 +228,9 @@ fun VittifyNavHost(
                 // Splash Screen
                 composable<Splash>(
                     enterTransition = VittifyTransitions.noneEnter,
-                    exitTransition = VittifyTransitions.noneExit,
+                    exitTransition = VittifyTransitions.splashExitTransition,
                     popEnterTransition = VittifyTransitions.noneEnter,
-                    popExitTransition = VittifyTransitions.noneExit
+                    popExitTransition = VittifyTransitions.splashExitTransition
                 ) {
                     SplashScreen(
                         currentAppIcon = themeUiState.currentAppIcon,
@@ -245,7 +245,7 @@ fun VittifyNavHost(
 
                 // App Lock Screen
                 composable<AppLock>(
-                    enterTransition = VittifyTransitions.noneEnter,
+                    enterTransition = VittifyTransitions.coldStartOrNoneEnter,
                     exitTransition = VittifyTransitions.noneExit,
                     popEnterTransition = VittifyTransitions.noneEnter,
                     popExitTransition = VittifyTransitions.noneExit
@@ -261,7 +261,7 @@ fun VittifyNavHost(
 
                 // Onboarding Screen
                 composable<OnBoarding>(
-                    enterTransition = VittifyTransitions.noneEnter,
+                    enterTransition = VittifyTransitions.coldStartOrNoneEnter,
                     exitTransition = VittifyTransitions.noneExit,
                     popEnterTransition = VittifyTransitions.noneEnter,
                     popExitTransition = VittifyTransitions.noneExit

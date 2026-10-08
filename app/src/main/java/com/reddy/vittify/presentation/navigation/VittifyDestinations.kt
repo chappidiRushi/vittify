@@ -3,8 +3,10 @@ package com.reddy.vittify.presentation.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -19,6 +21,37 @@ import kotlinx.serialization.Serializable
 // Centralized transition definitions
 object VittifyTransitions {
     
+    // Splash & cold-start transition: cinematic zoom-through dissolution
+    val splashExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+        fadeOut(
+            animationSpec = tween(
+                durationMillis = 400,
+                easing = FastOutSlowInEasing
+            )
+        ) + scaleOut(
+            targetScale = 1.08f,
+            animationSpec = tween(
+                durationMillis = 400,
+                easing = FastOutSlowInEasing
+            )
+        )
+    }
+
+    val splashToNextEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+        fadeIn(
+            animationSpec = tween(
+                durationMillis = 450,
+                easing = FastOutSlowInEasing
+            )
+        ) + scaleIn(
+            initialScale = 0.94f,
+            animationSpec = spring(
+                stiffness = Spring.StiffnessLow,
+                dampingRatio = Spring.DampingRatioNoBouncy
+            )
+        )
+    }
+
     private fun getBottomNavTabIndex(route: String?): Int = when {
         route == null -> -1
         route.contains("Home") -> 0
@@ -29,19 +62,24 @@ object VittifyTransitions {
 
     // Directional horizontal transitions for bottom navigation tabs
     val bottomNavEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-        val fromIndex = getBottomNavTabIndex(initialState.destination.route)
-        val toIndex = getBottomNavTabIndex(targetState.destination.route)
-        if (fromIndex != -1 && toIndex != -1) {
-            val direction = if (toIndex > fromIndex) 1 else -1
-            slideInHorizontally(
-                initialOffsetX = { direction * it },
-                animationSpec = spring(
-                    stiffness = Spring.StiffnessLow,
-                    dampingRatio = Spring.DampingRatioNoBouncy
-                )
-            ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+        val initialRoute = initialState.destination.route
+        if (initialRoute?.contains("Splash") == true || initialRoute?.contains("AppLock") == true) {
+            splashToNextEnterTransition(this)
         } else {
-            horizontalSlideEnter(this)
+            val fromIndex = getBottomNavTabIndex(initialRoute)
+            val toIndex = getBottomNavTabIndex(targetState.destination.route)
+            if (fromIndex != -1 && toIndex != -1) {
+                val direction = if (toIndex > fromIndex) 1 else -1
+                slideInHorizontally(
+                    initialOffsetX = { direction * it },
+                    animationSpec = spring(
+                        stiffness = Spring.StiffnessLow,
+                        dampingRatio = Spring.DampingRatioNoBouncy
+                    )
+                ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            } else {
+                horizontalSlideEnter(this)
+            }
         }
     }
 
@@ -63,19 +101,24 @@ object VittifyTransitions {
     }
 
     val bottomNavPopEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-        val fromIndex = getBottomNavTabIndex(initialState.destination.route)
-        val toIndex = getBottomNavTabIndex(targetState.destination.route)
-        if (fromIndex != -1 && toIndex != -1) {
-            val direction = if (toIndex > fromIndex) 1 else -1
-            slideInHorizontally(
-                initialOffsetX = { direction * it },
-                animationSpec = spring(
-                    stiffness = Spring.StiffnessLow,
-                    dampingRatio = Spring.DampingRatioNoBouncy
-                )
-            ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+        val initialRoute = initialState.destination.route
+        if (initialRoute?.contains("Splash") == true || initialRoute?.contains("AppLock") == true) {
+            splashToNextEnterTransition(this)
         } else {
-            horizontalSlidePopEnter(this)
+            val fromIndex = getBottomNavTabIndex(initialRoute)
+            val toIndex = getBottomNavTabIndex(targetState.destination.route)
+            if (fromIndex != -1 && toIndex != -1) {
+                val direction = if (toIndex > fromIndex) 1 else -1
+                slideInHorizontally(
+                    initialOffsetX = { direction * it },
+                    animationSpec = spring(
+                        stiffness = Spring.StiffnessLow,
+                        dampingRatio = Spring.DampingRatioNoBouncy
+                    )
+                ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            } else {
+                horizontalSlidePopEnter(this)
+            }
         }
     }
 
@@ -241,6 +284,15 @@ object VittifyTransitions {
     
     val noneExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
         fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMedium))
+    }
+
+    // Smooth transition from Splash screen into destination or fallback to none
+    val coldStartOrNoneEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+        if (initialState.destination.route?.contains("Splash") == true) {
+            splashToNextEnterTransition()
+        } else {
+            noneEnter()
+        }
     }
 }
 
