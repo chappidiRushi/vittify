@@ -27,6 +27,7 @@ import com.reddy.vittify.data.repository.AccountBalanceRepository
 import com.reddy.vittify.data.repository.BudgetRepository
 import com.reddy.vittify.data.repository.CategoryRepository
 import com.reddy.vittify.data.repository.CurrencyRepository
+import com.reddy.vittify.data.nlp.NlpParsingMode
 import com.reddy.vittify.data.nlp.NlpTransactionParser
 import com.reddy.vittify.data.cloud.engine.CloudSyncEngine
 import android.widget.Toast
@@ -1210,17 +1211,50 @@ class HomeViewModel @Inject constructor(
      */
     fun parseNaturalLanguageTransaction(input: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(nlpIsProcessing = true) }
+            _uiState.update { it.copy(nlpIsProcessing = true, nlpError = null) }
             try {
-                val draft = nlpTransactionParser.parse(input)
-                _nlpDraft.value = draft
+                val draft = nlpTransactionParser.parse(
+                    input = input,
+                    onStatusChange = { mode ->
+                        _uiState.update { it.copy(nlpParsingMode = mode) }
+                    },
+                    onAiError = { errorMessage ->
+                        _uiState.update { it.copy(nlpError = errorMessage) }
+                    }
+                )
+                if (draft != null) {
+                    _nlpDraft.value = draft
+                }
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "NLP parse error", e)
                 _nlpDraft.value = null
             } finally {
-                _uiState.update { it.copy(nlpIsProcessing = false) }
+                _uiState.update { it.copy(nlpIsProcessing = false, nlpParsingMode = null) }
             }
         }
+    }
+
+    /**
+     * Parses [input] directly with the regex parser, bypassing AI.
+     */
+    fun parseNaturalLanguageWithRegex(input: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(nlpIsProcessing = true, nlpError = null, nlpParsingMode = NlpParsingMode.REGEX) }
+            try {
+                val draft = nlpTransactionParser.parseWithRegex(input)
+                _nlpDraft.value = draft
+            } catch (e: Exception) {
+                Log.e("HomeViewModel", "Regex parse error", e)
+                _nlpDraft.value = null
+            } finally {
+                _uiState.update { it.copy(nlpIsProcessing = false, nlpParsingMode = null) }
+            }
+        }
+    }
+
+    /** Clears the NLP error state. */
+    fun clearNlpError() {
+        _uiState.update { it.copy(nlpError = null) }
     }
 
     /** Clears the NLP draft after navigation so it isn't re-applied on back-press. */

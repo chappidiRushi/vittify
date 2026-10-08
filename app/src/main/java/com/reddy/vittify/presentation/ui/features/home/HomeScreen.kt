@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import com.reddy.vittify.data.nlp.NlpParsingMode
 import com.reddy.vittify.data.preferences.NavigationBarStyle
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibility
@@ -51,15 +52,18 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AccountBalance
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -138,6 +142,7 @@ import com.reddy.vittify.presentation.effects.rememberOverscrollFlingBehavior
 import com.reddy.vittify.utils.capitalizeFirst
 import com.reddy.vittify.presentation.navigation.AccountDetail
 import com.reddy.vittify.presentation.navigation.AddTransaction
+import com.reddy.vittify.presentation.navigation.AiSettings
 import com.reddy.vittify.presentation.navigation.Analytics
 import com.reddy.vittify.presentation.navigation.Categories
 import com.reddy.vittify.presentation.navigation.CloudBackup
@@ -451,9 +456,63 @@ fun SharedTransitionScope.HomeScreen(
                             nlpNotes = draft.notes.ifBlank { null },
                             nlpCategory = draft.category.ifBlank { null },
                             nlpSubcategory = draft.subcategory.ifBlank { null },
+                            nlpDate = draft.date?.toString(),
                         )
                     )
                 }
+            }
+
+            // NLP Error Dialog: prompt user with error and let them change model
+            if (!uiState.nlpError.isNullOrBlank()) {
+                AlertDialog(
+                    onDismissRequest = { homeViewModel.clearNlpError() },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Rounded.ErrorOutline,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    title = {
+                        Text(
+                            text = stringResource(R.string.ai_error_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = uiState.nlpError ?: "",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                homeViewModel.clearNlpError()
+                                navController.safeNavigate(AiSettings(targetOptionId = "ai-model"))
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(stringResource(R.string.change_model))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { homeViewModel.clearNlpError() }) {
+                            Text(stringResource(R.string.dismiss))
+                        }
+                    },
+                    shape = VittifyShapes.dialog
+                )
             }
 
             PullToRefreshBox(
@@ -496,6 +555,18 @@ fun SharedTransitionScope.HomeScreen(
                                 item(key = "quick_add") {
                                     QuickAddCard(
                                         isProcessing = uiState.nlpIsProcessing,
+                                        parsingMode = uiState.nlpParsingMode,
+                                        errorMessage = uiState.nlpError,
+                                        onNavigateToAiSettings = {
+                                            homeViewModel.clearNlpError()
+                                            navController.safeNavigate(AiSettings(targetOptionId = "ai-model"))
+                                        },
+                                        onDismissError = {
+                                            homeViewModel.clearNlpError()
+                                        },
+                                        onParseOffline = { input ->
+                                            homeViewModel.parseNaturalLanguageWithRegex(input)
+                                        },
                                         onSubmit = { input ->
                                             homeViewModel.parseNaturalLanguageTransaction(input)
                                         }
@@ -1485,6 +1556,11 @@ private fun NetworthSummaryCards(
 @Composable
 fun QuickAddCard(
     isProcessing: Boolean,
+    parsingMode: NlpParsingMode? = null,
+    errorMessage: String? = null,
+    onNavigateToAiSettings: () -> Unit = {},
+    onDismissError: () -> Unit = {},
+    onParseOffline: ((String) -> Unit)? = null,
     onSubmit: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -1567,7 +1643,12 @@ fun QuickAddCard(
             // Input row
             OutlinedTextField(
                 value = inputText,
-                onValueChange = { inputText = it },
+                onValueChange = {
+                    inputText = it
+                    if (!errorMessage.isNullOrBlank()) {
+                        onDismissError()
+                    }
+                },
                 placeholder = {
                     Text(
                         text = stringResource(R.string.quick_add_placeholder),
@@ -1596,7 +1677,12 @@ fun QuickAddCard(
                     } else if (hasText) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(
-                                onClick = { inputText = "" },
+                                onClick = {
+                                    inputText = ""
+                                    if (!errorMessage.isNullOrBlank()) {
+                                        onDismissError()
+                                    }
+                                },
                                 modifier = Modifier.size(36.dp)
                             ) {
                                 Icon(
@@ -1633,46 +1719,118 @@ fun QuickAddCard(
 
             // Hint label
             if (isProcessing) {
+                val labelText = when (parsingMode) {
+                    NlpParsingMode.AI -> stringResource(R.string.quick_add_parsing_ai)
+                    NlpParsingMode.REGEX -> stringResource(R.string.quick_add_parsing_regex)
+                    null -> stringResource(R.string.quick_add_parsing)
+                }
                 Text(
-                    text = stringResource(R.string.quick_add_parsing),
+                    text = labelText,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(horizontal = 4.dp)
                 )
             }
+
+            // Error banner with "Change Model" button
+            if (!errorMessage.isNullOrBlank()) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.85f),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.ErrorOutline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .padding(top = 2.dp)
+                            )
+                            Text(
+                                text = errorMessage,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = onDismissError,
+                                modifier = Modifier.size(20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = stringResource(R.string.close),
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (onParseOffline != null && inputText.isNotBlank()) {
+                                TextButton(
+                                    onClick = { onParseOffline(inputText) },
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.quick_add_use_offline),
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                }
+                            }
+                            Button(
+                                onClick = onNavigateToAiSettings,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError
+                                ),
+                                shape = VittifyShapes.pill,
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                modifier = Modifier.height(34.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Settings,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(R.string.change_model),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     if (showDisclaimerDialog) {
-        AlertDialog(
-            onDismissRequest = { showDisclaimerDialog = false },
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.Info,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.quick_add_disclaimer_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(R.string.quick_add_disclaimer_message),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { showDisclaimerDialog = false }) {
-                    Text(stringResource(R.string.quick_add_disclaimer_got_it))
-                }
-            },
-            shape = VittifyShapes.dialog
+        QuickAddTutorialDialog(
+            onDismiss = { showDisclaimerDialog = false }
         )
     }
 }

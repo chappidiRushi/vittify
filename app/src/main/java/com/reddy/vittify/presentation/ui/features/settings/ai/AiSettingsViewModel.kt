@@ -3,9 +3,7 @@ package com.reddy.vittify.presentation.ui.features.settings.ai
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.reddy.vittify.data.ai.AiPreferencesRepository
-import com.reddy.vittify.data.ai.AiProviderType
 import com.reddy.vittify.data.ai.ConnectionTestState
-import com.reddy.vittify.data.ai.DEFAULT_GEMINI_MODELS
 import com.reddy.vittify.data.ai.GeminiAiProvider
 import com.reddy.vittify.data.ai.GeminiConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,11 +18,11 @@ import javax.inject.Inject
 
 data class AiSettingsUiState(
     val isAiEnabled: Boolean = true,
-    val selectedProvider: AiProviderType = AiProviderType.GEMINI,
     val geminiConfig: GeminiConfig = GeminiConfig(),
     val testState: ConnectionTestState = ConnectionTestState.Idle,
     val isFetchingModels: Boolean = false,
-    val showGuideDialog: Boolean = false
+    val showGuideDialog: Boolean = false,
+    val showOnlineModelDialog: Boolean = false
 )
 
 @HiltViewModel
@@ -40,20 +38,14 @@ class AiSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 aiPreferencesRepository.isAiEnabled,
-                aiPreferencesRepository.selectedProvider,
                 aiPreferencesRepository.geminiConfig
-            ) { isEnabled, provider, geminiConfig ->
-                AiSettingsUiState(
-                    isAiEnabled = isEnabled,
-                    selectedProvider = provider,
-                    geminiConfig = geminiConfig
-                )
-            }.collectLatest { state ->
+            ) { isEnabled, geminiConfig ->
+                Pair(isEnabled, geminiConfig)
+            }.collectLatest { (isEnabled, geminiConfig) ->
                 _uiState.update { current ->
                     current.copy(
-                        isAiEnabled = state.isAiEnabled,
-                        selectedProvider = state.selectedProvider,
-                        geminiConfig = state.geminiConfig
+                        isAiEnabled = isEnabled,
+                        geminiConfig = geminiConfig
                     )
                 }
             }
@@ -63,19 +55,18 @@ class AiSettingsViewModel @Inject constructor(
     fun onToggleAiEnabled(enabled: Boolean) {
         viewModelScope.launch {
             aiPreferencesRepository.setAiEnabled(enabled)
-        }
-    }
-
-    fun onSelectProvider(provider: AiProviderType) {
-        viewModelScope.launch {
-            aiPreferencesRepository.setSelectedProvider(provider)
+            aiPreferencesRepository.setGeminiEnabled(enabled)
         }
     }
 
     fun onApiKeyChanged(apiKey: String) {
         viewModelScope.launch {
-            aiPreferencesRepository.setGeminiApiKey(apiKey)
+            val trimmed = apiKey.trim()
+            aiPreferencesRepository.setGeminiApiKey(trimmed)
             _uiState.update { it.copy(testState = ConnectionTestState.Idle) }
+            if (trimmed.isNotBlank() && trimmed.length >= 20) {
+                fetchModelsForApiKey(trimmed)
+            }
         }
     }
 
@@ -85,16 +76,13 @@ class AiSettingsViewModel @Inject constructor(
         }
     }
 
-    fun onToggleGeminiEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            aiPreferencesRepository.setGeminiEnabled(enabled)
-        }
-    }
-
     fun onFetchModels() {
         val apiKey = _uiState.value.geminiConfig.apiKey
         if (apiKey.isBlank()) return
+        fetchModelsForApiKey(apiKey)
+    }
 
+    private fun fetchModelsForApiKey(apiKey: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isFetchingModels = true) }
             val result = geminiAiProvider.fetchAvailableModels(apiKey)
@@ -103,6 +91,12 @@ class AiSettingsViewModel @Inject constructor(
                     val cleanNames = models.map { it.cleanName }
                     if (cleanNames.isNotEmpty()) {
                         aiPreferencesRepository.setGeminiAvailableModels(cleanNames)
+                        val currentSelected = _uiState.value.geminiConfig.selectedModel
+                        if (currentSelected.isBlank() || currentSelected !in cleanNames) {
+                            val preferred = cleanNames.firstOrNull { it.contains("flash", ignoreCase = true) }
+                                ?: cleanNames.first()
+                            aiPreferencesRepository.setGeminiSelectedModel(preferred)
+                        }
                     }
                     _uiState.update { it.copy(isFetchingModels = false) }
                 },
@@ -132,18 +126,26 @@ class AiSettingsViewModel @Inject constructor(
             result.fold(
                 onSuccess = { testResult ->
                     if (testResult.isSuccess) {
-                        val availableModels = testResult.availableModels.ifEmpty { DEFAULT_GEMINI_MODELS }
+                        val availableModels = testResult.availableModels
                         aiPreferencesRepository.saveGeminiTestResult(
                             success = true,
                             message = testResult.message,
                             availableModels = availableModels
                         )
+                        if (availableModels.isNotEmpty()) {
+                            val currentSelected = _uiState.value.geminiConfig.selectedModel
+                            if (currentSelected.isBlank() || currentSelected !in availableModels) {
+                                val preferred = availableModels.firstOrNull { it.contains("flash", ignoreCase = true) }
+                                    ?: availableModels.first()
+                                aiPreferencesRepository.setGeminiSelectedModel(preferred)
+                            }
+                        }
                         _uiState.update {
                             it.copy(
                                 testState = ConnectionTestState.Success(
                                     message = testResult.message,
                                     modelsCount = availableModels.size
-                                ),
+                               ),
                                 isFetchingModels = false
                             )
                         }
@@ -174,6 +176,24 @@ class AiSettingsViewModel @Inject constructor(
         }
     }
 
+    fun onToggleIncludeCategories(enabled: Boolean) {
+        viewModelScope.launch {
+            aiPreferencesRepository.setIncludeCategories(enabled)
+        }
+    }
+
+    fun onToggleIncludeBankAccounts(enabled: Boolean) {
+        viewModelScope.launch {
+            aiPreferencesRepository.setIncludeBankAccounts(enabled)
+        }
+    }
+
+    fun onCustomRulesChanged(rules: String) {
+        viewModelScope.launch {
+            aiPreferencesRepository.setCustomRules(rules)
+        }
+    }
+
     fun onResetMetrics() {
         viewModelScope.launch {
             aiPreferencesRepository.resetMetrics()
@@ -182,5 +202,9 @@ class AiSettingsViewModel @Inject constructor(
 
     fun onToggleGuideDialog(show: Boolean) {
         _uiState.update { it.copy(showGuideDialog = show) }
+    }
+
+    fun onToggleOnlineModelDialog(show: Boolean) {
+        _uiState.update { it.copy(showOnlineModelDialog = show) }
     }
 }

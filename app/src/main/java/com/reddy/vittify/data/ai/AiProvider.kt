@@ -1,5 +1,6 @@
 package com.reddy.vittify.data.ai
 
+import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -90,8 +91,7 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                     if (filteredModels.isNotEmpty()) {
                         Result.success(filteredModels)
                     } else {
-                        // Fallback list if filtering returns empty
-                        Result.success(DEFAULT_GEMINI_MODELS.map { GeminiModelInfo(name = "models/$it", displayName = it) })
+                        Result.success(emptyList())
                     }
                 } else {
                     val errorMessage = extractErrorMessage(bodyText, status.value)
@@ -109,7 +109,7 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                 ConnectionTestResult(
                     isSuccess = false,
                     message = "API key is missing. Please enter your Google Gemini API key.",
-                    availableModels = DEFAULT_GEMINI_MODELS
+                    availableModels = emptyList()
                 )
             )
         }
@@ -125,7 +125,7 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                             ConnectionTestResult(
                                 isSuccess = true,
                                 message = "Successfully connected to Gemini API! ${cleanModelNames.size} models available.",
-                                availableModels = if (cleanModelNames.isNotEmpty()) cleanModelNames else DEFAULT_GEMINI_MODELS
+                                availableModels = cleanModelNames
                             )
                         )
                     },
@@ -134,7 +134,7 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                             ConnectionTestResult(
                                 isSuccess = false,
                                 message = error.message ?: "Failed to connect to Gemini API. Check your key & network connection.",
-                                availableModels = DEFAULT_GEMINI_MODELS
+                                availableModels = emptyList()
                             )
                         )
                     }
@@ -144,7 +144,7 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                     ConnectionTestResult(
                         isSuccess = false,
                         message = e.localizedMessage ?: "Connection error occurred.",
-                        availableModels = DEFAULT_GEMINI_MODELS
+                        availableModels = emptyList()
                     )
                 )
             }
@@ -152,29 +152,31 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
     }
 
     override suspend fun generateContent(apiKey: String, model: String, prompt: String): Result<AiGenerationResult> {
-        if (apiKey.isBlank()) {
+        val trimmedKey = apiKey.trim()
+        if (trimmedKey.isBlank()) {
             return Result.failure(IllegalArgumentException("Gemini API key is required"))
         }
 
-        val cleanModel = model.removePrefix("models/")
+        val cleanModel = model.trim().removePrefix("models/").ifBlank { "gemini-1.5-flash" }
 
         return withContext(Dispatchers.IO) {
             try {
                 val requestUrl = "$BASE_URL/models/$cleanModel:generateContent"
-                
-                @Serializable
-                data class TextPart(val text: String)
-                @Serializable
-                data class Content(val parts: List<TextPart>)
-                @Serializable
-                data class GeminiRequest(val contents: List<Content>)
 
-                val requestBody = GeminiRequest(
-                    contents = listOf(Content(parts = listOf(TextPart(prompt))))
+                val requestBody = GeminiGenerateRequest(
+                    contents = listOf(
+                        GeminiRequestContent(
+                            parts = listOf(GeminiRequestPart(text = prompt))
+                        )
+                    ),
+                    generationConfig = GeminiGenerationConfig(
+                        responseMimeType = "application/json",
+                        temperature = 0.1f
+                    )
                 )
 
                 val response: HttpResponse = client.post(requestUrl) {
-                    parameter("key", apiKey.trim())
+                    parameter("key", trimmedKey)
                     contentType(ContentType.Application.Json)
                     setBody(requestBody)
                 }
@@ -205,9 +207,11 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                     )
                 } else {
                     val errorMessage = extractErrorMessage(bodyText, response.status.value)
+                    Log.e("GeminiAiProvider", "generateContent HTTP error: $errorMessage")
                     Result.failure(Exception(errorMessage))
                 }
             } catch (e: Exception) {
+                Log.e("GeminiAiProvider", "generateContent request failed", e)
                 Result.failure(e)
             }
         }

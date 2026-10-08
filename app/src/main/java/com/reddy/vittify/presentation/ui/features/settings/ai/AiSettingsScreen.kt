@@ -16,17 +16,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -34,6 +34,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.rounded.AccountBalance
+import androidx.compose.material.icons.rounded.ArrowDropDown
+import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Clear
@@ -42,26 +45,30 @@ import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.HelpOutline
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Memory
 import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -76,7 +83,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -87,16 +93,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reddy.vittify.R
-import com.reddy.vittify.data.ai.AiProviderType
 import com.reddy.vittify.data.ai.ConnectionTestState
 import com.reddy.vittify.presentation.effects.overScrollVertical
+import com.reddy.vittify.presentation.navigation.SettingsDeepLink
 import com.reddy.vittify.presentation.ui.components.CustomTitleTopAppBar
+import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
 import com.reddy.vittify.presentation.ui.features.categories.NavigationContent
+import com.reddy.vittify.presentation.ui.icons.Iconax
+import com.reddy.vittify.presentation.ui.icons.SecuritySafe
 import com.reddy.vittify.presentation.ui.theme.Dimensions
 import com.reddy.vittify.presentation.ui.theme.Spacing
 import com.reddy.vittify.presentation.ui.theme.VittifyShapes
@@ -106,15 +115,13 @@ import com.reddy.vittify.presentation.ui.theme.purple_dark
 import com.reddy.vittify.presentation.ui.theme.purple_light
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.compose.foundation.relocation.BringIntoViewRequester
-import com.reddy.vittify.presentation.navigation.SettingsDeepLink
-import com.reddy.vittify.presentation.ui.components.settingOptionHighlight
-import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AiSettingsScreen(
     modifier: Modifier = Modifier,
@@ -156,6 +163,7 @@ fun AiSettingsScreen(
     }
 
     var showApiKeyVisible by remember { mutableStateOf(false) }
+    var isModelMenuExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -184,7 +192,103 @@ fun AiSettingsScreen(
                 ),
             verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
-            // Master AI Switch Card
+            // ─────────────────────────────────────────────────────────────
+            // 1. Top Disclosure Card (Vittify Intelligence)
+            // ─────────────────────────────────────────────────────────────
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+                shape = VittifyShapes.hero
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.vittify_intelligence),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        IconButton(
+                            onClick = {
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                viewModel.onToggleOnlineModelDialog(true)
+                            },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Info,
+                                contentDescription = stringResource(R.string.online_model),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = stringResource(R.string.vittify_intelligence_disclaimer),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                        thickness = 1.dp
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(VittifyShapes.small)
+                            .clickable {
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                viewModel.onToggleGuideDialog(true)
+                            }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.HelpOutline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.view_setup_guide),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Rounded.OpenInNew,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            // 2. Google Gemini Main Configuration Platter
+            // ─────────────────────────────────────────────────────────────
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -193,180 +297,148 @@ fun AiSettingsScreen(
                         id = "enable-ai",
                         requester = bringIntoViewRequesters["enable-ai"],
                         highlightedId = highlightedOptionId,
-                        shape = VittifyShapes.large
+                        shape = VittifyShapes.hero
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                 ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
-                shape = VittifyShapes.large
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(purple_light, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.AutoAwesome,
-                                contentDescription = null,
-                                tint = purple_dark,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = stringResource(R.string.ai_master_toggle),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = stringResource(R.string.ai_master_toggle_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                        }
-                    }
-                    Switch(
-                        checked = uiState.isAiEnabled,
-                        onCheckedChange = { checked ->
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            viewModel.onToggleAiEnabled(checked)
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary,
-                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                        )
-                    )
-                }
-            }
-
-            AnimatedVisibility(
-                visible = uiState.isAiEnabled,
-                enter = fadeIn() + androidx.compose.animation.expandVertically(),
-                exit = fadeOut() + androidx.compose.animation.shrinkVertically()
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+                shape = VittifyShapes.hero
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Providers Selection Section
-                    Text(
-                        text = stringResource(R.string.ai_providers),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                    )
-
-                    FlowRow(
+                    // Header Row with Toggle & Info Icon
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        AiProviderType.entries.forEach { provider ->
-                            val isSelected = uiState.selectedProvider == provider
-                            
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = {
-                                    if (provider.isSupported) {
-                                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                                        viewModel.onSelectProvider(provider)
-                                    }
-                                },
-                                label = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .background(purple_light, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.AutoAwesome,
+                                    contentDescription = null,
+                                    tint = purple_dark,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = stringResource(R.string.google_gemini),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                            viewModel.onToggleOnlineModelDialog(true)
+                                        },
+                                        modifier = Modifier.size(24.dp)
                                     ) {
-                                        Text(text = provider.displayName)
-                                        if (!provider.isSupported) {
-                                            Text(
-                                                text = stringResource(R.string.coming_soon),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                fontSize = 10.sp,
-                                                color = MaterialTheme.colorScheme.outline
-                                            )
-                                        }
-                                    }
-                                },
-                                leadingIcon = if (isSelected) {
-                                    {
                                         Icon(
-                                            imageVector = Icons.Rounded.Check,
-                                            contentDescription = null,
+                                            imageVector = Icons.Rounded.Info,
+                                            contentDescription = stringResource(R.string.online_model),
+                                            tint = MaterialTheme.colorScheme.outline,
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
-                                } else null,
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                ),
-                                shape = VittifyShapes.input
-                            )
-                        }
-                    }
-
-                    // Gemini AI Configuration Card
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow)),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.78f)
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
-                        shape = VittifyShapes.large
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            // Section Header + Status Badge
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = stringResource(R.string.gemini_section_title),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.gemini_section_desc),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
                                 }
-                                
-                                ConfigurationStatusBadge(
-                                    isConfigured = uiState.geminiConfig.isConfigured,
-                                    hasKey = uiState.geminiConfig.apiKey.isNotBlank(),
-                                    isAiEnabled = uiState.isAiEnabled
+                                Text(
+                                    text = stringResource(R.string.online_model),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                        }
+                        Switch(
+                            checked = uiState.isAiEnabled,
+                            onCheckedChange = { checked ->
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                viewModel.onToggleAiEnabled(checked)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                            )
+                        )
+                    }
 
-                            // API Key Outlined Input
+                    // Content Visible Only When Master Toggle is ON
+                    AnimatedVisibility(
+                        visible = uiState.isAiEnabled,
+                        enter = fadeIn() + androidx.compose.animation.expandVertically(),
+                        exit = fadeOut() + androidx.compose.animation.shrinkVertically()
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                                thickness = 1.dp
+                            )
+
+                            // Missing API Key Callout Banner
+                            if (uiState.geminiConfig.apiKey.isBlank()) {
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(VittifyShapes.medium)
+                                        .clickable {
+                                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey"))
+                                            context.startActivity(intent)
+                                        },
+                                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.65f),
+                                    shape = VittifyShapes.medium,
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.35f))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(14.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Warning,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.error,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = stringResource(R.string.missing_api_key),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onErrorContainer
+                                            )
+                                            Text(
+                                                text = stringResource(R.string.missing_api_key_desc),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onErrorContainer
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // API Key Input Field
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -439,32 +511,58 @@ fun AiSettingsScreen(
                                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                     keyboardActions = KeyboardActions(onDone = {
                                         keyboardController?.hide()
-                                        viewModel.onTestConnection()
+                                        viewModel.onFetchModels()
                                     }),
                                     shape = VittifyShapes.input
                                 )
                             }
 
-                            // Guide Option to get API key
-                            TextButton(
-                                onClick = { viewModel.onToggleGuideDialog(true) },
-                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+                            // Get API Key Row Link
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(VittifyShapes.small)
+                                    .clickable {
+                                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey"))
+                                        context.startActivity(intent)
+                                    }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Key,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.get_api_key),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                                 Icon(
-                                    imageVector = Icons.Rounded.HelpOutline,
+                                    imageVector = Icons.Rounded.OpenInNew,
                                     contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = stringResource(R.string.api_key_guide_title),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.primary
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
 
-                            // Model Selection Section (Dynamically Loaded)
-                            Column(
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                                thickness = 1.dp
+                            )
+
+                            // AI Model Selector Dropdown Row
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .settingOptionHighlight(
@@ -472,74 +570,183 @@ fun AiSettingsScreen(
                                         requester = bringIntoViewRequesters["ai-model"],
                                         highlightedId = highlightedOptionId,
                                         shape = VittifyShapes.medium
-                                    ),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    )
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.weight(1f),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Memory,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                     Text(
                                         text = stringResource(R.string.model_selection),
-                                        style = MaterialTheme.typography.labelMedium,
+                                        style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.SemiBold
                                     )
+                                }
+
+                                Box(
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
                                     if (uiState.isFetchingModels) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                            shape = VittifyShapes.pill
                                         ) {
-                                            CircularProgressIndicator(
-                                                modifier = Modifier.size(14.dp),
-                                                strokeWidth = 2.dp,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                            Text(
-                                                text = stringResource(R.string.fetching_models),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.primary
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(14.dp),
+                                                    strokeWidth = 2.dp,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                                Text(
+                                                    text = "Loading…",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    } else if (uiState.geminiConfig.availableModels.isEmpty()) {
+                                        Surface(
+                                            modifier = Modifier
+                                                .clip(VittifyShapes.pill)
+                                                .clickable {
+                                                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                                    viewModel.onFetchModels()
+                                                },
+                                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                            shape = VittifyShapes.pill
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Text(
+                                                    text = if (uiState.geminiConfig.apiKey.isBlank()) {
+                                                        stringResource(R.string.select_model)
+                                                    } else {
+                                                        "Fetch Models"
+                                                    },
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                                Icon(
+                                                    imageVector = Icons.Rounded.ArrowDropDown,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        Surface(
+                                            modifier = Modifier
+                                                .clip(VittifyShapes.pill)
+                                                .clickable {
+                                                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                                    isModelMenuExpanded = true
+                                                },
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = VittifyShapes.pill
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Text(
+                                                    text = uiState.geminiConfig.selectedModel.ifBlank { stringResource(R.string.select_model) },
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    modifier = Modifier.widthIn(max = 160.dp)
+                                                )
+                                                Icon(
+                                                    imageVector = Icons.Rounded.ArrowDropDown,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
+                                        }
+
+                                        DropdownMenu(
+                                            expanded = isModelMenuExpanded,
+                                            onDismissRequest = { isModelMenuExpanded = false },
+                                            modifier = Modifier.heightIn(max = 350.dp)
+                                        ) {
+                                            uiState.geminiConfig.availableModels.forEach { model ->
+                                                val isSelected = uiState.geminiConfig.selectedModel == model
+                                                DropdownMenuItem(
+                                                    text = {
+                                                        Text(
+                                                            text = model,
+                                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                            style = MaterialTheme.typography.bodyMedium
+                                                        )
+                                                    },
+                                                    leadingIcon = if (isSelected) {
+                                                        {
+                                                            Icon(
+                                                                imageVector = Icons.Rounded.Check,
+                                                                contentDescription = null,
+                                                                tint = MaterialTheme.colorScheme.primary,
+                                                                modifier = Modifier.size(16.dp)
+                                                            )
+                                                        }
+                                                    } else null,
+                                                    onClick = {
+                                                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                                        viewModel.onModelSelected(model)
+                                                        isModelMenuExpanded = false
+                                                    }
+                                                )
+                                            }
+                                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        text = stringResource(R.string.refresh_model_list),
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Refresh,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.primary,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                },
+                                                onClick = {
+                                                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                                    viewModel.onFetchModels()
+                                                    isModelMenuExpanded = false
+                                                }
                                             )
                                         }
                                     }
                                 }
-
-                                Text(
-                                    text = stringResource(R.string.model_selection_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-
-                                FlowRow(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    uiState.geminiConfig.availableModels.forEach { model ->
-                                        val isSelected = uiState.geminiConfig.selectedModel == model
-                                        FilterChip(
-                                            selected = isSelected,
-                                            onClick = {
-                                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                                                viewModel.onModelSelected(model)
-                                            },
-                                            label = { Text(text = model) },
-                                            leadingIcon = if (isSelected) {
-                                                {
-                                                    Icon(
-                                                        imageVector = Icons.Rounded.Check,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(16.dp)
-                                                    )
-                                                }
-                                            } else null,
-                                            shape = VittifyShapes.scaled(12.dp)
-                                        )
-                                    }
-                                }
                             }
 
-                            // Test Connection & Verification Button
+                            // Test Connection Button
                             Button(
                                 onClick = {
                                     keyboardController?.hide()
@@ -572,7 +779,7 @@ fun AiSettingsScreen(
                                 }
                             }
 
-                            // Connection Test Result Banner
+                            // Connection Test Banner
                             when (val state = uiState.testState) {
                                 is ConnectionTestState.Success -> {
                                     Box(
@@ -630,80 +837,312 @@ fun AiSettingsScreen(
                             }
                         }
                     }
+                }
+            }
 
-                    // Usage Metrics Section
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow)),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.78f)
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
-                        shape = VittifyShapes.large
+            // ─────────────────────────────────────────────────────────────
+            // 3. Quick Add Options Section Card (Intelligence Settings)
+            // ─────────────────────────────────────────────────────────────
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow)),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+                shape = VittifyShapes.hero
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.quick_add_options),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    // Option A: Include Categories and Subcategories
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = stringResource(R.string.usage_metrics),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-
-                                OutlinedButton(
-                                    onClick = { viewModel.onResetMetrics() },
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
-                                    shape = VittifyShapes.button
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.reset_metrics),
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                }
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                MetricStatCard(
-                                    modifier = Modifier.weight(1f),
-                                    title = stringResource(R.string.total_requests),
-                                    value = uiState.geminiConfig.totalRequests.toString(),
-                                    icon = Icons.Filled.AutoAwesome
-                                )
-                                MetricStatCard(
-                                    modifier = Modifier.weight(1f),
-                                    title = stringResource(R.string.total_tokens),
-                                    value = formatTokenCount(uiState.geminiConfig.totalTokens),
-                                    icon = Icons.Rounded.Info
+                                Icon(
+                                    imageVector = Icons.Rounded.Category,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
-
-                            if (uiState.geminiConfig.lastTestedAt > 0L) {
-                                val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()) }
+                            Column {
                                 Text(
-                                    text = "Last verified: ${dateFormat.format(Date(uiState.geminiConfig.lastTestedAt))}",
+                                    text = stringResource(R.string.include_categories),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = stringResource(R.string.include_categories_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
+                        Switch(
+                            checked = uiState.geminiConfig.includeCategories,
+                            onCheckedChange = { checked ->
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                viewModel.onToggleIncludeCategories(checked)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                        thickness = 1.dp
+                    )
+
+                    // Option B: Include Bank Accounts
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.AccountBalance,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.include_bank_accounts),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = stringResource(R.string.include_bank_accounts_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = uiState.geminiConfig.includeBankAccounts,
+                            onCheckedChange = { checked ->
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                viewModel.onToggleIncludeBankAccounts(checked)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                        thickness = 1.dp
+                    )
+
+                    // Extra Rules / Custom Instructions Input
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.extra_rules_label),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        OutlinedTextField(
+                            value = uiState.geminiConfig.customRules,
+                            onValueChange = { viewModel.onCustomRulesChanged(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text(text = stringResource(R.string.extra_rules_hint))
+                            },
+                            minLines = 2,
+                            maxLines = 4,
+                            shape = VittifyShapes.input
+                        )
+                    }
+                }
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            // 4. Usage Metrics Section
+            // ─────────────────────────────────────────────────────────────
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow)),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+                shape = VittifyShapes.hero
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.usage_metrics),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        OutlinedButton(
+                            onClick = {
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                viewModel.onResetMetrics()
+                            },
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                            shape = VittifyShapes.button
+                        ) {
+                            Text(
+                                text = stringResource(R.string.reset_metrics),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        MetricStatCard(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(R.string.total_requests),
+                            value = uiState.geminiConfig.totalRequests.toString(),
+                            icon = Icons.Filled.AutoAwesome
+                        )
+                        MetricStatCard(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(R.string.total_tokens),
+                            value = formatTokenCount(uiState.geminiConfig.totalTokens),
+                            icon = Icons.Rounded.Info
+                        )
+                    }
+
+                    if (uiState.geminiConfig.lastTestedAt > 0L) {
+                        val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()) }
+                        Text(
+                            text = "Last verified: ${dateFormat.format(Date(uiState.geminiConfig.lastTestedAt))}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
         }
 
-        // Guide Dialog
+        // ─────────────────────────────────────────────────────────────
+        // 5. Online Model Disclosure Modal Dialog
+        // ─────────────────────────────────────────────────────────────
+        if (uiState.showOnlineModelDialog) {
+            AlertDialog(
+                onDismissRequest = { viewModel.onToggleOnlineModelDialog(false) },
+                icon = {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(purple_light, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Iconax.SecuritySafe,
+                            contentDescription = null,
+                            tint = purple_dark,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.online_model_dialog_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(R.string.online_model_dialog_desc),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            viewModel.onToggleOnlineModelDialog(false)
+                        },
+                        shape = VittifyShapes.button,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            viewModel.onToggleOnlineModelDialog(false)
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://ai.google.dev/terms"))
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(R.string.google_gemini_terms))
+                    }
+                },
+                shape = VittifyShapes.dialog
+            )
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 6. API Key Setup Guide Dialog
+        // ─────────────────────────────────────────────────────────────
         if (uiState.showGuideDialog) {
             AlertDialog(
                 onDismissRequest = { viewModel.onToggleGuideDialog(false) },
@@ -711,7 +1150,8 @@ fun AiSettingsScreen(
                     Icon(
                         imageVector = Icons.Rounded.Key,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
                     )
                 },
                 title = {
@@ -758,67 +1198,6 @@ fun AiSettingsScreen(
 }
 
 @Composable
-private fun ConfigurationStatusBadge(
-    isConfigured: Boolean,
-    hasKey: Boolean,
-    isAiEnabled: Boolean
-) {
-    val (bgColor, textColor, textKey, icon) = when {
-        !isAiEnabled -> Quadruple(
-            MaterialTheme.colorScheme.surfaceContainerHighest,
-            MaterialTheme.colorScheme.onSurfaceVariant,
-            R.string.status_disabled,
-            Icons.Rounded.ErrorOutline
-        )
-        isConfigured -> Quadruple(
-            green_light,
-            green_dark,
-            R.string.status_configured,
-            Icons.Rounded.CheckCircle
-        )
-        hasKey -> Quadruple(
-            MaterialTheme.colorScheme.tertiaryContainer,
-            MaterialTheme.colorScheme.onTertiaryContainer,
-            R.string.status_unverified,
-            Icons.Rounded.Info
-        )
-        else -> Quadruple(
-            MaterialTheme.colorScheme.errorContainer,
-            MaterialTheme.colorScheme.onErrorContainer,
-            R.string.status_not_configured,
-            Icons.Rounded.ErrorOutline
-        )
-    }
-
-    Box(
-        modifier = Modifier
-            .clip(VittifyShapes.pill)
-            .background(bgColor)
-            .padding(horizontal = 10.dp, vertical = 6.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = textColor,
-                modifier = Modifier.size(14.dp)
-            )
-            Text(
-                text = stringResource(textKey),
-                style = MaterialTheme.typography.labelSmall,
-                color = textColor,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
-
-@Composable
 private fun MetricStatCard(
     modifier: Modifier = Modifier,
     title: String,
@@ -829,7 +1208,6 @@ private fun MetricStatCard(
         modifier = modifier
             .clip(VittifyShapes.medium)
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.60f))
             .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)), VittifyShapes.medium)
             .padding(14.dp)
     ) {

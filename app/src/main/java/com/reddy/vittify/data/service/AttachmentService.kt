@@ -37,8 +37,25 @@ class AttachmentService @Inject constructor(
     fun saveAttachment(uri: Uri, transactionId: Long): String? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val mimeType = context.contentResolver.getType(uri)
-            val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: "bin"
+            val mimeType = try {
+                context.contentResolver.getType(uri)
+            } catch (_: Exception) {
+                null
+            }
+            val extensionFromMime = try {
+                mimeType?.let { MimeTypeMap.getSingleton()?.getExtensionFromMimeType(it) }
+            } catch (_: Exception) {
+                null
+            } ?: when (mimeType) {
+                "image/jpeg" -> "jpg"
+                "image/png" -> "png"
+                "image/webp" -> "webp"
+                "application/pdf" -> "pdf"
+                "text/csv" -> "csv"
+                else -> null
+            }
+            val extensionFromUri = uri.lastPathSegment?.substringAfterLast('.', "")?.takeIf { it.isNotBlank() }
+            val extension = extensionFromMime ?: extensionFromUri ?: "jpg"
             
             // Generate unique filename: transactionId_uuid.extension
             val fileName = "${transactionId}_${UUID.randomUUID()}.$extension"
@@ -51,6 +68,24 @@ class AttachmentService @Inject constructor(
             
             // Return relative path for storage in database
             "$ATTACHMENTS_DIR/$fileName"
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * Create a temporary file and content Uri for camera capture fallback.
+     * Stored in attachments directory so FileProvider can serve it.
+     * @return Pair of Content Uri and File, or null if creation failed
+     */
+    fun createTempCaptureUri(): Pair<Uri, File>? {
+        return try {
+            val fileName = "temp_capture_${System.currentTimeMillis()}.jpg"
+            val file = File(attachmentsDir, fileName)
+            val authority = "${context.packageName}.fileprovider"
+            val uri = FileProvider.getUriForFile(context, authority, file)
+            Pair(uri, file)
         } catch (e: Exception) {
             e.printStackTrace()
             null
@@ -98,8 +133,21 @@ class AttachmentService @Inject constructor(
      */
     fun getAttachmentMimeType(relativePath: String): String {
         val extension = relativePath.substringAfterLast('.', "")
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-            ?: "application/octet-stream"
+        return try {
+            MimeTypeMap.getSingleton()?.getMimeTypeFromExtension(extension)
+        } catch (_: Exception) {
+            null
+        } ?: when (extension.lowercase()) {
+            "jpg", "jpeg" -> "image/jpeg"
+            "png" -> "image/png"
+            "webp" -> "image/webp"
+            "gif" -> "image/gif"
+            "pdf" -> "application/pdf"
+            "csv" -> "text/csv"
+            "xls" -> "application/vnd.ms-excel"
+            "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            else -> "application/octet-stream"
+        }
     }
 
     /**
