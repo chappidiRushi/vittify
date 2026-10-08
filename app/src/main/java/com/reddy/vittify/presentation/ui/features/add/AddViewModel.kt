@@ -589,7 +589,7 @@ constructor(
     fun prefillFromNlpDraft(
         draft: ParsedTransactionDraft
     ) {
-        // Apply amount, merchant, type, notes
+        // Apply amount, merchant, type, notes, and date
         _transactionUiState.update { current ->
             current.copy(
                 amount = draft.amount,
@@ -597,8 +597,12 @@ constructor(
                 merchant = draft.merchant,
                 merchantError = validateMerchant(draft.merchant),
                 transactionType = draft.type,
-                notes = draft.notes
+                notes = draft.notes,
+                date = draft.date ?: current.date
             )
+        }
+        if (draft.date != null) {
+            updateTransferRateCalculation()
         }
 
         // Match bank name, account last4, or Custom ID against user's accounts

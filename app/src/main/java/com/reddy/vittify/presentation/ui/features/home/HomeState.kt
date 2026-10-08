@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import com.reddy.vittify.data.database.entity.AccountBalanceEntity
 import com.reddy.vittify.data.database.entity.SubscriptionEntity
 import com.reddy.vittify.data.database.entity.TransactionEntity
+import com.reddy.vittify.data.nlp.NlpParsingMode
 import com.reddy.vittify.data.repository.BudgetWithSpending
 import com.reddy.vittify.presentation.ui.components.BalancePoint
 import java.math.BigDecimal
@@ -47,6 +48,8 @@ data class HomeUiState(
     val splitTransactionIds: Set<Long> = emptySet(),
     val baseCurrency: String = "INR",
     val nlpIsProcessing: Boolean = false,
+    val nlpParsingMode: NlpParsingMode? = null,
+    val nlpError: String? = null,
     val isCoupleTrackingEnabled: Boolean = false,
     val activeViewMode: com.reddy.vittify.data.sync.ViewMode = com.reddy.vittify.data.sync.ViewMode.COMBINED,
     val partnerName: String? = null,

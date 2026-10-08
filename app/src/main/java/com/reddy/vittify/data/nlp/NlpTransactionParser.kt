@@ -10,8 +10,16 @@ import com.reddy.vittify.data.ai.GeminiAiProvider
 import kotlinx.coroutines.flow.first
 import com.reddy.vittify.domain.catalogue.CategoryItemCatalogue
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
+
+enum class NlpParsingMode {
+    AI,
+    REGEX
+}
 
 /**
  * Parsed draft that pre-fills the AddTransaction screen.
@@ -24,7 +32,8 @@ data class ParsedTransactionDraft(
     val bankName: String = "",          // raw bank name hint from text
     val notes: String = "",
     val category: String = "Miscellaneous",
-    val subcategory: String = ""
+    val subcategory: String = "",
+    val date: LocalDateTime? = null
 )
 
 
@@ -119,137 +128,190 @@ class NlpTransactionParser @Inject constructor(
         )
     }
 
-    suspend fun parse(input: String): ParsedTransactionDraft {
+    suspend fun parse(
+        input: String,
+        onStatusChange: ((NlpParsingMode) -> Unit)? = null,
+        onAiError: ((String) -> Unit)? = null
+    ): ParsedTransactionDraft? {
         if (input.isBlank()) return ParsedTransactionDraft()
 
         // 1. Try AI parsing if enabled & configured
-        try {
-            val isAiEnabled = aiPreferencesRepository.isAiEnabled.first()
-            val geminiConfig = aiPreferencesRepository.geminiConfig.first()
-
-            if (isAiEnabled && geminiConfig.isEnabled && geminiConfig.apiKey.isNotBlank()) {
-                val aiResult = parseWithAi(input, geminiConfig.apiKey, geminiConfig.selectedModel)
+        val aiConfigured = isAiConfigured()
+        if (aiConfigured) {
+            onStatusChange?.invoke(NlpParsingMode.AI)
+            try {
+                val geminiConfig = aiPreferencesRepository.geminiConfig.first()
+                val aiResult = parseWithAi(input, geminiConfig)
                 if (aiResult != null) {
                     Log.d(TAG, "Successfully parsed transaction using AI: $aiResult")
                     return aiResult
                 }
+                Log.w(TAG, "AI returned null draft, falling back to regex")
+            } catch (e: Exception) {
+                Log.e(TAG, "AI transaction parsing failed: ${e.message}", e)
+                if (onAiError != null) {
+                    onAiError(e.message ?: "AI transaction parsing failed")
+                    return null
+                }
+                Log.w(TAG, "No onAiError callback provided, falling back to regex")
             }
-        } catch (e: Exception) {
-            Log.w(TAG, "AI transaction parsing failed, falling back to regex", e)
         }
 
         // 2. Fallback to Regex Parser
+        onStatusChange?.invoke(NlpParsingMode.REGEX)
         return parseWithRegex(input)
+    }
+
+    private suspend fun isAiConfigured(): Boolean {
+        return try {
+            val isAiEnabled = aiPreferencesRepository.isAiEnabled.first()
+            val geminiConfig = aiPreferencesRepository.geminiConfig.first()
+            isAiEnabled && geminiConfig.isEnabled && geminiConfig.apiKey.isNotBlank()
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun extractJsonObject(rawText: String): String? {
+        val start = rawText.indexOf('{')
+        val end = rawText.lastIndexOf('}')
+        if (start != -1 && end != -1 && end > start) {
+            return rawText.substring(start, end + 1).trim()
+        }
+        return null
     }
 
     private suspend fun parseWithAi(
         input: String,
-        apiKey: String,
-        model: String
+        config: com.reddy.vittify.data.ai.GeminiConfig
     ): ParsedTransactionDraft? {
-        val userAccounts = try {
-            accountBalanceRepository.getAllLatestBalances().first()
-        } catch (e: Exception) {
-            emptyList()
-        }
+        val userAccounts = if (config.includeBankAccounts) {
+            try {
+                accountBalanceRepository.getAllLatestBalances().first()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else emptyList()
 
-        val userCategories = try {
-            categoryRepository.getAllCategories().first()
-        } catch (e: Exception) {
-            emptyList()
-        }
+        val userCategories = if (config.includeCategories) {
+            try {
+                categoryRepository.getAllCategories().first()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else emptyList()
 
-        val allSubcategories = try {
-            subcategoryRepository.getAllSubcategories().first()
-        } catch (e: Exception) {
-            emptyList()
-        }
+        val allSubcategories = if (config.includeCategories) {
+            try {
+                subcategoryRepository.getAllSubcategories().first()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else emptyList()
 
-        val expenseCategories = userCategories.filter { !it.isIncome }
-        val targetCategories = if (expenseCategories.isNotEmpty()) expenseCategories else userCategories
+        val categoriesSection = if (config.includeCategories && userCategories.isNotEmpty()) {
+            val expenseCategories = userCategories.filter { !it.isIncome }
+            val targetCategories = if (expenseCategories.isNotEmpty()) expenseCategories else userCategories
+            val formatted = targetCategories.joinToString("\n") { cat ->
+                val subs = allSubcategories.filter { it.categoryId == cat.id }
+                if (subs.isNotEmpty()) {
+                    "- \"${cat.name}\" (Subcategories: ${subs.joinToString(", ") { "\"${it.name}\"" }})"
+                } else {
+                    "- \"${cat.name}\""
+                }
+            }
+            "Available Categories & Subcategories in user's app:\n$formatted"
+        } else ""
 
-        val formattedCategories = targetCategories.joinToString("\n") { cat ->
-            val subs = allSubcategories.filter { it.categoryId == cat.id }
-            if (subs.isNotEmpty()) {
-                "- Category: \"${cat.name}\" (Subcategories: ${subs.joinToString(", ") { "\"${it.name}\"" }})"
+        val accountsSection = if (config.includeBankAccounts && userAccounts.isNotEmpty()) {
+            val formatted = userAccounts.joinToString("\n") { acc ->
+                "- Bank: \"${acc.bankName}\", Last4: \"${acc.accountLast4}\", Alias: \"${acc.customId ?: ""}\""
+            }
+            "Available Bank Accounts in user's app:\n$formatted"
+        } else ""
+
+        val customRulesSection = if (config.customRules.isNotBlank()) {
+            "User Custom Rules:\n${config.customRules.trim()}"
+        } else ""
+
+        val today = LocalDate.now()
+        val todayDesc = "$today (${today.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }})"
+
+        val prompt = buildString {
+            appendLine("Extract financial transaction details from the user's text into strict JSON.")
+            appendLine("User Text: \"$input\"")
+            appendLine("Reference Date (Today): $todayDesc")
+            appendLine()
+            if (accountsSection.isNotBlank()) {
+                appendLine(accountsSection)
+                appendLine()
+            }
+            if (categoriesSection.isNotBlank()) {
+                appendLine(categoriesSection)
+                appendLine()
+            }
+            if (customRulesSection.isNotBlank()) {
+                appendLine(customRulesSection)
+                appendLine()
+            }
+            appendLine("Rules:")
+            appendLine("1. amount: numeric value only (digits and decimal), e.g. \"500\", \"45.50\".")
+            appendLine("2. merchant: person, merchant, or item name.")
+            appendLine("3. type: EXPENSE, INCOME, TRANSFER, CREDIT, or INVESTMENT (default EXPENSE).")
+            if (config.includeBankAccounts) {
+                appendLine("4. bankName: exact Bank Name or Alias matching user's bank accounts, else \"\".")
             } else {
-                "- Category: \"${cat.name}\""
+                appendLine("4. bankName: bank name mentioned in text or \"\".")
             }
+            if (config.includeCategories) {
+                appendLine("5. category: conceptually match the item to one of the Available Categories exactly, default \"Miscellaneous\".")
+                appendLine("6. subcategory: match to a subcategory listed under the chosen category, else \"\".")
+            } else {
+                appendLine("5. category: common category (e.g. Food & Drinks, Groceries, Shopping, Transport, Bill, Entertainment, Medical, Miscellaneous).")
+                appendLine("6. subcategory: relevant subcategory or \"\".")
+            }
+            appendLine("7. date: ISO format YYYY-MM-DD (e.g. \"2024-03-15\") if a specific date or relative date (such as \"yesterday\", \"last Monday\", \"Tuesday\", \"3 days ago\", etc.) is mentioned. Calculate relative dates using the Reference Date. If no date is mentioned or implied, return \"\".")
+            appendLine("8. notes: \"$input\"")
+            appendLine()
+            appendLine("Return ONLY a raw JSON object with keys: amount, merchant, type, bankName, category, subcategory, date, notes. No explanation, no markdown.")
         }
 
-        val formattedAccounts = if (userAccounts.isNotEmpty()) {
-            userAccounts.joinToString("\n") { acc ->
-                "- Bank Name: \"${acc.bankName}\", Account Number/Last4: \"${acc.accountLast4}\", Alias Prompt/Custom ID: \"${acc.customId ?: "None"}\""
+        val effectiveModel = config.selectedModel.ifBlank { "gemini-1.5-flash" }
+        val response = geminiAiProvider.generateContent(config.apiKey, effectiveModel, prompt)
+        val result = response.fold(
+            onSuccess = { it },
+            onFailure = { error ->
+                Log.e(TAG, "Gemini generateContent call failed: ${error.message}", error)
+                throw error
             }
-        } else {
-            "No saved bank accounts."
-        }
-
-        val prompt = """
-You are an intelligent financial assistant extracting details from user's expense or income transaction text.
-
-User Input: "$input"
-
-Available Bank Accounts in user's app:
-$formattedAccounts
-
-Available Categories & Subcategories in user's app:
-$formattedCategories
-
-MANDATORY CATEGORY & SUBCATEGORY MATCHING INSTRUCTIONS:
-1. You MUST match the user's item or purchase (e.g. "mangoes", "milk", "coffee", "tea", "uber", "movie ticket") to ONE of the Available Categories listed above.
-2. The item name in user input DOES NOT need to match the category name directly. Match conceptually!
-   - Example: "mangoes", "apples", or "banana" -> Category: "Groceries" (or "Food & Drinks"), Subcategory: "Fruits" (if "Fruits" exists under that category).
-   - Example: "coffee" or "tea" -> Category: "Food & Drinks", Subcategory: "Tea & Coffee" (or "Eat out").
-   - Example: "milk", "cheese", or "curd" -> Category: "Groceries", Subcategory: "Milk & Dairy" (or "Dairy").
-3. You MUST pick the category name EXACTLY as spelled in the list above.
-4. If a matching subcategory is listed under that category, you MUST select it and pick its name EXACTLY as spelled in the list above. If no specific subcategory fits, return empty string "".
-5. If no reasonable category fits, default category to "Miscellaneous".
-
-OTHER EXTRACTION INSTRUCTIONS:
-1. Extract numeric amount (e.g., "500" from "paid 500 for mangoes from hdk"). Return digits and decimal points only.
-2. Identify the merchant or item (e.g., "mangoes").
-3. Determine transaction type (MUST be EXPENSE, INCOME, TRANSFER, CREDIT, or INVESTMENT. Default to EXPENSE).
-4. Match bank account from Available Bank Accounts matching account name, last4, or alias/custom ID (e.g. "hdk" or "sb1" matches account with custom ID/alias "hdk" or "sb1"). Return exact Bank Name or Alias/Custom ID if matched, else empty string "".
-5. Set notes to "$input".
-
-Return ONLY a raw JSON object with no code blocks or markdown, using this exact format:
-{
-  "amount": "500",
-  "merchant": "mangoes",
-  "type": "EXPENSE",
-  "bankName": "hdk",
-  "category": "Groceries",
-  "subcategory": "Fruits",
-  "notes": "$input"
-}
-""".trimIndent()
-
-        val response = geminiAiProvider.generateContent(apiKey, model, prompt)
-        val result = response.getOrNull() ?: return null
+        )
 
         if (result.totalTokens > 0) {
             aiPreferencesRepository.recordRequestUsage(result.totalTokens)
         }
 
         val rawText = result.text.trim()
-        if (rawText.isBlank()) return null
+        if (rawText.isBlank()) {
+            Log.w(TAG, "AI returned empty text content")
+            return null
+        }
 
-        // Clean json output (strip ```json or ``` blocks)
-        val jsonText = rawText
-            .removePrefix("```json")
-            .removePrefix("```")
-            .removeSuffix("```")
-            .trim()
+        val jsonText = extractJsonObject(rawText)
+        if (jsonText.isNullOrBlank()) {
+            Log.w(TAG, "Could not extract JSON object from AI response: $rawText")
+            return null
+        }
 
         return try {
             val json = JSONObject(jsonText)
-            val amount = json.optString("amount", "")
+            val rawAmount = json.optString("amount", "")
+            val cleanAmount = rawAmount.replace(Regex("""[^0-9.]"""), "").trim()
             val merchant = json.optString("merchant", "")
             val typeStr = json.optString("type", "EXPENSE")
             val rawBankName = json.optString("bankName", "")
             val rawCategory = json.optString("category", "Miscellaneous")
             val rawSubcategory = json.optString("subcategory", "")
+            val rawDate = json.optString("date", "")
             val notes = json.optString("notes", input)
 
             val type = try {
@@ -257,6 +319,13 @@ Return ONLY a raw JSON object with no code blocks or markdown, using this exact 
             } catch (_: Exception) {
                 TransactionType.EXPENSE
             }
+
+            val parsedDate = if (rawDate.isNotBlank()) {
+                NlpDateParser.parseAiDate(rawDate)
+            } else {
+                NlpDateParser.extractDateAndCleanInput(input).date
+            }
+            val transactionDateTime = parsedDate?.atTime(LocalTime.now())
 
             // Resolve bankName against actual user accounts if possible
             val resolvedBankName = if (rawBankName.isNotBlank()) {
@@ -272,25 +341,46 @@ Return ONLY a raw JSON object with no code blocks or markdown, using this exact 
                 ""
             }
 
-            // Resolve category against user categories using fuzzy matching
-            val matchedCat = findBestMatchingCategory(userCategories, rawCategory)
-            val resolvedCategory = matchedCat?.name ?: rawCategory
+            val effectiveBankName = if (resolvedBankName.isNotBlank()) {
+                resolvedBankName
+            } else if (!config.includeBankAccounts) {
+                val localAccounts = try { accountBalanceRepository.getAllLatestBalances().first() } catch (e: Exception) { emptyList() }
+                extractBankName(input.lowercase(), localAccounts)
+            } else {
+                ""
+            }
 
-            // Resolve subcategory against user subcategories using fuzzy matching
-            val matchedSub = if (matchedCat != null && rawSubcategory.isNotBlank()) {
-                val subsForCat = allSubcategories.filter { it.categoryId == matchedCat.id }
-                findBestMatchingSubcategory(subsForCat, rawSubcategory)
-            } else null
-            val resolvedSubcategory = matchedSub?.name ?: rawSubcategory
+            // Resolve category against user categories
+            val (effectiveCategory, effectiveSubcategory) = if (config.includeCategories) {
+                val matchedCat = findBestMatchingCategory(userCategories, rawCategory)
+                val resolvedCat = matchedCat?.name ?: rawCategory
+                val matchedSub = if (matchedCat != null && rawSubcategory.isNotBlank()) {
+                    val subsForCat = allSubcategories.filter { it.categoryId == matchedCat.id }
+                    findBestMatchingSubcategory(subsForCat, rawSubcategory)
+                } else null
+                Pair(resolvedCat, matchedSub?.name ?: rawSubcategory)
+            } else {
+                val localCats = try { categoryRepository.getAllCategories().first() } catch (e: Exception) { emptyList() }
+                val localSubs = try { subcategoryRepository.getAllSubcategories().first() } catch (e: Exception) { emptyList() }
+                val matched = findBestMatchingCategory(localCats, rawCategory)
+                if (matched != null) {
+                    val subsForCat = localSubs.filter { it.categoryId == matched.id }
+                    val matchedSub = findBestMatchingSubcategory(subsForCat, rawSubcategory)
+                    Pair(matched.name, matchedSub?.name ?: rawSubcategory)
+                } else {
+                    detectCategoryAndSubcategory(input.lowercase(), type, localCats, localSubs)
+                }
+            }
 
             ParsedTransactionDraft(
-                amount = amount,
+                amount = cleanAmount,
                 merchant = merchant,
                 type = type,
-                bankName = resolvedBankName,
+                bankName = effectiveBankName,
                 notes = notes,
-                category = resolvedCategory,
-                subcategory = resolvedSubcategory
+                category = effectiveCategory,
+                subcategory = effectiveSubcategory,
+                date = transactionDateTime
             )
         } catch (e: Exception) {
             Log.w(TAG, "Failed to parse JSON response from AI: $jsonText", e)
@@ -370,14 +460,20 @@ Return ONLY a raw JSON object with no code blocks or markdown, using this exact 
             emptyList()
         }
 
+        // --- Date & Sanitized Input for Merchant ---
+        val dateResult = NlpDateParser.extractDateAndCleanInput(input)
+        val transactionDateTime = dateResult.date?.atTime(LocalTime.now())
+        val textWithoutDate = dateResult.cleanedText
+        val lowerWithoutDate = textWithoutDate.lowercase()
+
         // --- Amount ---
         val amount = extractAmount(lower)
 
         // --- Transaction Type ---
         val type = detectType(lower)
 
-        // --- Merchant ---
-        val merchant = extractMerchant(input, lower, type)
+        // --- Merchant (using text cleaned of date words) ---
+        val merchant = extractMerchant(textWithoutDate, lowerWithoutDate, type)
 
         // --- Bank name ---
         val bankName = extractBankName(lower, userAccounts)
@@ -395,7 +491,8 @@ Return ONLY a raw JSON object with no code blocks or markdown, using this exact 
             bankName = bankName,
             notes = notes,
             category = category,
-            subcategory = subcategory
+            subcategory = subcategory,
+            date = transactionDateTime
         )
     }
 

@@ -51,6 +51,7 @@ fun VittifyApp(
     nlpNotes: String? = null,
     nlpCategory: String? = null,
     nlpSubcategory: String? = null,
+    nlpDate: String? = null,
     onAddComplete: () -> Unit = {},
     pendingSettingsDestination: Any? = null,
     onSettingsDestinationHandled: () -> Unit = {}
@@ -128,7 +129,8 @@ fun VittifyApp(
                     nlpBankName = nlpBankName,
                     nlpNotes = nlpNotes,
                     nlpCategory = nlpCategory,
-                    nlpSubcategory = nlpSubcategory
+                    nlpSubcategory = nlpSubcategory,
+                    nlpDate = nlpDate
                 )
             )
             onAddComplete()
