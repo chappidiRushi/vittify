@@ -47,6 +47,9 @@ class AiPreferencesRepository @Inject constructor(
         val GEMINI_LAST_TESTED_AT = longPreferencesKey("gemini_last_tested_at")
         val GEMINI_LAST_TEST_SUCCESS = booleanPreferencesKey("gemini_last_test_success")
         val GEMINI_LAST_TEST_MESSAGE = stringPreferencesKey("gemini_last_test_message")
+        val INCLUDE_CATEGORIES = booleanPreferencesKey("include_categories")
+        val INCLUDE_BANK_ACCOUNTS = booleanPreferencesKey("include_bank_accounts")
+        val CUSTOM_RULES = stringPreferencesKey("custom_rules")
     }
 
     private val securePrefs: SharedPreferences by lazy {
@@ -96,22 +99,27 @@ class AiPreferencesRepository @Inject constructor(
 
         val modelsJson = preferences[Keys.GEMINI_AVAILABLE_MODELS_JSON]
         val modelsList = if (modelsJson != null) {
-            runCatching { Json.decodeFromString<List<String>>(modelsJson) }.getOrElse { DEFAULT_GEMINI_MODELS }
+            runCatching { Json.decodeFromString<List<String>>(modelsJson) }.getOrElse { emptyList() }
         } else {
-            DEFAULT_GEMINI_MODELS
+            emptyList()
         }
+
+        val selectedModel = preferences[Keys.GEMINI_SELECTED_MODEL] ?: (modelsList.firstOrNull() ?: "")
 
         GeminiConfig(
             apiKey = effectiveApiKey,
-            selectedModel = preferences[Keys.GEMINI_SELECTED_MODEL] ?: "gemini-2.5-flash",
-            availableModels = modelsList.ifEmpty { DEFAULT_GEMINI_MODELS },
+            selectedModel = selectedModel,
+            availableModels = modelsList,
             isEnabled = preferences[Keys.GEMINI_ENABLED] ?: true,
             isConfigured = effectiveApiKey.isNotBlank() && (preferences[Keys.GEMINI_LAST_TEST_SUCCESS] == true),
             totalRequests = preferences[Keys.GEMINI_TOTAL_REQUESTS] ?: 0,
             totalTokens = preferences[Keys.GEMINI_TOTAL_TOKENS] ?: 0L,
             lastTestedAt = preferences[Keys.GEMINI_LAST_TESTED_AT] ?: 0L,
             lastTestSuccess = preferences[Keys.GEMINI_LAST_TEST_SUCCESS],
-            lastTestMessage = preferences[Keys.GEMINI_LAST_TEST_MESSAGE]
+            lastTestMessage = preferences[Keys.GEMINI_LAST_TEST_MESSAGE],
+            includeCategories = preferences[Keys.INCLUDE_CATEGORIES] ?: true,
+            includeBankAccounts = preferences[Keys.INCLUDE_BANK_ACCOUNTS] ?: true,
+            customRules = preferences[Keys.CUSTOM_RULES] ?: ""
         )
     }
 
@@ -137,6 +145,10 @@ class AiPreferencesRepository @Inject constructor(
             // Reset test status when API key changes
             preferences.remove(Keys.GEMINI_LAST_TEST_SUCCESS)
             preferences.remove(Keys.GEMINI_LAST_TEST_MESSAGE)
+            if (trimmed.isBlank()) {
+                preferences.remove(Keys.GEMINI_AVAILABLE_MODELS_JSON)
+                preferences.remove(Keys.GEMINI_SELECTED_MODEL)
+            }
         }
     }
 
@@ -185,6 +197,24 @@ class AiPreferencesRepository @Inject constructor(
         context.aiDataStore.edit { preferences ->
             preferences[Keys.GEMINI_TOTAL_REQUESTS] = 0
             preferences[Keys.GEMINI_TOTAL_TOKENS] = 0L
+        }
+    }
+
+    suspend fun setIncludeCategories(enabled: Boolean) {
+        context.aiDataStore.edit { preferences ->
+            preferences[Keys.INCLUDE_CATEGORIES] = enabled
+        }
+    }
+
+    suspend fun setIncludeBankAccounts(enabled: Boolean) {
+        context.aiDataStore.edit { preferences ->
+            preferences[Keys.INCLUDE_BANK_ACCOUNTS] = enabled
+        }
+    }
+
+    suspend fun setCustomRules(rules: String) {
+        context.aiDataStore.edit { preferences ->
+            preferences[Keys.CUSTOM_RULES] = rules
         }
     }
 }

@@ -74,6 +74,7 @@ class QuickAddWidgetActivity : ComponentActivity() {
                             putExtra(MainActivity.EXTRA_NLP_NOTES, draft.notes.ifBlank { null })
                             putExtra(MainActivity.EXTRA_NLP_CATEGORY, draft.category.ifBlank { null })
                             putExtra(MainActivity.EXTRA_NLP_SUBCATEGORY, draft.subcategory.ifBlank { null })
+                            putExtra(MainActivity.EXTRA_NLP_DATE, draft.date?.toString())
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                         }
                         startActivity(intent)

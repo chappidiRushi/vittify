@@ -41,6 +41,9 @@ import com.reddy.vittify.presentation.ui.features.categories.NavigationContent
 import com.reddy.vittify.presentation.ui.theme.Dimensions
 import com.reddy.vittify.presentation.ui.theme.Spacing
 import com.reddy.vittify.data.database.entity.TransactionType
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
@@ -62,6 +65,7 @@ fun SharedTransitionScope.AddScreen(
     nlpNotes: String? = null,
     nlpCategory: String? = null,
     nlpSubcategory: String? = null,
+    nlpDate: String? = null,
     onNavigateToTransactionSettings: () -> Unit = {},
     blurEffects: Boolean,
 ) {
@@ -74,10 +78,10 @@ fun SharedTransitionScope.AddScreen(
 
     // Reset state when screen is opened to avoid stale data from previous entries.
     // Skip reset when NLP prefill fields are present so they are not wiped.
-    val hasNlpData = nlpAmount != null || nlpMerchant != null || nlpType != null || nlpCategory != null || nlpSubcategory != null
+    val hasNlpData = nlpAmount != null || nlpMerchant != null || nlpType != null || nlpCategory != null || nlpSubcategory != null || nlpDate != null
     val accounts by addViewModel.accounts.collectAsState()
 
-    LaunchedEffect(subscriptionId, transactionType, nlpAmount, nlpMerchant, nlpType, nlpCategory, nlpSubcategory) {
+    LaunchedEffect(subscriptionId, transactionType, nlpAmount, nlpMerchant, nlpType, nlpCategory, nlpSubcategory, nlpDate) {
         if (subscriptionId == null && transactionType == null && !hasNlpData) {
             addViewModel.resetAllStates()
         }
@@ -101,6 +105,18 @@ fun SharedTransitionScope.AddScreen(
                 try { TransactionType.valueOf(it) } catch (_: Exception) { TransactionType.EXPENSE }
             } ?: TransactionType.EXPENSE
 
+            val parsedNlpDate = nlpDate?.let { dateStr ->
+                try {
+                    LocalDateTime.parse(dateStr)
+                } catch (_: Exception) {
+                    try {
+                        LocalDate.parse(dateStr).atTime(LocalTime.now())
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
+            }
+
             val draft = com.reddy.vittify.data.nlp.ParsedTransactionDraft(
                 amount = nlpAmount ?: "",
                 merchant = nlpMerchant ?: "",
@@ -108,7 +124,8 @@ fun SharedTransitionScope.AddScreen(
                 bankName = nlpBankName ?: "",
                 notes = nlpNotes ?: "",
                 category = nlpCategory ?: "Miscellaneous",
-                subcategory = nlpSubcategory ?: ""
+                subcategory = nlpSubcategory ?: "",
+                date = parsedNlpDate
             )
             addViewModel.prefillFromNlpDraft(draft)
         }
