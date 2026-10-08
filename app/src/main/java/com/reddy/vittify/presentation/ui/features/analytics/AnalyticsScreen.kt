@@ -1,18 +1,10 @@
 package com.reddy.vittify.presentation.ui.features.analytics
 
 import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -76,7 +68,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reddy.vittify.presentation.common.TimePeriod
 import com.reddy.vittify.presentation.common.TransactionTypeFilter
 import com.reddy.vittify.presentation.common.icons.CategoryMapping
-import com.reddy.vittify.presentation.effects.BlurredAnimatedVisibility
 import com.reddy.vittify.presentation.effects.overScrollVertical
 import com.reddy.vittify.presentation.effects.rememberOverscrollFlingBehavior
 import com.reddy.vittify.presentation.ui.components.VittifyCard
@@ -313,11 +304,7 @@ fun SharedTransitionScope.AnalyticsScreen(
 
                 // Analytics Summary
                 item {
-                    BlurredAnimatedVisibility(
-                        uiState.totalSpending > BigDecimal.ZERO || uiState.transactionCount > 0,
-                        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
-                    ) {
+                    if (uiState.totalSpending > BigDecimal.ZERO || uiState.transactionCount > 0) {
                         AnalyticsSummaryCard(
                             totalAmount = uiState.totalSpending,
                             transactionCount = uiState.transactionCount,
@@ -390,16 +377,13 @@ fun SharedTransitionScope.AnalyticsScreen(
                                         start = Dimensions.Padding.content,
                                         end = Dimensions.Padding.content,
                                     )
-                                    .animateContentSize()
                             ) {
 
-                                BlurredAnimatedVisibility(
-                                    visible = showChartTypeSelector,
-                                    modifier = Modifier
-                                        .padding(horizontal = Spacing.sm)
-                                ) {
+                                if (showChartTypeSelector) {
                                     VittifyCard(
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier
+                                            .padding(horizontal = Spacing.sm)
+                                            .fillMaxWidth()
                                     ) {
                                         Column{
                                             ChartType.entries.forEach { type ->
@@ -455,39 +439,26 @@ fun SharedTransitionScope.AnalyticsScreen(
                                     start = Dimensions.Padding.content,
                                     end = Dimensions.Padding.content,
                                 )
-                                .animateContentSize()
                         ) {
                             Column{
 
                                 when (selectedChartType) {
 
-                                    ChartType.LINE ->  AnimatedVisibility(
-                                        visible = true,
-                                        enter = fadeIn() + expandVertically(),
-                                        exit = fadeOut() + shrinkVertically()
-                                    ) {
+                                    ChartType.LINE -> {
                                         SpendingLineChart(
                                             data = uiState.spendingTrend,
                                             currency = uiState.currency,
                                             typeFilters = transactionTypeFilter
                                         )
                                     }
-                                    ChartType.BAR ->  AnimatedVisibility(
-                                        visible = true,
-                                        enter = fadeIn() + expandVertically(),
-                                        exit = fadeOut() + shrinkVertically()
-                                    ) {
+                                    ChartType.BAR -> {
                                         SpendingBarChart(
                                             data = uiState.spendingTrend,
                                             currency = uiState.currency,
                                             typeFilters = transactionTypeFilter
                                         )
                                     }
-                                    ChartType.HEATMAP ->  AnimatedVisibility(
-                                        visible = true,
-                                        enter = fadeIn() + expandVertically(),
-                                        exit = fadeOut() + shrinkVertically()
-                                    ) {
+                                    ChartType.HEATMAP -> {
                                         SpendingHeatmap(
                                             data = uiState.spendingTrend
                                         )
@@ -540,21 +511,15 @@ fun SharedTransitionScope.AnalyticsScreen(
                     item {
                         Column(
                             modifier = Modifier
-                                .animateContentSize()
                                 .padding(
                                     start = Dimensions.Padding.content,
                                     end = Dimensions.Padding.content,
                                 )
                         ) {
                             // Pie Chart
-                            BlurredAnimatedVisibility(
-                                visible = selectedBreakdownType == BreakdownType.PIE,
-                                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                                exit = fadeOut() + slideOutVertically(targetOffsetY = { -it }),
-                            ) {
+                            if (selectedBreakdownType == BreakdownType.PIE) {
                                 VittifyCard(
                                     modifier = Modifier
-                                        .animateContentSize()
                                         .fillMaxWidth()
                                 ) {
                                     Column{
@@ -565,12 +530,8 @@ fun SharedTransitionScope.AnalyticsScreen(
                                     }
                                 }
                             }
-                            uiState.categoryBreakdown.take(5).forEach { category ->
-                                BlurredAnimatedVisibility(
-                                    visible = selectedBreakdownType != BreakdownType.PIE,
-                                    enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
-                                ) {
+                            if (selectedBreakdownType != BreakdownType.PIE) {
+                                uiState.categoryBreakdown.take(5).forEach { category ->
                                     CategoryProgressItem(
                                         name = category.name,
                                         amount = category.amount,
@@ -702,7 +663,6 @@ fun SharedTransitionScope.CategoryProgressItem(
 
     Column(
         modifier = Modifier
-            .animateContentSize()
             .fillMaxWidth()
             .then(
                 if (animatedContentScope != null) {
