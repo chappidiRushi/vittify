@@ -95,7 +95,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.reddy.vittify.R
 import com.reddy.vittify.presentation.common.TimePeriod
-import com.reddy.vittify.presentation.effects.BlurredAnimatedVisibility
 import com.reddy.vittify.presentation.effects.overScrollVertical
 import com.reddy.vittify.presentation.effects.rememberOverscrollFlingBehavior
 import com.reddy.vittify.presentation.ui.components.VittifyCard
@@ -374,7 +373,7 @@ fun SharedTransitionScope.TransactionsScreen(
                     }
                 },
                 actionContent = {
-                    BlurredAnimatedVisibility(selectionMode) {
+                    if (selectionMode) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
@@ -474,7 +473,7 @@ fun SharedTransitionScope.TransactionsScreen(
                     },
                     trailingIcon = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            BlurredAnimatedVisibility(searchTextFieldValue.text.isNotEmpty()) {
+                            if (searchTextFieldValue.text.isNotEmpty()) {
                                 IconButton(onClick = {
                                     searchTextFieldValue = TextFieldValue("")
                                     transactionsViewModel.updateSearchQuery("")

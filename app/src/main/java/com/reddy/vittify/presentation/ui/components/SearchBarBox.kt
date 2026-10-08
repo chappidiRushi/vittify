@@ -1,8 +1,5 @@
 package com.reddy.vittify.presentation.ui.components
 
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.focus.FocusRequester
@@ -41,15 +37,6 @@ fun SearchBarBox(
     val shape = VittifyShapes.input
     var isFocused by remember { mutableStateOf(false) }
 
-    val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.015f else 1.0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "search_bar_focus_scale"
-    )
-
     TextField(
         value = searchQuery,
         onValueChange = onSearchQueryChange,
@@ -58,10 +45,6 @@ fun SearchBarBox(
         modifier = modifier
             .fillMaxWidth()
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
             .clip(shape)
             .background(
                 color = if (isFocused) themeColors.surfaceContainerHighest else themeColors.surfaceContainerHigh,
