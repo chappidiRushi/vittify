@@ -1289,7 +1289,6 @@
     <!-- Fallback strings (en) -->
     <string name="vittify_ai">Vittify AI</string>
     <string name="clear_chat">Clear Chat</string>
-    <string name="qwen_model_required">Qwen Model Required</string>
     <string name="download_ai_model_prompt">Download the AI model from Settings to start chatting</string>
     <string name="go_to_settings">Go to Settings</string>
     <string name="model_required">Model Required</string>
@@ -1305,7 +1304,6 @@
     <string name="chat_memory_full_warning">Chat memory almost full! Clear chat to continue.</string>
     <string name="chat_memory_almost_full_warning_format">Chat memory is %1$d%% full. Consider clearing soon.</string>
     <string name="chat_memory_usage_format">Chat memory is %1$d%% full.</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d messages</string>
     <string name="tokens_format">%1$s tokens</string>
     <string name="context_usage">Context Usage</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -1315,10 +1313,8 @@
     <string name="delete_ai_model_title">Delete AI Model?</string>
     <string name="delete_ai_model_confirm">Are you sure you want to delete the AI model? This will remove the offline chat capability until you download it again.</string>
     <string name="ai_chat_assistant">AI Chat Assistant</string>
-    <string name="ai_chat_subtitle_not_downloaded">Download Qwen 2.5 model (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Downloading… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Download paused. Tap to resume.</string>
-    <string name="ai_chat_subtitle_completed">Qwen ready for chat</string>
     <string name="ai_chat_subtitle_failed">Download failed. Tap to retry.</string>
     <string name="ai_chat_subtitle_insufficient_space">Not enough storage space</string>
     <string name="token_info">Chat Token Info</string>
@@ -1541,7 +1537,7 @@
     <!-- Onboarding 2.0 Strings -->
     <string name="welcome_to_vittify">Welcome to Vittify</string>
     <string name="welcome_subtitle_v2">A tiny, smart financial companion that makes tracking money delightfully simple.</string>
-    <string name="privacy_manifesto_title">100% On-Device &amp; Private by Design</string>
+    <string name="privacy_manifesto_title">100% On-Device Parsing, Optional Cloud AI</string>
     <string name="privacy_manifesto_desc">Vittify runs completely on your phone. We never upload your personal bank SMS, statements, or balances to cloud servers.</string>
     <string name="terms_and_privacy_title">Terms of Service &amp; Privacy</string>
     <string name="terms_agreement_checkbox">I have read and agree to the Terms of Service and Privacy Policy.</string>

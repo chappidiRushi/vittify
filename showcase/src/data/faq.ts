@@ -10,7 +10,7 @@ export const faqs: FAQItem[] = [
   },
   {
     q: 'How does SMS reading work — is it safe?',
-    a: 'Vittify requests the READ_SMS permission and parses your bank messages entirely on-device using its built-in parser engine. No message content is ever uploaded to any server. The parsing happens locally, results are stored in an encrypted local Room database, and that\'s the end of the data journey.',
+    a: 'Vittify requests the READ_SMS permission and parses your bank messages entirely on-device using its built-in parser engine. Message content is not uploaded unless you enable the optional Gemini AI features. The default parsing happens locally, results are stored in an encrypted local Room database.',
   },
   {
     q: 'Can it import bank statements or UPI PDFs?',

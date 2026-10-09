@@ -278,7 +278,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Weitere Optionen</string>
     <string name="clear_chat">Chat löschen</string>
-    <string name="qwen_model_required">Qwen Modell erforderlich</string>
     <string name="download_ai_model_prompt">Laden Sie das KI-Modell aus den Einstellungen herunter um mit dem Chatten zu beginnen</string>
     <string name="go_to_settings">Gehe zu Einstellungen</string>
     <string name="model_required">Modell erforderlich</string>
@@ -295,7 +294,6 @@
     <string name="chat_memory_almost_full_warning_format">Chatspeicher ist %1$d%% voll. Überlegen Sie es bald.</string>
     <string name="chat_memory_usage_format">Chatspeicher ist %1$d%% voll.</string>
     <string name="clear">Leeren</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d Nachrichten</string>
     <string name="tokens_format">%1$s Token</string>
     <string name="context_usage">Kontext-Nutzung</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -750,10 +748,8 @@
     <string name="smart_rules_subtitle">Automatische Transaktionskategorisierung</string>
     <string name="data_privacy_subtitle">Ihre Daten- und Datenschutzeinstellungen verwalten</string>
     <string name="ai_chat_assistant">KI-Chat-Assistent</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 Modell herunterladen (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Herunterladen… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Download pausiert. Tippen, um fortzufahren.</string>
-    <string name="ai_chat_subtitle_completed">Qwen bereit zum Chatten</string>
     <string name="ai_chat_subtitle_failed">Download fehlgeschlagen. Tippen, um erneut zu versuchen.</string>
     <string name="ai_chat_subtitle_insufficient_space">Nicht genügend Speicherplatz</string>
     <string name="notifications">Benachrichtigungen</string>

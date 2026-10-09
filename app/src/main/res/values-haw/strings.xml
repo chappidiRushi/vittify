@@ -278,7 +278,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Nā koho hou aku</string>
     <string name="clear_chat">Hoʻomaʻemaʻe kamaʻilio</string>
-    <string name="qwen_model_required">Pono ke kumu hoʻohālike Qwen</string>
     <string name="download_ai_model_prompt">Hoʻoiho i ke kumu hoʻohālike AI mai Settings e hoʻomaka e kamaʻilio</string>
     <string name="go_to_settings">E hele i ka Settings</string>
     <string name="model_required">Pono ke kumu hoʻohālike</string>
@@ -295,7 +294,6 @@
     <string name="chat_memory_almost_full_warning_format">He %1$d%% piha ka memo kamaʻilio. E noʻonoʻo e hoʻomaʻemaʻe koke.</string>
     <string name="chat_memory_usage_format">He %1$d%% piha ka memo kamaʻilio.</string>
     <string name="clear">Akaka</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d memo</string>
     <string name="tokens_format">%1$s hōʻailona</string>
     <string name="context_usage">Hoʻohana Hōʻike</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -750,10 +748,8 @@
     <string name="smart_rules_subtitle">Hoʻokaʻawale ʻokoʻa kālepa</string>
     <string name="data_privacy_subtitle">E mālama i kāu ʻikepili a me nā hoʻonohonoho pilikino</string>
     <string name="ai_chat_assistant">Kokua kamaʻilio AI</string>
-    <string name="ai_chat_subtitle_not_downloaded">Hoʻoiho i ke kumu hoʻohālike Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Hoʻoiho ʻia… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Hoʻomaha ʻia ka hoʻoiho ʻana. Kaomi no ka hoʻomau ʻana.</string>
-    <string name="ai_chat_subtitle_completed">Mākaukau ʻo Qwen no ke kamaʻilio ʻana</string>
     <string name="ai_chat_subtitle_failed">ʻAʻole i hoʻoiho ʻia. Kaomi no ka ho\'āʻo hou.</string>
     <string name="ai_chat_subtitle_insufficient_space">ʻAʻole lawa kahi waiho ʻana</string>
     <string name="notifications">Hoolaha</string>

@@ -41,7 +41,7 @@ private val TERMS_SECTIONS = listOf(
     TermsSection(
         title = "2. Nature of the Application & Financial Disclaimer",
         paragraphs = listOf(
-            "Vittify is an on-device personal expense tracker and organizational tool designed to help you monitor personal spending.",
+            "Vittify is an on-device personal expense tracker and organizational tool designed to help you monitor personal spending, with optional cloud AI integration.",
             "Vittify does NOT provide certified financial advice, legal counsel, tax planning, investment recommendations, or banking services.",
             "Information displayed within the app—including currency exchange rates, budget projections, and spending totals—is provided for convenience and estimation purposes only. Always refer to your official bank statements for authoritative balances."
         )

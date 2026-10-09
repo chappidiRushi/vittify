@@ -280,7 +280,6 @@ Köp periodlar bilen uzak möhletleýin býugetler üçin peýdalydyr</string>
     <string name="vittify_ai">Kaşiro AI</string>
     <string name="more_options">Has köp opsiýalar</string>
     <string name="clear_chat">Söhbeti arassala</string>
-    <string name="qwen_model_required">Qwen modeli talap edilýär</string>
     <string name="download_ai_model_prompt">Söhbeti başlamak üçin AI modelini Sazlamalardan göçüriň</string>
     <string name="go_to_settings">Sazlamalara geç</string>
     <string name="model_required">Model talap edilýär</string>
@@ -297,7 +296,6 @@ Köp periodlar bilen uzak möhletleýin býugetler üçin peýdalydyr</string>
     <string name="chat_memory_almost_full_warning_format">Chat ýatlamasy %1$d%%doly. Ýakynda arassalamagy göz öňünde tutuň.</string>
     <string name="chat_memory_usage_format">Chat ýatlamasy %1$d%%doly.</string>
     <string name="clear">Arassala</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d habarlar</string>
     <string name="tokens_format">%1$s tokenler</string>
     <string name="context_usage">Context ulanylyşy</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Köp periodlar bilen uzak möhletleýin býugetler üçin peýdalydyr</string>
     <string name="smart_rules_subtitle">İşlemleriň awtomatik kategoriýalaşdyrylmagy</string>
     <string name="data_privacy_subtitle">Maglumatlaryňyzy we gizlinlik sazlamalaryňyzy dolandyryň</string>
     <string name="ai_chat_assistant">AI Chat Kömekçisi</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 modelini ýükläp alyň (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Ýüklenilýär... %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Ýüklemek säginildi. Dowam etmek üçin basyň.</string>
-    <string name="ai_chat_subtitle_completed">Qwen söhbetdeşlige taýýar</string>
     <string name="ai_chat_subtitle_failed">Ýüklemek başa barmady. Ýene-de synanyşmak üçin basyň.</string>
     <string name="ai_chat_subtitle_insufficient_space">Saklama ýeri ýeterlik däl</string>
     <string name="notifications">Bildirişler</string>

@@ -280,7 +280,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">更多选项</string>
     <string name="clear_chat">清除聊天</string>
-    <string name="qwen_model_required">需要 Qwen 模型</string>
     <string name="download_ai_model_prompt">从设置下载 AI 模型以开始聊天</string>
     <string name="go_to_settings">前往设置</string>
     <string name="model_required">需要模型</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">聊天记录存储已使用 %1$d%%。请考虑尽快清理。</string>
     <string name="chat_memory_usage_format">聊天记录存储已使用 %1$d%%。</string>
     <string name="clear">清理</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d 条消息</string>
     <string name="tokens_format">%1$s 代币</string>
     <string name="context_usage">上下文使用情况</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">自动交易分类</string>
     <string name="data_privacy_subtitle">管理您的数据和隐私设置</string>
     <string name="ai_chat_assistant">AI 聊天助手</string>
-    <string name="ai_chat_subtitle_not_downloaded">下载 Qwen 2.5 模型 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">正在下载… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">下载已暂停。点击继续。</string>
-    <string name="ai_chat_subtitle_completed">Qwen 可进行聊天</string>
     <string name="ai_chat_subtitle_failed">下载失败。点击重试。</string>
     <string name="ai_chat_subtitle_insufficient_space">存储空间不足</string>
     <string name="notifications">通知</string>

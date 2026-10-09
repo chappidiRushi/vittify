@@ -210,9 +210,9 @@ class SupportedBanksDocTest {
         val root = repoRoot()
         val jsonFile = File(root, "docs/supported-banks.json")
         val readmeFile = File(root, "README.md")
-        // pennywise-web serves a landing page per bank/country off this same catalogue, and
+        // vittify-web serves a landing page per bank/country off this same catalogue, and
         // reads it from its own classpath — so the web module gets a generated copy too.
-        val webJsonFile = File(root, "pennywise-web/server/src/main/resources/supported-banks.json")
+        val webJsonFile = File(root, "vittify-web/server/src/main/resources/supported-banks.json")
         // The Play Store long description quotes the same coverage numbers.
         val listingFile = File(root, "fastlane/metadata/android/en-US/full_description.txt")
         val claim = listingText(groups)
@@ -242,7 +242,7 @@ class SupportedBanksDocTest {
             assertEquals(
                 json,
                 webJsonFile.readText(),
-                "pennywise-web/server/src/main/resources/supported-banks.json is stale"
+                "vittify-web/server/src/main/resources/supported-banks.json is stale"
             )
         }
         if (listingFile.exists() && listingClaim.find(listingFile.readText()) != null) {

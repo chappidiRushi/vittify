@@ -6,7 +6,7 @@ const stats = [
   {
     icon: ShieldCheck,
     value: '100%',
-    label: 'On-Device',
+    label: 'On-Device Parsing',
     detail: 'No cloud. No uploads.',
     color: 'var(--color-accent-mint)',
   },

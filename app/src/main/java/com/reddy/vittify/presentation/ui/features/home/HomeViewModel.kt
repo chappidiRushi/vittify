@@ -1206,7 +1206,7 @@ class HomeViewModel @Inject constructor(
     val nlpDraft: StateFlow<ParsedTransactionDraft?> = _nlpDraft.asStateFlow()
 
     /**
-     * Parses [input] using the on-device LLM (or regex fallback) and exposes
+     * Parses [input] using the Gemini LLM (or regex fallback) and exposes
      * the result via [nlpDraft]. Sets nlpIsProcessing while working.
      */
     fun parseNaturalLanguageTransaction(input: String) {

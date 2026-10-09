@@ -1290,7 +1290,7 @@ fun CreateRuleScreen(
                                 updatedAt = System.currentTimeMillis()
                             )
                             onSaveRule(rule)
-                            // Navigation is handled in PennyWiseNavHost after saving
+                            // Navigation is handled in VittifyNavHost after saving
                         } },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shapes = ButtonDefaults.shapes(),

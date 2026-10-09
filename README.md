@@ -7,7 +7,7 @@
   <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-2.3.0-7F52FF.svg?style=flat-square&logo=kotlin" alt="Kotlin 2.3.0" /></a>
   <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Jetpack_Compose-2026.03.01-4285F4.svg?style=flat-square&logo=jetpackcompose" alt="Compose BOM 2026.03.01" /></a>
   <a href="https://m3.material.io/"><img src="https://img.shields.io/badge/Design-Material_3_Expressive-FF7043.svg?style=flat-square" alt="Material 3 Expressive" /></a>
-  <a href="#privacy--offline-sovereignty"><img src="https://img.shields.io/badge/Privacy-100%25_On--Device_&_P2P-00BFA5.svg?style=flat-square" alt="100% On-Device & P2P" /></a>
+  <a href="#privacy--offline-sovereignty"><img src="https://img.shields.io/badge/Privacy-On--Device_Parsing_&_Optional_Cloud_AI-00BFA5.svg?style=flat-square" alt="On-Device Parsing & Optional Cloud AI" /></a>
   <a href="https://vittify.in/"><img src="https://img.shields.io/badge/Live_Demo-vittify.in-FF6B50.svg?style=flat-square&logo=safari" alt="Live Showcase Site" /></a>
 </p>
 
@@ -20,7 +20,7 @@
 **Vittify** is a modern, open-source, offline-first personal finance companion built from the ground up for Android. It turns cryptic bank SMS notifications and digital UPI PDF statements into a clean, scannable, and actionable financial timeline—without sacrificing your privacy.
 
 Unlike traditional personal finance trackers that harvest personal banking data on remote servers, Vittify operates with **zero server dependencies**:
-- **100% On-Device Processing**: SMS reading, PDF statement parsing, pattern categorization, and analytics never leave your device.
+- **On-Device Processing**: SMS reading, PDF statement parsing, pattern categorization, and analytics never leave your device (unless using optional Gemini AI).
 - **Serverless Partner / Couple Sync**: Securely synchronize spending with a partner using peer-to-peer encrypted local mesh networks (Nearby & WebRTC)—no accounts, no cloud databases, and zero intermediary servers.
 - **Frictionless Expense Logging**: Auto-parse SMS alerts, pin the Home Screen Quick Add widget, or log cash in seconds.
 - **Material 3 Expressive UI**: Crafted with generous 28dp squircle platters, spring physics, rolling numbers, tactile haptics, and tonal surface hierarchies.
@@ -92,7 +92,7 @@ Captured directly from **Google Pixel 7 Pro** running the latest Vittify Beta bu
 
 ##  Key Features
 
-### ⚡ 1. Intelligent On-Device SMS Parser
+### ⚡ 1. Intelligent On-Device SMS Parser (with Optional AI)
 - **155+ Banks across 25+ Countries**: Auto-detects and decodes transaction alerts from leading banks across India, the US, UAE, Nepal, Thailand, Egypt, Nigeria, Saudi Arabia, Tanzania, Mozambique, Kenya, Colombia, and more.
 - **Multilingual Support**: Parses SMS in English, Arabic, Thai, Swahili, Portuguese, Amharic, and Spanish.
 - **Zero Inbox Alterations**: Read-only SMS inspection; your messages are never modified, sent, or uploaded.

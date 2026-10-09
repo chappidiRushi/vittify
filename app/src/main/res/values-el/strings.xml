@@ -280,7 +280,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Περισσότερες επιλογές</string>
     <string name="clear_chat">Καθαρισμός Συνομιλίας</string>
-    <string name="qwen_model_required">Απαιτείται Μοντέλο Qwen</string>
     <string name="download_ai_model_prompt">Κατεβάστε το μοντέλο AI από τις Ρυθμίσεις για να ξεκινήσετε τη συνομιλία</string>
     <string name="go_to_settings">Μεταβείτε στις Ρυθμίσεις</string>
     <string name="model_required">Απαιτείται Μοντέλο</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">Η μνήμη συνομιλίας είναι %1$d%% γεμάτη. Σκεφτείτε να την καθαρίσετε σύντομα.</string>
     <string name="chat_memory_usage_format">Η μνήμη συνομιλίας είναι %1$d%% γεμάτη.</string>
     <string name="clear">Καθαρισμός</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d μηνύματα</string>
     <string name="tokens_format">%1$s διακριτικά</string>
     <string name="context_usage">Χρήση Πλαισίου</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">Αυτόματη κατηγοριοποίηση συναλλαγών</string>
     <string name="data_privacy_subtitle">Διαχείριση των δεδομένων και των ρυθμίσεων απορρήτου σας</string>
     <string name="ai_chat_assistant">Βοηθός συνομιλίας AI</string>
-    <string name="ai_chat_subtitle_not_downloaded">Λήψη μοντέλου Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Λήψη… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Η λήψη διακόπηκε. Πατήστε για να συνεχίσετε.</string>
-    <string name="ai_chat_subtitle_completed">Το Qwen είναι έτοιμο για συνομιλία</string>
     <string name="ai_chat_subtitle_failed">Η λήψη απέτυχε. Πατήστε για επανεκκίνηση.</string>
     <string name="ai_chat_subtitle_insufficient_space">Δεν υπάρχει αρκετός αποθηκευτικός χώρος</string>
     <string name="notifications">Ειδοποιήσεις</string>

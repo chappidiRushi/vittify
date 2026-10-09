@@ -280,7 +280,6 @@
     <string name="vittify_ai">کیشیرو اے آے</string>
     <string name="more_options">مٔزیٖد آپشن</string>
     <string name="clear_chat">کَرنہٕ آمُت چیٹ کَرنہٕ آمُ</string>
-    <string name="qwen_model_required">Qwen ماڈل ضروٗرت</string>
     <string name="download_ai_model_prompt">چیٹنگ شروع کرنہٕ خٲطرٕ کٔرِو سیٹینگ پیٹھٕ اے آے ماڈل ڈاون لوڈ</string>
     <string name="go_to_settings">سیٹنگس پیٹھ گژھ</string>
     <string name="model_required">ماڈل ضروٗرت</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">چیٹ میموری چھِ ٪1$d٪٪ بٔرِتھ۔ جلدی صاف کرنَس پیٹھ کٔرِو غور۔</string>
     <string name="chat_memory_usage_format">چیٹ میموری چھِ ٪1$d٪٪ بٔرِتھ۔</string>
     <string name="clear">صاف</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • ٪1$d پٲغامات</string>
     <string name="tokens_format">٪1$s ٹوکن</string>
     <string name="context_usage">سیاق و سباقُک استعمال</string>
     <string name="percentage_format_no_brackets">٪1$d٪٪</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">آٹومیٹک ٹرانزیکشن درجہٕ بندی</string>
     <string name="data_privacy_subtitle">پَنُن ڈیٹا تہٕ پرائیویسی سیٹنگ ہُند انتظام کٔرِو</string>
     <string name="ai_chat_assistant">اے آے چیٹ اسسٹنٹ</string>
-    <string name="ai_chat_subtitle_not_downloaded">ڈاؤن لوڈ کٔرِو Qwen 2.5 ماڈل (٪1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">ڈاون لوڈ کَرُن... ٪1$d٪٪</string>
     <string name="ai_chat_subtitle_paused">ڈاون لوڈ آو رُکاونہٕ۔ دوبارٕ شروع کرنہٕ خٲطرٕ دبٲیِو۔</string>
-    <string name="ai_chat_subtitle_completed">Qwen چیٹ خٲطرٕ تیار</string>
     <string name="ai_chat_subtitle_failed">ڈاون لوڈ گٔیہِ ناکام۔ دُبارٕ کوٗشِش کرنہٕ خٲطرٕ دبٲیِو۔</string>
     <string name="ai_chat_subtitle_insufficient_space">ذخیرٕ کرنٕچ جاے چھِنہٕ کٲفی</string>
     <string name="notifications">اطلاع</string>

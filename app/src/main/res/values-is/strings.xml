@@ -280,7 +280,6 @@ Hentugt fyrir langtímafjárhagsáætlanir yfir mörg tímabil</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Fleiri valkostir</string>
     <string name="clear_chat">Hreinsa spjall</string>
-    <string name="qwen_model_required">Krafist Qwen Líkans</string>
     <string name="download_ai_model_prompt">Sæktu AI-líkanið úr Stillingum til að byrja að spjalla</string>
     <string name="go_to_settings">Fara í Stillingar</string>
     <string name="model_required">Krafist líkans</string>
@@ -297,7 +296,6 @@ Hentugt fyrir langtímafjárhagsáætlanir yfir mörg tímabil</string>
     <string name="chat_memory_almost_full_warning_format">Spjallminnið er %1$d%% fyllt. Hugleiddu að hreinsa fljótlega.</string>
     <string name="chat_memory_usage_format">Spjallminnið er %1$d%% fyllt.</string>
     <string name="clear">Hreinsa</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d skilaboð</string>
     <string name="tokens_format">%1$s einingar</string>
     <string name="context_usage">Notkun samhengis</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Grænn (+) = Sparnaður | Rauður (-) = Ofureyðsla</string>
     <string name="smart_rules_subtitle">Sjálfvirk flokkun færslna</string>
     <string name="data_privacy_subtitle">Stjórna gögnum þínum og persónuverndarstillingum</string>
     <string name="ai_chat_assistant">AI Spjallaðstoð</string>
-    <string name="ai_chat_subtitle_not_downloaded">Sækja Qwen 2.5 módelið (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Sæki… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Niðurhal stöðvað. Pikkaðu til að halda áfram.</string>
-    <string name="ai_chat_subtitle_completed">Qwen tilbúinn í spjall</string>
     <string name="ai_chat_subtitle_failed">Niðurhal mistókst. Pikkaðu til að reyna aftur.</string>
     <string name="ai_chat_subtitle_insufficient_space">Ekki nóg geymslurými</string>
     <string name="notifications">Tilkynningar</string>

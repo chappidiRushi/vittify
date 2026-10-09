@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for Cashiro
+about: Suggest an idea for Vittify
 title: '[FEATURE] '
 labels: enhancement
 assignees: 'ritesh-kanwar'

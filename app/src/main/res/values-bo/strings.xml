@@ -280,7 +280,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">གདམ་ག་མང་ཙམ་ཡོད།</string>
     <string name="clear_chat">ཁ་བརྡ་ཁ་གསལ་བཟོ་དགོས།</string>
-    <string name="qwen_model_required">Qwen དཔེ་དབྱིབས་དགོས་པ།</string>
     <string name="download_ai_model_prompt">Settings ནས་AIདཔེ་དབྱིབས་ཕབ་ལེན་བྱས་ནས་ཁ་བརྡ་བྱེད་འགོ་བརྩམས་པ་ཡིན།</string>
     <string name="go_to_settings">སྒྲིག་སྟངས་ནང་སོང་</string>
     <string name="model_required">དཔེ་དབྱིབས་དགོས་མཁོ།</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">ཁ་བརྡའི་དྲན་ཤེས་%1$d%%བཀང་ཡོད། མྱུར་དུ་གཙང་སེལ་བྱེད་པར་བསམ་བློ་གཏོང་དགོས།</string>
     <string name="chat_memory_usage_format">ཁ་བརྡའི་དྲན་ཤེས་%1$d%%བཀང་ཡོད།</string>
     <string name="clear">ཁ་གསལ་བཟོ་བ།</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d messages</string>
     <string name="tokens_format">%1$s མཚོན་རྟགས།</string>
     <string name="context_usage">རྒྱབ་ལྗོངས་བེད་སྤྱོད་བྱེད་ཐབས།</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">རང་འགུལ་གྱིས་ཉོ་ཚོང་གི་རིགས་དབྱེ་བ།</string>
     <string name="data_privacy_subtitle">ཁྱོད་ཀྱི་གཞི་གྲངས་དང་གསང་བའི་སྒྲིག་སྟངས་ལ་དོ་དམ་བྱེད་དགོས།</string>
     <string name="ai_chat_assistant">AI ཁ་བརྡའི་ལས་རོགས་</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 དཔེ་དབྱིབས་ཕབ་ལེན་བྱས་པ། (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">ཕབ་ལེན་བྱེད་བཞིན་པ... %1$d%%</string>
     <string name="ai_chat_subtitle_paused">ཕབ་ལེན་མཚམས་བཞག མནན་ནས་བསྐྱར་གསོ་བྱེད་དགོས།</string>
-    <string name="ai_chat_subtitle_completed">Qwen ཁ་བརྡ་བྱེད་པར་གྲ་སྒྲིག་བྱས།</string>
     <string name="ai_chat_subtitle_failed">ཕབ་ལེན་བྱས་མ་སོང་། མནན་ནས་བསྐྱར་དུ་ཚོད་ལྟ་བྱེད་དགོས།</string>
     <string name="ai_chat_subtitle_insufficient_space">གསོག་ཉར་བར་སྟོང་མི་འདང་བ།</string>
     <string name="notifications">བརྡ་ཐོ།</string>

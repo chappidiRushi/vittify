@@ -280,7 +280,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">ตัวเลือกเพิ่มเติม</string>
     <string name="clear_chat">ล้างแชท</string>
-    <string name="qwen_model_required">จำเป็นต้องใช้โมเดล Qwen</string>
     <string name="download_ai_model_prompt">ดาวน์โหลดโมเดล AI จากการตั้งค่าเพื่อเริ่มแชท</string>
     <string name="go_to_settings">ไปที่การตั้งค่า</string>
     <string name="model_required">ต้องใช้โมเดล</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">หน่วยความจำแชทเต็ม %1$d%% พิจารณาล้างในเร็ว ๆ นี้</string>
     <string name="chat_memory_usage_format">หน่วยความจำแชทเต็ม %1$d%%</string>
     <string name="clear">ล้าง</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d ข้อความ</string>
     <string name="tokens_format">%1$s โทเค็น</string>
     <string name="context_usage">การใช้บริบท</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">การจัดหมวดหมู่ธุรกรรมอัตโนมัติ</string>
     <string name="data_privacy_subtitle">จัดการข้อมูลและการตั้งค่าความเป็นส่วนตัวของคุณ</string>
     <string name="ai_chat_assistant">ผู้ช่วยแชท AI</string>
-    <string name="ai_chat_subtitle_not_downloaded">ดาวน์โหลดโมเดล Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">กำลังดาวน์โหลด… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">การดาวน์โหลดหยุดชั่วคราว แตะเพื่อทำต่อ</string>
-    <string name="ai_chat_subtitle_completed">Qwen พร้อมสำหรับแชท</string>
     <string name="ai_chat_subtitle_failed">ดาวน์โหลดล้มเหลว แตะเพื่อพยายามอีกครั้ง</string>
     <string name="ai_chat_subtitle_insufficient_space">พื้นที่จัดเก็บไม่เพียงพอ</string>
     <string name="notifications">การแจ้งเตือน</string>

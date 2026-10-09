@@ -300,10 +300,6 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
     
-    // LiteRT-LM for on-device LLM inference
-
-
-    
     // Google Play In-App Updates (only for standard flavor)
     "standardImplementation"(libs.app.update)
     "standardImplementation"(libs.app.update.ktx)

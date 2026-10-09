@@ -16,7 +16,7 @@ export const features: Feature[] = [
     label: 'Auto Capture',
     headline: 'Your transactions, captured automatically.',
     description:
-      'Vittify reads incoming bank SMS alerts entirely on-device using 155+ bank parsers. No manual entry. No cloud upload. Every debit and credit is captured, categorized, and stored locally the moment it arrives.',
+      'Vittify reads incoming bank SMS alerts entirely on-device using 155+ bank parsers. No manual entry. Every debit and credit is captured, categorized, and stored locally the moment it arrives. Optional cloud AI integration is available.',
     screenshot: 'home.png',
     screenshotAlt: 'Vittify home screen showing financial overview and recent transactions',
     tag: '155+ Banks',

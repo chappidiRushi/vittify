@@ -1,7 +1,7 @@
 # Database Migrations Guide
 
 ## Overview
-This guide explains how to handle database migrations in PennyWise using Room's migration features.
+This guide explains how to handle database migrations in Vittify using Room's migration features.
 
 ## Migration Types
 
@@ -30,12 +30,12 @@ For ambiguous changes, provide additional information:
         AutoMigration(
             from = 1, 
             to = 2, 
-            spec = PennyWiseDatabase.Migration1To2::class
+            spec = VittifyDatabase.Migration1To2::class
         )
     ]
 )
 
-// Inside PennyWiseDatabase
+// Inside VittifyDatabase
 @RenameColumn(
     tableName = "transactions",
     fromColumnName = "merchant_name",
@@ -123,7 +123,7 @@ override fun migrate(db: SupportSQLiteDatabase) {
 fun testMigration1To2() {
     val db = Room.databaseBuilder(
         context,
-        PennyWiseDatabase::class.java,
+        VittifyDatabase::class.java,
         "test-db"
     ).addMigrations(MIGRATION_1_2).build()
     

@@ -280,7 +280,6 @@
     <string name="vittify_ai">קשירו AI</string>
     <string name="more_options">אפשרויות נוספות</string>
     <string name="clear_chat">נקה שיחה</string>
-    <string name="qwen_model_required">נדרש מודל Qwen</string>
     <string name="download_ai_model_prompt">הורד את מודל ה-AI מהגדרות כדי להתחיל לשוחח</string>
     <string name="go_to_settings">עבור להגדרות</string>
     <string name="model_required">נדרש מודל</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">זיכרון הצ\'אט מלא ב-%1$d%%. שקול לנקות בקרוב.</string>
     <string name="chat_memory_usage_format">זיכרון הצ\'אט מלא ב-%1$d%%.</string>
     <string name="clear">נקה</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d הודעות</string>
     <string name="tokens_format">%1$s אסימונים</string>
     <string name="context_usage">שימוש בהקשר</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">סיווג אוטומטי של עסקאות</string>
     <string name="data_privacy_subtitle">נהל את הנתונים והגדרות הפרטיות שלך</string>
     <string name="ai_chat_assistant">עוזר צ\'אט מבוסס בינה מלאכותית</string>
-    <string name="ai_chat_subtitle_not_downloaded">הורד את דגם Qwen 2.5 (%1$d מגהבייט)</string>
     <string name="ai_chat_subtitle_downloading">מוריד… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">ההורדה הופסקה. הקש להמשך.</string>
-    <string name="ai_chat_subtitle_completed">Qwen מוכן לצ\'אט</string>
     <string name="ai_chat_subtitle_failed">ההורדה נכשלה. הקש לנסות שוב.</string>
     <string name="ai_chat_subtitle_insufficient_space">אין מספיק מקום אחסון</string>
     <string name="notifications">התראות</string>

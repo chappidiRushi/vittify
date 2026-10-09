@@ -278,7 +278,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Zosankha zina</string>
     <string name="clear_chat">Chotsani Chat</string>
-    <string name="qwen_model_required">Qwen Model Yofunika</string>
     <string name="download_ai_model_prompt">Tsitsani mtundu wa AI kuchokera ku Zikhazikiko kuti muyambe kucheza</string>
     <string name="go_to_settings">Pitani ku Zikhazikiko</string>
     <string name="model_required">Chitsanzo Chofunika</string>
@@ -295,7 +294,6 @@
     <string name="chat_memory_almost_full_warning_format">Memory chat ndi %1$d%% yodzaza. Lingalirani kuyeretsa posachedwa.</string>
     <string name="chat_memory_usage_format">Memory chat ndi %1$d%% yodzaza.</string>
     <string name="clear">Zomveka</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d mauthenga</string>
     <string name="tokens_format">%1$s zizindikiro</string>
     <string name="context_usage">Kugwiritsa Ntchito Context</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -750,10 +748,8 @@
     <string name="smart_rules_subtitle">Kusanja zochita zokha</string>
     <string name="data_privacy_subtitle">Konzani data yanu ndi zochunira zachinsinsi</string>
     <string name="ai_chat_assistant">Wothandizira Chat wa AI</string>
-    <string name="ai_chat_subtitle_not_downloaded">Tsitsani mtundu wa Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Kutsitsa… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Kutsitsa kwayimitsidwa. Dinani kuti muyambitsenso.</string>
-    <string name="ai_chat_subtitle_completed">Qwen wokonzeka kucheza</string>
     <string name="ai_chat_subtitle_failed">Kutsitsa kwalephera. Dinani kuti muyesenso.</string>
     <string name="ai_chat_subtitle_insufficient_space">Palibe malo okwanira osungira</string>
     <string name="notifications">Zidziwitso</string>

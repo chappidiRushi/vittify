@@ -570,7 +570,7 @@ fun SplashScreen(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "100% On-Device & Private",
+                    text = "100% On-Device Parsing, Optional Cloud AI",
                     style = MaterialTheme.typography.labelSmall.copy(
                         letterSpacing = 0.2.sp
                     ),

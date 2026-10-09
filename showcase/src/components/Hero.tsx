@@ -173,7 +173,7 @@ function PhoneMockup() {
 }
 
 const badges = [
-  { icon: Shield, label: '100% On-Device', color: 'var(--color-accent-mint)' },
+  { icon: Shield, label: 'On-Device Parsing', color: 'var(--color-accent-mint)' },
   { icon: Zap, label: '155+ Banks', color: 'var(--color-accent-amber)' },
   { icon: Sparkles, label: 'Material 3 Expressive', color: 'var(--color-accent-lavender)' },
 ]
