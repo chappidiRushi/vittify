@@ -246,7 +246,7 @@ dependencies {
     
     // Color Picker for Compose
     implementation(libs.colorpicker.compose)
-    implementation(libs.haze)
+    // Haze library removed in favor of zero-overhead lightweight glassmorphism (no-op blur passes)
     
     // Splash Screen API
     implementation(libs.androidx.core.splashscreen)

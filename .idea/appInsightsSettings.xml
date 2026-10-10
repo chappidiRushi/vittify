@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AppInsightsSettings">
-    <option name="selectedTabId" value="Android Vitals" />
+    <option name="selectedTabId" value="Android vitals" />
     <option name="tabSettings">
       <map>
         <entry key="Android Vitals">
@@ -21,11 +21,6 @@
         <entry key="Android vitals">
           <value>
             <InsightsFilterSettings>
-              <option name="connection">
-                <ConnectionSetting>
-                  <option name="appId" value="com.reddy.vittify" />
-                </ConnectionSetting>
-              </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
               <option name="timeIntervalDays" value="SEVEN_DAYS" />
               <option name="visibilityType" value="ALL" />
@@ -37,10 +32,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.reddy.vittify.debug" />
+                  <option name="mobileSdkAppId" value="1:619516124387:android:e69f451ca6c0207759b9d6" />
+                  <option name="projectId" value="vittify" />
+                  <option name="projectNumber" value="619516124387" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

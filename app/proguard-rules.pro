@@ -97,6 +97,12 @@
     public static *** e(...);
 }
 
+# R8 Full-Mode & Proguard aggressive optimization
+-optimizationpasses 5
+-allowaccessmodification
+-mergeinterfacesaggressively
+
+
 # Protobuf
 -dontwarn com.google.protobuf.Internal$ProtoMethodMayReturnNull
 -dontwarn com.google.protobuf.Internal$ProtoNonnullApi

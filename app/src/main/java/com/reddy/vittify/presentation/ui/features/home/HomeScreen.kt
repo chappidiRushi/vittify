@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -363,7 +364,10 @@ fun SharedTransitionScope.HomeScreen(
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = Color.Transparent,
         topBar = {
             CustomTitleTopAppBar(
@@ -627,7 +631,7 @@ fun SharedTransitionScope.HomeScreen(
                                                 }
                                             },
                                             onHistoryClick = onNavigateToBudgetHistory,
-                                            animatedVisibilityScope = animatedContentScope,
+                                            animatedVisibilityScope = null,
                                         )
                                     }
                                 }
@@ -652,7 +656,7 @@ fun SharedTransitionScope.HomeScreen(
                                                     )
                                                 )
                                             },
-                                            animatedContentScope = animatedContentScope,
+                                            animatedContentScope = null,
                                             blurEffects = blurEffects,
                                             hazeState = hazeState
                                         )
@@ -667,46 +671,17 @@ fun SharedTransitionScope.HomeScreen(
                                             end = VittifySpacing.scaledStandard,
                                         )
 
-                                        if (animatedContentScope != null) {
-                                            UpcomingSubscriptionsCard(
-                                                subscriptions = uiState.upcomingSubscriptions,
-                                                totalAmount = uiState.upcomingSubscriptionsTotal,
-                                                currency = uiState.upcomingSubscriptionsCurrency,
-                                                categoriesMap = categoriesMap,
-                                                subcategoriesMap = subcategoriesMap,
-                                                onClick = onNavigateToSubscriptions,
-                                                blurEffects = blurEffects,
-                                                hazeState = hazeState,
-                                                modifier = cardModifier.sharedBounds(
-                                                    rememberSharedContentState(key = "upcoming_subscriptions_card"),
-                                                    animatedVisibilityScope = animatedContentScope,
-                                                    boundsTransform = { _, _ ->
-                                                        spring(
-                                                            stiffness = Spring.StiffnessLow,
-                                                            dampingRatio = Spring.DampingRatioNoBouncy
-                                                        )
-                                                    },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(
-                                                        contentScale = ContentScale.Fit,
-                                                        alignment = Alignment.Center
-                                                    ),
-                                                    renderInOverlayDuringTransition = false
-                                                )
-                                                    .skipToLookaheadSize()
-                                            )
-                                        } else {
-                                            UpcomingSubscriptionsCard(
-                                                subscriptions = uiState.upcomingSubscriptions,
-                                                totalAmount = uiState.upcomingSubscriptionsTotal,
-                                                currency = uiState.upcomingSubscriptionsCurrency,
-                                                categoriesMap = categoriesMap,
-                                                subcategoriesMap = subcategoriesMap,
-                                                onClick = onNavigateToSubscriptions,
-                                                blurEffects = blurEffects,
-                                                hazeState = hazeState,
-                                                modifier = cardModifier
-                                            )
-                                        }
+                                        UpcomingSubscriptionsCard(
+                                            subscriptions = uiState.upcomingSubscriptions,
+                                            totalAmount = uiState.upcomingSubscriptionsTotal,
+                                            currency = uiState.upcomingSubscriptionsCurrency,
+                                            categoriesMap = categoriesMap,
+                                            subcategoriesMap = subcategoriesMap,
+                                            onClick = onNavigateToSubscriptions,
+                                            blurEffects = blurEffects,
+                                            hazeState = hazeState,
+                                            modifier = cardModifier
+                                        )
                                     }
                                 }
                             }
@@ -748,27 +723,7 @@ fun SharedTransitionScope.HomeScreen(
                                                         ) {
                                                             // Search button
                                                             TextButton(
-                                                                onClick = onNavigateToTransactionsWithSearch,
-                                                                modifier = Modifier.then(
-                                                                    if (animatedContentScope != null) {
-                                                                        Modifier.sharedBounds(
-                                                                            rememberSharedContentState(key = "transactions_search"),
-                                                                            animatedVisibilityScope = animatedContentScope,
-                                                                            boundsTransform = { _, _ ->
-                                                                                spring(
-                                                                                    stiffness = Spring.StiffnessLow,
-                                                                                    dampingRatio = Spring.DampingRatioNoBouncy
-                                                                                )
-                                                                            },
-                                                                            resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(
-                                                                                contentScale = ContentScale.None,
-                                                                                alignment = Alignment.Center
-                                                                            ),
-                                                                            renderInOverlayDuringTransition = false
-                                                                        )
-                                                                            .skipToLookaheadSize()
-                                                                    } else Modifier
-                                                                )
+                                                                onClick = onNavigateToTransactionsWithSearch
                                                             ) {
                                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                                     Icon(
@@ -846,8 +801,8 @@ fun SharedTransitionScope.HomeScreen(
                                                                 )
                                                             },
                                                             modifier = Modifier.fillMaxWidth(),
-                                                            animatedContentScope = animatedContentScope,
-                                                            sharedElementKey = "transaction_${transaction.id}",
+                                                            animatedContentScope = null,
+                                                            sharedElementKey = null,
                                                             isPartner = uiState.isCoupleTrackingEnabled &&
                                                                 uiState.activeViewMode == ViewMode.COMBINED &&
                                                                 transaction.ownerId.isNotBlank() &&
@@ -876,26 +831,6 @@ fun SharedTransitionScope.HomeScreen(
                                             TextButton(
                                                 onClick = onNavigateToTransactions,
                                                 modifier = Modifier
-                                                    .then(
-                                                        if (animatedContentScope != null) {
-                                                            Modifier.sharedBounds(
-                                                                rememberSharedContentState(key = "transactions_screen"),
-                                                                animatedVisibilityScope = animatedContentScope,
-                                                                boundsTransform = { _, _ ->
-                                                                    spring(
-                                                                        stiffness = Spring.StiffnessLow,
-                                                                        dampingRatio = Spring.DampingRatioNoBouncy
-                                                                    )
-                                                                },
-                                                                resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(
-                                                                    contentScale = ContentScale.None,
-                                                                    alignment = Alignment.Center
-                                                                ),
-                                                                renderInOverlayDuringTransition = false
-                                                            )
-                                                                .skipToLookaheadSize()
-                                                        } else Modifier
-                                                    )
                                                     .clip(VittifyShapes.pill)
                                                     .then(
                                                         if (blurEffects) Modifier.hazeEffect(
@@ -966,11 +901,7 @@ fun SharedTransitionScope.HomeScreen(
             }
 
             // Global Search Results Overlay
-            AnimatedVisibility(
-                visible = isSearchActive,
-                enter = fadeIn(animationSpec = androidx.compose.animation.core.spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow)),
-                exit = fadeOut(animationSpec = androidx.compose.animation.core.spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow))
-            ) {
+            if (isSearchActive) {
                 GlobalSearchResultsOverlay(
                     uiState = searchUiState,
                     onAccountClick = { bankName, accountLast4 ->

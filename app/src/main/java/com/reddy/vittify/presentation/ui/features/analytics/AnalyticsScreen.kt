@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -149,7 +150,10 @@ fun SharedTransitionScope.AnalyticsScreen(
     val hazeState = remember { HazeState() }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CustomTitleTopAppBar(
                 title = stringResource(R.string.analytics),
@@ -664,21 +668,6 @@ fun SharedTransitionScope.CategoryProgressItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (animatedContentScope != null) {
-                    Modifier.sharedBounds(
-                        rememberSharedContentState(key = "category_$name"),
-                        animatedVisibilityScope = animatedContentScope,
-                        boundsTransform = { _, _ ->
-                            spring(
-                                stiffness =  Spring.StiffnessLow,
-                                dampingRatio = Spring.DampingRatioNoBouncy
-                            )
-                        },
-                        resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit, Alignment.Center)
-                    )
-                } else Modifier
-            )
             .clickable(onClick = onClick)
             .padding(horizontal = Spacing.sm, vertical = Spacing.md)
     ) {

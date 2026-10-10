@@ -15,6 +15,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavBackStackEntry
 import kotlinx.serialization.Serializable
 
@@ -52,6 +53,11 @@ object VittifyTransitions {
         )
     }
 
+    private val BottomNavSlideSpec = tween<IntOffset>(
+        durationMillis = 280,
+        easing = FastOutSlowInEasing
+    )
+
     private fun getBottomNavTabIndex(route: String?): Int = when {
         route == null -> -1
         route.contains("Home") -> 0
@@ -60,7 +66,7 @@ object VittifyTransitions {
         else -> -1
     }
 
-    // Directional horizontal transitions for bottom navigation tabs
+    // Seamless side-by-side sliding transitions for bottom navigation tabs with zero overlap
     val bottomNavEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         val initialRoute = initialState.destination.route
         if (initialRoute?.contains("Splash") == true || initialRoute?.contains("AppLock") == true) {
@@ -68,17 +74,19 @@ object VittifyTransitions {
         } else {
             val fromIndex = getBottomNavTabIndex(initialRoute)
             val toIndex = getBottomNavTabIndex(targetState.destination.route)
-            if (fromIndex != -1 && toIndex != -1) {
+            if (fromIndex != -1 && toIndex != -1 && fromIndex != toIndex) {
                 val direction = if (toIndex > fromIndex) 1 else -1
                 slideInHorizontally(
-                    initialOffsetX = { direction * it },
-                    animationSpec = spring(
-                        stiffness = Spring.StiffnessLow,
-                        dampingRatio = Spring.DampingRatioNoBouncy
-                    )
-                ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                    initialOffsetX = { fullWidth -> direction * fullWidth },
+                    animationSpec = BottomNavSlideSpec
+                )
+            } else if (fromIndex == -1 && toIndex != -1) {
+                slideInHorizontally(
+                    initialOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = BottomNavSlideSpec
+                )
             } else {
-                horizontalSlideEnter(this)
+                EnterTransition.None
             }
         }
     }
@@ -86,17 +94,20 @@ object VittifyTransitions {
     val bottomNavExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
         val fromIndex = getBottomNavTabIndex(initialState.destination.route)
         val toIndex = getBottomNavTabIndex(targetState.destination.route)
-        if (fromIndex != -1 && toIndex != -1) {
-            val direction = if (toIndex > fromIndex) -1 else 1
+        if (fromIndex != -1 && toIndex != -1 && fromIndex != toIndex) {
+            val direction = if (toIndex > fromIndex) 1 else -1
             slideOutHorizontally(
-                targetOffsetX = { direction * it / 4 },
-                animationSpec = spring(
-                    stiffness = Spring.StiffnessLow,
-                    dampingRatio = Spring.DampingRatioNoBouncy
-                )
-            ) + fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                targetOffsetX = { fullWidth -> -direction * fullWidth },
+                animationSpec = BottomNavSlideSpec
+            )
+        } else if (fromIndex != -1 && toIndex == -1) {
+            // Leaving bottom nav screen to open sub-screen (e.g. Home -> Settings)
+            slideOutHorizontally(
+                targetOffsetX = { fullWidth -> -fullWidth },
+                animationSpec = BottomNavSlideSpec
+            )
         } else {
-            horizontalSlideExit(this)
+            ExitTransition.None
         }
     }
 
@@ -107,17 +118,20 @@ object VittifyTransitions {
         } else {
             val fromIndex = getBottomNavTabIndex(initialRoute)
             val toIndex = getBottomNavTabIndex(targetState.destination.route)
-            if (fromIndex != -1 && toIndex != -1) {
+            if (fromIndex != -1 && toIndex != -1 && fromIndex != toIndex) {
                 val direction = if (toIndex > fromIndex) 1 else -1
                 slideInHorizontally(
-                    initialOffsetX = { direction * it },
-                    animationSpec = spring(
-                        stiffness = Spring.StiffnessLow,
-                        dampingRatio = Spring.DampingRatioNoBouncy
-                    )
-                ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                    initialOffsetX = { fullWidth -> direction * fullWidth },
+                    animationSpec = BottomNavSlideSpec
+                )
+            } else if (fromIndex == -1 && toIndex != -1) {
+                // Returning from sub-screen back to bottom nav (e.g. Settings -> Home)
+                slideInHorizontally(
+                    initialOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = BottomNavSlideSpec
+                )
             } else {
-                horizontalSlidePopEnter(this)
+                EnterTransition.None
             }
         }
     }
@@ -125,100 +139,78 @@ object VittifyTransitions {
     val bottomNavPopExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
         val fromIndex = getBottomNavTabIndex(initialState.destination.route)
         val toIndex = getBottomNavTabIndex(targetState.destination.route)
-        if (fromIndex != -1 && toIndex != -1) {
-            val direction = if (toIndex > fromIndex) -1 else 1
+        if (fromIndex != -1 && toIndex != -1 && fromIndex != toIndex) {
+            val direction = if (toIndex > fromIndex) 1 else -1
             slideOutHorizontally(
-                targetOffsetX = { direction * it / 4 },
-                animationSpec = spring(
-                    stiffness = Spring.StiffnessLow,
-                    dampingRatio = Spring.DampingRatioNoBouncy
-                )
-            ) + fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                targetOffsetX = { fullWidth -> -direction * fullWidth },
+                animationSpec = BottomNavSlideSpec
+            )
+        } else if (fromIndex != -1 && toIndex == -1) {
+            slideOutHorizontally(
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = BottomNavSlideSpec
+            )
         } else {
-            horizontalSlidePopExit(this)
+            ExitTransition.None
         }
     }
     
-    // Horizontal slide transitions for sub-screens
+    // Horizontal slide transitions for sub-screens with zero overlap
     val horizontalSlideEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         slideInHorizontally(
-            initialOffsetX = { it },
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioNoBouncy
-            )
-        ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            initialOffsetX = { fullWidth -> fullWidth },
+            animationSpec = BottomNavSlideSpec
+        )
     }
     
     val horizontalSlideExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
         slideOutHorizontally(
-            targetOffsetX = { -it / 4 },
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioNoBouncy
-            )
-        ) + fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            targetOffsetX = { fullWidth -> -fullWidth },
+            animationSpec = BottomNavSlideSpec
+        )
     }
     
     val horizontalSlidePopEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         slideInHorizontally(
-            initialOffsetX = { -it / 4 },
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioNoBouncy
-            )
-        ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            initialOffsetX = { fullWidth -> -fullWidth },
+            animationSpec = BottomNavSlideSpec
+        )
     }
     
     val horizontalSlidePopExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
         slideOutHorizontally(
-            targetOffsetX = { it },
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioNoBouncy
-            )
-        ) + fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            targetOffsetX = { fullWidth -> fullWidth },
+            animationSpec = BottomNavSlideSpec
+        )
     }
     
-    // Vertical slide transitions
+    // Vertical slide transitions with zero overlap
     val verticalSlideEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioNoBouncy
-            )
-        ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            initialOffsetY = { fullHeight -> fullHeight },
+            animationSpec = BottomNavSlideSpec
+        )
     }
     
     val verticalSlideExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
         slideOutVertically(
-            targetOffsetY = { -it / 4},
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioNoBouncy
-            )
-        ) + fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            targetOffsetY = { fullHeight -> -fullHeight },
+            animationSpec = BottomNavSlideSpec
+        )
     }
 
     val verticalSlidePopEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         slideInVertically(
-            initialOffsetY = { -it / 4 },
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioNoBouncy
-            )
-        ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            initialOffsetY = { fullHeight -> -fullHeight },
+            animationSpec = BottomNavSlideSpec
+        )
     }
 
     val verticalSlidePopExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
         slideOutVertically(
-            targetOffsetY = { -it },
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioNoBouncy
-            )
-        ) + fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
+            targetOffsetY = { fullHeight -> fullHeight },
+            animationSpec = BottomNavSlideSpec
+        )
     }
     
     // FAB to screen scale transitions

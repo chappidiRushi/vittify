@@ -227,6 +227,7 @@ class TransactionsViewModel @Inject constructor(
     
     // Categories flow - will be used to map category names to colors
     val categories: StateFlow<Map<String, CategoryEntity>> = categoryRepository.getAllCategories()
+        .distinctUntilChanged()
         .map { categoryList ->
             categoryList.associateBy { it.name }
         }
@@ -238,6 +239,7 @@ class TransactionsViewModel @Inject constructor(
     
     // Subcategories flow - will be used to map subcategory names to entities
     val subcategories: StateFlow<Map<String, SubcategoryEntity>> = subcategoryRepository.getAllSubcategories()
+        .distinctUntilChanged()
         .map { subcategoryList ->
             subcategoryList.associateBy { it.name }
         }
@@ -248,6 +250,7 @@ class TransactionsViewModel @Inject constructor(
         )
 
     val accountsMap: StateFlow<Map<String, AccountBalanceEntity>> = accountBalanceRepository.getAllLatestBalances()
+        .distinctUntilChanged()
         .map { accountList ->
             accountList.associateBy { it.id }
         }
@@ -259,6 +262,7 @@ class TransactionsViewModel @Inject constructor(
         
     // Calculate the absolute maximum transaction amount across all transactions
     val maxTransactionAmount: StateFlow<Float> = transactionRepository.getAllTransactions()
+        .distinctUntilChanged()
         .map { transactions ->
             transactions.maxOfOrNull<com.reddy.vittify.data.database.entity.TransactionEntity, java.math.BigDecimal> { tx -> tx.amount }?.toFloat() ?: 0f
         }
@@ -362,7 +366,7 @@ class TransactionsViewModel @Inject constructor(
                     currencyConversionService.rateChangeTrigger.map { "rates" },
                     p2pPreferences.activeViewModeFlow.map { "viewMode" },
                     p2pPreferences.coupleTrackingEnabledFlow.map { "coupleTracking" }
-                )
+                ).debounce(50)
             }
             .transformLatest { trigger ->
                 // Get current values from all StateFlows
@@ -380,6 +384,8 @@ class TransactionsViewModel @Inject constructor(
  
                  // Get filtered transactions
                  getFilteredTransactions(query, period, category, subcategory, amountRange, accounts, filterCurrencies, typeFilter)
+                     .distinctUntilChanged()
+                     .conflate()
                      .collect { transactions ->
                          // No longer filtering by selectedCurrency. Show all unless explicitly filtered via filter sheet
                          val currencyFilteredTransactions = transactions
@@ -393,6 +399,7 @@ class TransactionsViewModel @Inject constructor(
                          emit(Pair(sortTransactions(currencyFilteredTransactions, sort), converted))
                      }
             }
+            .conflate()
             .onEach { (transactions, converted) ->
                 val splitIds = transactionRepository.getSplitTransactionIds(transactions.map { it.id }).toSet()
                 _uiState.value = _uiState.value.copy(
@@ -773,9 +780,9 @@ class TransactionsViewModel @Inject constructor(
     ): Flow<List<TransactionEntity>> {
         // Start with the base flow filtered by couple view mode
         val baseFlow = combine(
-            transactionRepository.getAllTransactions(),
+            transactionRepository.getAllTransactions().distinctUntilChanged(),
             p2pPreferences.coupleViewState,
-            accountBalanceRepository.getAllLatestBalances()
+            accountBalanceRepository.getAllLatestBalances().distinctUntilChanged()
         ) { transactions, coupleState, accountsList ->
             val accountOwnerMap = accountsList.associate { it.id to it.ownerId }
             val accountLast4OwnerMap = accountsList.filter { it.ownerId.isNotBlank() }.associate { it.accountLast4 to it.ownerId }
@@ -789,7 +796,7 @@ class TransactionsViewModel @Inject constructor(
                     ?: tx.fromAccount?.let { accountLast4OwnerMap[it] }?.takeIf { it.isNotBlank() }
                     ?: tx.ownerId
             }
-        }
+        }.distinctUntilChanged()
         
         // Apply period filter
         val periodFilteredFlow = when (period) {

@@ -50,7 +50,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -118,14 +121,17 @@ class HomeViewModel @Inject constructor(
     val showMoreBottomSheet: StateFlow<Boolean> = _showMoreBottomSheet.asStateFlow()
 
     val categoriesMap = categoryRepository.getAllCategories()
+        .distinctUntilChanged()
         .map { cats -> cats.associateBy { it.name } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     val subcategoriesMap = subcategoryRepository.getAllSubcategories()
+        .distinctUntilChanged()
         .map { subcats -> subcats.associateBy { it.name } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     val accountsMap = accountBalanceRepository.getAllLatestBalances()
+        .distinctUntilChanged()
         .map { accountList ->
             accountList.associateBy { it.id.toString() }
         }
@@ -183,19 +189,23 @@ class HomeViewModel @Inject constructor(
 
     private fun loadUserData() {
         viewModelScope.launch {
-            userPreferencesRepository.userPreferences.collect { preferences ->
-                _uiState.value = _uiState.value.copy(
-                    userName = preferences.userName,
-                    profileImageUri = preferences.profileImageUri?.toUri(),
-                    profileBackgroundColor = Color(preferences.profileBackgroundColor)
-                )
-            }
+            userPreferencesRepository.userPreferences
+                .distinctUntilChanged()
+                .collect { preferences ->
+                    _uiState.value = _uiState.value.copy(
+                        userName = preferences.userName,
+                        profileImageUri = preferences.profileImageUri?.toUri(),
+                        profileBackgroundColor = Color(preferences.profileBackgroundColor)
+                    )
+                }
         }
 
         viewModelScope.launch {
-            unrecognizedSmsRepository.getUnreportedCount().collect { count ->
-                _uiState.value = _uiState.value.copy(unreadUpdatesCount = count)
-            }
+            unrecognizedSmsRepository.getUnreportedCount()
+                .distinctUntilChanged()
+                .collect { count ->
+                    _uiState.value = _uiState.value.copy(unreadUpdatesCount = count)
+                }
         }
 
         viewModelScope.launch {
@@ -218,14 +228,18 @@ class HomeViewModel @Inject constructor(
                 }
 
                 orderedWidgets
-            }.collect { widgets ->
-                _homeWidgets.value = widgets
             }
+                .distinctUntilChanged()
+                .collect { widgets ->
+                    _homeWidgets.value = widgets
+                }
         }
 
         viewModelScope.launch {
             _uiState
                 .map { Triple(it.totalBalance, it.currentMonthIncome to it.currentMonthExpenses, it.upcomingSubscriptions.size) }
+                .distinctUntilChanged()
+                .conflate()
                 .collectLatest {
                     com.reddy.vittify.widget.FinancialOverviewWidgetProvider.requestUpdate(context)
                 }
@@ -284,17 +298,23 @@ class HomeViewModel @Inject constructor(
                 p2pPreferences.coupleTrackingEnabledFlow,
                 selectedCurrencyCombined,
                 currencyConversionService.rateChangeTrigger,
-                accountBalanceRepository.getAllLatestBalances()
+                accountBalanceRepository.getAllLatestBalances().distinctUntilChanged()
             ) { viewMode, coupleEnabled, selectedCurrency, _, accountsList ->
                 val accountOwnerMap = accountsList.associate { it.id to it.ownerId }
                 val accountLast4OwnerMap = accountsList.filter { it.ownerId.isNotBlank() }.associate { it.accountLast4 to it.ownerId }
                 val filter = getOwnerFilter(viewMode, coupleEnabled, accountOwnerMap, accountLast4OwnerMap)
                 Triple(filter, selectedCurrency, Unit)
-            }.flatMapLatest { (filter, selectedCurrency, _) ->
-                transactionRepository.getCurrentMonthBreakdownByCurrency(filter).map { breakdown ->
-                    Pair(breakdown, selectedCurrency)
-                }
-            }.collectLatest { (breakdownByCurrency, selectedCurrency) ->
+            }.distinctUntilChanged()
+            .flatMapLatest { (filter, selectedCurrency, _) ->
+                transactionRepository.getCurrentMonthBreakdownByCurrency(filter)
+                    .distinctUntilChanged()
+                    .conflate()
+                    .map { breakdown ->
+                        Pair(breakdown, selectedCurrency)
+                    }
+            }
+            .conflate()
+            .collectLatest { (breakdownByCurrency, selectedCurrency) ->
                 updateBreakdownForSelectedCurrency(breakdownByCurrency, period = FinancialPeriod.CURRENT_MONTH, selectedCurrency = selectedCurrency)
             }
         }
@@ -302,7 +322,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             // Load account balances and react to currency and view mode changes
             combine(
-                accountBalanceRepository.getAllLatestBalances(),
+                accountBalanceRepository.getAllLatestBalances().distinctUntilChanged(),
                 selectedCurrencyCombined,
                 currencyConversionService.rateChangeTrigger,
                 p2pPreferences.activeViewModeFlow,
@@ -399,7 +419,10 @@ class HomeViewModel @Inject constructor(
                         selectedCurrency = selectedCurrency
                     )
                 }
-            }.collectLatest { }
+            }
+            .distinctUntilChanged()
+            .conflate()
+            .collectLatest { }
         }
 
         viewModelScope.launch {
@@ -412,11 +435,11 @@ class HomeViewModel @Inject constructor(
                 transactionRepository.getTransactionsBetweenDates(
                     startDate = startOfMonth,
                     endDate = endOfMonth
-                ),
+                ).distinctUntilChanged(),
                 selectedCurrencyCombined,
                 currencyConversionService.rateChangeTrigger,
                 p2pPreferences.coupleViewState,
-                accountBalanceRepository.getAllLatestBalances()
+                accountBalanceRepository.getAllLatestBalances().distinctUntilChanged()
             ) { allTransactions, selectedCurrency, _, coupleState, accountsList ->
                 val myDeviceId = p2pPreferences.getDeviceId()
                 val accountOwnerMap = accountsList.associate { it.id to it.ownerId }
@@ -468,7 +491,10 @@ class HomeViewModel @Inject constructor(
                     currentMonthTransfer = transferTotal,
                     currentMonthInvestment = investmentTotal
                 ) }
-            }.collectLatest { }
+            }
+            .distinctUntilChanged()
+            .conflate()
+            .collectLatest { }
         }
 
         viewModelScope.launch {
@@ -480,10 +506,10 @@ class HomeViewModel @Inject constructor(
                 transactionRepository.getTransactionsBetweenDates(
                     startDate = startOfHeatmap,
                     endDate = endOfHeatmap
-                ),
+                ).distinctUntilChanged(),
                 p2pPreferences.activeViewModeFlow,
                 p2pPreferences.coupleTrackingEnabledFlow,
-                accountBalanceRepository.getAllLatestBalances()
+                accountBalanceRepository.getAllLatestBalances().distinctUntilChanged()
             ) { allTransactions, viewMode, coupleEnabled, accountsList ->
                 val myDeviceId = p2pPreferences.getDeviceId()
                 val accountOwnerMap = accountsList.associate { it.id to it.ownerId }
@@ -510,7 +536,10 @@ class HomeViewModel @Inject constructor(
                 val heatmap = transactions.groupBy { it.dateTime.toLocalDate() }
                     .mapValues { it.value.size }
                 _uiState.update { it.copy(transactionHeatmap = heatmap) }
-            }.collectLatest { }
+            }
+            .distinctUntilChanged()
+            .conflate()
+            .collectLatest { }
         }
 
         viewModelScope.launch {
@@ -520,17 +549,23 @@ class HomeViewModel @Inject constructor(
                 p2pPreferences.coupleTrackingEnabledFlow,
                 selectedCurrencyCombined,
                 currencyConversionService.rateChangeTrigger,
-                accountBalanceRepository.getAllLatestBalances()
+                accountBalanceRepository.getAllLatestBalances().distinctUntilChanged()
             ) { viewMode, coupleEnabled, selectedCurrency, _, accountsList ->
                 val accountOwnerMap = accountsList.associate { it.id to it.ownerId }
                 val accountLast4OwnerMap = accountsList.filter { it.ownerId.isNotBlank() }.associate { it.accountLast4 to it.ownerId }
                 val filter = getOwnerFilter(viewMode, coupleEnabled, accountOwnerMap, accountLast4OwnerMap)
                 Triple(filter, selectedCurrency, Unit)
-            }.flatMapLatest { (filter, selectedCurrency, _) ->
-                transactionRepository.getLastMonthBreakdownByCurrency(filter).map { breakdown ->
-                    Pair(breakdown, selectedCurrency)
-                }
-            }.collectLatest { (breakdownByCurrency, selectedCurrency) ->
+            }.distinctUntilChanged()
+            .flatMapLatest { (filter, selectedCurrency, _) ->
+                transactionRepository.getLastMonthBreakdownByCurrency(filter)
+                    .distinctUntilChanged()
+                    .conflate()
+                    .map { breakdown ->
+                        Pair(breakdown, selectedCurrency)
+                    }
+            }
+            .conflate()
+            .collectLatest { (breakdownByCurrency, selectedCurrency) ->
                 updateBreakdownForSelectedCurrency(breakdownByCurrency, period = FinancialPeriod.LAST_MONTH, selectedCurrency = selectedCurrency)
             }
         }
@@ -542,17 +577,23 @@ class HomeViewModel @Inject constructor(
                 p2pPreferences.coupleTrackingEnabledFlow,
                 selectedCurrencyCombined,
                 currencyConversionService.rateChangeTrigger,
-                accountBalanceRepository.getAllLatestBalances()
+                accountBalanceRepository.getAllLatestBalances().distinctUntilChanged()
             ) { viewMode, coupleEnabled, selectedCurrency, _, accountsList ->
                 val accountOwnerMap = accountsList.associate { it.id to it.ownerId }
                 val accountLast4OwnerMap = accountsList.filter { it.ownerId.isNotBlank() }.associate { it.accountLast4 to it.ownerId }
                 val filter = getOwnerFilter(viewMode, coupleEnabled, accountOwnerMap, accountLast4OwnerMap)
                 Triple(filter, selectedCurrency, Unit)
-            }.flatMapLatest { (filter, selectedCurrency, _) ->
-                transactionRepository.getCurrentYearBreakdownByCurrency(filter).map { breakdown ->
-                    Pair(breakdown, selectedCurrency)
-                }
-            }.collectLatest { (breakdownByCurrency, selectedCurrency) ->
+            }.distinctUntilChanged()
+            .flatMapLatest { (filter, selectedCurrency, _) ->
+                transactionRepository.getCurrentYearBreakdownByCurrency(filter)
+                    .distinctUntilChanged()
+                    .conflate()
+                    .map { breakdown ->
+                        Pair(breakdown, selectedCurrency)
+                    }
+            }
+            .conflate()
+            .collectLatest { (breakdownByCurrency, selectedCurrency) ->
                 updateBreakdownForSelectedCurrency(breakdownByCurrency, period = FinancialPeriod.CURRENT_YEAR, selectedCurrency = selectedCurrency)
             }
         }
@@ -560,11 +601,11 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             // Load recent transactions (last 3) and react to base currency and view mode changes
             combine(
-                transactionRepository.getAllTransactions(),
+                transactionRepository.getAllTransactions().distinctUntilChanged(),
                 selectedCurrencyCombined,
                 currencyConversionService.rateChangeTrigger,
                 p2pPreferences.coupleViewState,
-                accountBalanceRepository.getAllLatestBalances()
+                accountBalanceRepository.getAllLatestBalances().distinctUntilChanged()
             ) { allTransactions, selectedCurrency, _, coupleState, accountsList ->
                 val myDeviceId = p2pPreferences.getDeviceId()
                 val accountOwnerMap = accountsList.associate { it.id to it.ownerId }
@@ -608,13 +649,16 @@ class HomeViewModel @Inject constructor(
                     splitTransactionIds = splitIds,
                     isLoading = false
                 ) }
-            }.collectLatest { }
+            }
+            .distinctUntilChanged()
+            .conflate()
+            .collectLatest { }
         }
 
         viewModelScope.launch {
             // Load all active subscriptions and react to currency and view mode changes
             combine(
-                subscriptionRepository.getActiveSubscriptions(),
+                subscriptionRepository.getActiveSubscriptions().distinctUntilChanged(),
                 selectedCurrencyCombined,
                 p2pPreferences.coupleViewState,
                 currencyConversionService.rateChangeTrigger
@@ -649,14 +693,17 @@ class HomeViewModel @Inject constructor(
                         upcomingSubscriptionsCurrency = targetCurrency
                     )
                 }
-            }.collectLatest { }
+            }
+            .distinctUntilChanged()
+            .conflate()
+            .collectLatest { }
         }
 
         viewModelScope.launch {
             // Load active budgets for current month and react to currency and view mode changes
             val yearMonth = YearMonth.now()
             combine(
-                budgetRepository.getBudgetsWithSpendingForMonth(yearMonth.year, yearMonth.monthValue),
+                budgetRepository.getBudgetsWithSpendingForMonth(yearMonth.year, yearMonth.monthValue).distinctUntilChanged(),
                 selectedCurrencyCombined,
                 p2pPreferences.coupleViewState,
                 currencyConversionService.rateChangeTrigger
@@ -694,14 +741,17 @@ class HomeViewModel @Inject constructor(
                 _uiState.update { 
                     it.copy(activeBudgets = convertedBudgets)
                 }
-            }.collectLatest { }
+            }
+            .distinctUntilChanged()
+            .conflate()
+            .collectLatest { }
         }
 
         viewModelScope.launch {
             // Load portfolio balance history dynamically computed from account balances and transactions
             combine(
-                accountBalanceRepository.getAllLatestBalances(),
-                transactionRepository.getAllTransactions(),
+                accountBalanceRepository.getAllLatestBalances().distinctUntilChanged(),
+                transactionRepository.getAllTransactions().distinctUntilChanged(),
                 selectedCurrencyCombined,
                 currencyConversionService.rateChangeTrigger,
                 p2pPreferences.coupleViewState
@@ -792,7 +842,10 @@ class HomeViewModel @Inject constructor(
                         currency = selectedCurrency
                     )
                 }
-            }.collectLatest { dailyPortfolioHistory ->
+            }
+            .distinctUntilChanged()
+            .conflate()
+            .collectLatest { dailyPortfolioHistory ->
                 _uiState.update { it.copy(
                     balanceHistory = dailyPortfolioHistory
                 ) }
