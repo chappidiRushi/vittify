@@ -1,5 +1,6 @@
 package com.reddy.vittify.data.ai
 
+import android.util.Base64
 import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -24,6 +25,13 @@ interface AiProvider {
     suspend fun fetchAvailableModels(apiKey: String): Result<List<GeminiModelInfo>>
     suspend fun testConnection(apiKey: String, model: String): Result<ConnectionTestResult>
     suspend fun generateContent(apiKey: String, model: String, prompt: String): Result<AiGenerationResult>
+    suspend fun generateContentWithImage(
+        apiKey: String,
+        model: String,
+        prompt: String,
+        imageBytes: ByteArray,
+        mimeType: String = "image/jpeg"
+    ): Result<AiGenerationResult>
 }
 
 data class ConnectionTestResult(
@@ -49,6 +57,7 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                 ignoreUnknownKeys = true
                 isLenient = true
                 coerceInputValues = true
+                explicitNulls = false
             })
         }
     }
@@ -212,6 +221,112 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                 }
             } catch (e: Exception) {
                 Log.e("GeminiAiProvider", "generateContent request failed", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+    override suspend fun generateContentWithImage(
+        apiKey: String,
+        model: String,
+        prompt: String,
+        imageBytes: ByteArray,
+        mimeType: String
+    ): Result<AiGenerationResult> {
+        val trimmedKey = apiKey.trim()
+        if (trimmedKey.isBlank()) {
+            return Result.failure(IllegalArgumentException("Gemini API key is required"))
+        }
+
+        val cleanModel = model.trim().removePrefix("models/").ifBlank { "gemini-1.5-flash" }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val base64Data = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
+
+                val requestBody = GeminiGenerateRequest(
+                    contents = listOf(
+                        GeminiRequestContent(
+                            parts = listOf(
+                                GeminiRequestPart(
+                                    inlineData = GeminiBlob(
+                                        mimeType = mimeType,
+                                        data = base64Data
+                                    )
+                                ),
+                                GeminiRequestPart(text = prompt)
+                            )
+                        )
+                    ),
+                    generationConfig = GeminiGenerationConfig(
+                        responseMimeType = "application/json",
+                        temperature = 0.1f
+                    )
+                )
+
+                var response: HttpResponse = client.post("$BASE_URL/models/$cleanModel:generateContent") {
+                    parameter("key", trimmedKey)
+                    contentType(ContentType.Application.Json)
+                    setBody(requestBody)
+                }
+
+                var bodyText = response.body<String>()
+
+                // Fallback 1: If responseMimeType is not supported by the model, retry without it
+                if (response.status.value in 400..499 && bodyText.contains("responseMimeType", ignoreCase = true)) {
+                    val fallbackBody = GeminiGenerateRequest(
+                        contents = requestBody.contents,
+                        generationConfig = GeminiGenerationConfig(temperature = 0.1f)
+                    )
+                    response = client.post("$BASE_URL/models/$cleanModel:generateContent") {
+                        parameter("key", trimmedKey)
+                        contentType(ContentType.Application.Json)
+                        setBody(fallbackBody)
+                    }
+                    bodyText = response.body<String>()
+                }
+
+                // Fallback 2: If the custom model is not found or unsupported for vision, retry with default flash model
+                if (response.status.value in 400..499 && cleanModel != "gemini-1.5-flash" && cleanModel != "gemini-2.5-flash") {
+                    Log.w("GeminiAiProvider", "Model $cleanModel failed (${response.status.value}), attempting fallback to gemini-1.5-flash")
+                    response = client.post("$BASE_URL/models/gemini-1.5-flash:generateContent") {
+                        parameter("key", trimmedKey)
+                        contentType(ContentType.Application.Json)
+                        setBody(requestBody)
+                    }
+                    bodyText = response.body<String>()
+                }
+
+                if (response.status.value in 200..299) {
+                    val json = Json { ignoreUnknownKeys = true }
+                    val jsonElement = json.parseToJsonElement(bodyText).jsonObject
+
+                    val text = jsonElement["candidates"]
+                        ?.jsonArray?.firstOrNull()?.jsonObject
+                        ?.get("content")?.jsonObject
+                        ?.get("parts")?.jsonArray?.firstOrNull()?.jsonObject
+                        ?.get("text")?.jsonPrimitive?.content ?: ""
+
+                    val usageMetadata = jsonElement["usageMetadata"]?.jsonObject
+                    val promptTokens = usageMetadata?.get("promptTokenCount")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                    val candidateTokens = usageMetadata?.get("candidatesTokenCount")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                    val totalTokens = usageMetadata?.get("totalTokenCount")?.jsonPrimitive?.content?.toIntOrNull() ?: (promptTokens + candidateTokens)
+
+                    Result.success(
+                        AiGenerationResult(
+                            text = text,
+                            promptTokens = promptTokens,
+                            candidateTokens = candidateTokens,
+                            totalTokens = totalTokens
+                        )
+                    )
+                } else {
+                    val errorMessage = extractErrorMessage(bodyText, response.status.value)
+                    Log.e("GeminiAiProvider", "generateContentWithImage HTTP error: $errorMessage, body: $bodyText")
+                    Result.failure(Exception(errorMessage))
+                }
+            } catch (e: Exception) {
+                Log.e("GeminiAiProvider", "generateContentWithImage request failed", e)
                 Result.failure(e)
             }
         }

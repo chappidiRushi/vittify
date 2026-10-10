@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
 import com.reddy.vittify.R
+import com.reddy.vittify.presentation.ui.icons.Iconax
+import com.reddy.vittify.presentation.ui.icons.ReceiptSearch
 import com.reddy.vittify.presentation.ui.components.CustomTitleTopAppBar
 import com.reddy.vittify.presentation.ui.components.GenericTypeSwitcher
 import com.reddy.vittify.presentation.ui.features.categories.NavigationContent
@@ -67,6 +70,7 @@ fun SharedTransitionScope.AddScreen(
     nlpSubcategory: String? = null,
     nlpDate: String? = null,
     onNavigateToTransactionSettings: () -> Unit = {},
+    onNavigateToAi: () -> Unit = {},
     blurEffects: Boolean,
 ) {
     val hazeState = remember { HazeState() }
@@ -75,6 +79,14 @@ fun SharedTransitionScope.AddScreen(
         pageCount = { 2 }
     )
     val coroutineScope = rememberCoroutineScope()
+
+    val isScanningReceipt by addViewModel.isScanningReceipt.collectAsState()
+    val receiptScanError by addViewModel.receiptScanError.collectAsState()
+    val showAiNotConfigured by addViewModel.showAiNotConfiguredDialog.collectAsState()
+
+    val launchReceiptScanner = com.reddy.vittify.presentation.ui.components.rememberReceiptScannerLauncher { imageUri ->
+        addViewModel.processScannedReceipt(imageUri)
+    }
 
     // Reset state when screen is opened to avoid stale data from previous entries.
     // Skip reset when NLP prefill fields are present so they are not wiped.
@@ -174,12 +186,31 @@ fun SharedTransitionScope.AddScreen(
                     hasBackButton = true,
                     hasActionButton = true,
                     actionContent = {
-                        IconButton(onClick = { if (!isTransitioning) onNavigateToTransactionSettings() }) {
-                            Icon(
-                                Icons.Outlined.Settings,
-                                contentDescription = stringResource(R.string.transaction_settings),
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (pagerState.currentPage == 0) {
+                                IconButton(
+                                    onClick = {
+                                        if (!isTransitioning) {
+                                            addViewModel.onScanReceiptClicked {
+                                                launchReceiptScanner()
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Iconax.ReceiptSearch,
+                                        contentDescription = stringResource(R.string.scan_receipt),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                            IconButton(onClick = { if (!isTransitioning) onNavigateToTransactionSettings() }) {
+                                Icon(
+                                    Icons.Outlined.Settings,
+                                    contentDescription = stringResource(R.string.transaction_settings),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     },
                     navigationContent = { NavigationContent { if (!isTransitioning) onNavigateBack() } }
@@ -222,6 +253,13 @@ fun SharedTransitionScope.AddScreen(
                         0 -> TransactionTabContent(
                             viewModel = addViewModel,
                             onSave = onNavigateBack,
+                            onScanReceipt = {
+                                if (!isTransitioning) {
+                                    addViewModel.onScanReceiptClicked {
+                                        launchReceiptScanner()
+                                    }
+                                }
+                            },
                             isTransitioning = isTransitioning,
                             blurEffects = blurEffects,
                             hazeState = hazeState
@@ -237,5 +275,20 @@ fun SharedTransitionScope.AddScreen(
                 }
             }
         }
+
+        com.reddy.vittify.presentation.ui.components.ReceiptScanningProgressDialog(
+            isVisible = isScanningReceipt
+        )
+
+        com.reddy.vittify.presentation.ui.components.AiNotConfiguredDialog(
+            isVisible = showAiNotConfigured,
+            onDismiss = addViewModel::dismissAiNotConfiguredDialog,
+            onNavigateToAiSettings = onNavigateToAi
+        )
+
+        com.reddy.vittify.presentation.ui.components.ReceiptScanErrorDialog(
+            errorMessage = receiptScanError,
+            onDismiss = addViewModel::clearReceiptScanError
+        )
     }
 }

@@ -37,12 +37,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import android.net.Uri
 import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.UUID
 import javax.inject.Inject
+import com.reddy.vittify.data.nlp.ParsedTransactionDraft
+import com.reddy.vittify.data.nlp.ReceiptTransactionParser
 import com.reddy.vittify.data.sync.P2pSyncPreferencesRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -59,12 +62,23 @@ class TransactionDetailViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val transactionBalanceService: TransactionBalanceService,
     private val p2pPreferences: P2pSyncPreferencesRepository,
+    private val receiptTransactionParser: ReceiptTransactionParser,
     val attachmentService: AttachmentService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TransactionDetailUiState())
     val uiState: StateFlow<TransactionDetailUiState> = _uiState.asStateFlow()
+
+    // Receipt scanning states
+    private val _isScanningReceipt = MutableStateFlow(false)
+    val isScanningReceipt: StateFlow<Boolean> = _isScanningReceipt.asStateFlow()
+
+    private val _receiptScanError = MutableStateFlow<String?>(null)
+    val receiptScanError: StateFlow<String?> = _receiptScanError.asStateFlow()
+
+    private val _showAiNotConfiguredDialog = MutableStateFlow(false)
+    val showAiNotConfiguredDialog: StateFlow<Boolean> = _showAiNotConfiguredDialog.asStateFlow()
 
     val directFieldEditing: StateFlow<Boolean> = userPreferencesRepository.directFieldEditing
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
@@ -1103,5 +1117,158 @@ class TransactionDetailViewModel @Inject constructor(
     private suspend fun findAccountByLast4(last4: String): AccountBalanceEntity? {
         return accountBalanceRepository.getAllLatestBalances().first()
             .find { it.accountLast4 == last4 }
+    }
+
+    /**
+     * Checks AI configuration before initiating receipt scanning.
+     */
+    fun onScanReceiptClicked(onLaunchScanner: () -> Unit) {
+        viewModelScope.launch {
+            if (receiptTransactionParser.isAiConfigured()) {
+                onLaunchScanner()
+            } else {
+                _showAiNotConfiguredDialog.value = true
+            }
+        }
+    }
+
+    /**
+     * Analyzes a scanned receipt image with Gemini AI and auto-fills transaction fields & items in edit mode.
+     */
+    fun processScannedReceipt(uri: Uri) {
+        viewModelScope.launch {
+            _isScanningReceipt.value = true
+            _receiptScanError.value = null
+            try {
+                val currentId = _uiState.value.editableTransaction?.id ?: _uiState.value.transaction?.id ?: 0L
+                val savedPath = attachmentService.saveAttachment(uri, currentId)
+                val savedFile = savedPath?.let { java.io.File(context.filesDir, it) }
+                val parseResult = receiptTransactionParser.parseReceipt(uri, savedFile)
+                parseResult.fold(
+                    onSuccess = { draft ->
+                        applyReceiptDraft(draft, savedPath)
+                        _isScanningReceipt.value = false
+                    },
+                    onFailure = { error ->
+                        Log.e("TransactionDetailVM", "Receipt scan failed", error)
+                        if (savedPath != null) {
+                            addAttachment(savedPath)
+                        }
+                        _receiptScanError.value = error.message ?: "Failed to read receipt"
+                        _isScanningReceipt.value = false
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("TransactionDetailVM", "Unexpected error scanning receipt", e)
+                _receiptScanError.value = e.message ?: "Failed to read receipt"
+                _isScanningReceipt.value = false
+            }
+        }
+    }
+
+    fun applyReceiptDraft(draft: ParsedTransactionDraft, attachmentPath: String? = null) {
+        val currentTxn = _uiState.value.editableTransaction ?: _uiState.value.transaction ?: return
+        val currentId = currentTxn.id
+
+        if (!_uiState.value.isEditMode) {
+            enterEditMode()
+        }
+
+        val parsedAmount = draft.amount.toBigDecimalOrNull()
+        val parsedDate = draft.date ?: currentTxn.dateTime
+
+        _uiState.update { state ->
+            val cur = state.editableTransaction ?: currentTxn
+            state.copy(
+                editableTransaction = cur.copy(
+                    amount = parsedAmount ?: cur.amount,
+                    merchantName = draft.merchant.ifBlank { cur.merchantName },
+                    dateTime = parsedDate,
+                    transactionType = draft.type,
+                    description = if (draft.notes.isNotBlank()) draft.notes else cur.description
+                )
+            )
+        }
+
+        // Match bank name / account
+        if (draft.bankName.isNotBlank()) {
+            viewModelScope.launch {
+                val accounts = availableAccounts.filter { it.isNotEmpty() }.first()
+                val lowerBank = draft.bankName.lowercase()
+                val matched = accounts.firstOrNull { account ->
+                    account.customId?.lowercase() == lowerBank ||
+                    account.accountLast4.lowercase() == lowerBank ||
+                    account.bankName.lowercase().contains(lowerBank) ||
+                    lowerBank.contains(account.bankName.lowercase())
+                }
+                if (matched != null) {
+                    updateTransactionAccount(matched)
+                }
+            }
+        }
+
+        // Match category & subcategory
+        if (draft.category.isNotBlank()) {
+            viewModelScope.launch {
+                val availableCats = categoryRepository.getAllCategories().first()
+                val cat = availableCats.firstOrNull {
+                    it.name.equals(draft.category, ignoreCase = true) ||
+                    it.name.contains(draft.category, ignoreCase = true)
+                }
+                if (cat != null) {
+                    val subName = if (draft.subcategory.isNotBlank()) {
+                        val subList = subcategoryRepository.getSubcategoriesByCategoryId(cat.id).first()
+                        subList.firstOrNull {
+                            it.name.equals(draft.subcategory, ignoreCase = true) ||
+                            it.name.contains(draft.subcategory, ignoreCase = true)
+                        }?.name ?: draft.subcategory
+                    } else null
+
+                    updateCategory(cat.name, subName)
+                }
+            }
+        }
+
+        // Populate items
+        if (draft.items.isNotEmpty()) {
+            viewModelScope.launch {
+                val availableCats = categoryRepository.getAllCategories().first()
+                val convertedItems = draft.items.map { itemDraft ->
+                    val cat = availableCats.firstOrNull {
+                        it.name.equals(itemDraft.category, ignoreCase = true) ||
+                        it.name.contains(itemDraft.category, ignoreCase = true)
+                    }
+                    val catName = cat?.name ?: itemDraft.category.ifBlank { "Miscellaneous" }
+                    val subName = if (cat != null && itemDraft.subcategory.isNotBlank()) {
+                        val subList = subcategoryRepository.getSubcategoriesByCategoryId(cat.id).first()
+                        subList.firstOrNull {
+                            it.name.equals(itemDraft.subcategory, ignoreCase = true) ||
+                            it.name.contains(itemDraft.subcategory, ignoreCase = true)
+                        }?.name ?: itemDraft.subcategory
+                    } else itemDraft.subcategory.ifBlank { null }
+
+                    TransactionItemEntity(
+                        transactionId = currentId,
+                        name = itemDraft.name,
+                        amount = itemDraft.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                        category = catName,
+                        subcategory = subName
+                    )
+                }
+                _uiState.update { it.copy(editableItems = convertedItems) }
+            }
+        }
+
+        if (attachmentPath != null) {
+            addAttachment(attachmentPath)
+        }
+    }
+
+    fun clearReceiptScanError() {
+        _receiptScanError.value = null
+    }
+
+    fun dismissAiNotConfiguredDialog() {
+        _showAiNotConfiguredDialog.value = false
     }
 }

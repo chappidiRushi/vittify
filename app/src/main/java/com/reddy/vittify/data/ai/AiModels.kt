@@ -51,8 +51,15 @@ data class GeminiRequestContent(
 )
 
 @Serializable
+data class GeminiBlob(
+    val mimeType: String,
+    val data: String
+)
+
+@Serializable
 data class GeminiRequestPart(
-    val text: String
+    val text: String? = null,
+    val inlineData: GeminiBlob? = null
 )
 
 @Serializable
