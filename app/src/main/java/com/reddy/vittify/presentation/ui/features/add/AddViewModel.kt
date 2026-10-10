@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalTime
 import com.reddy.vittify.R
 import com.reddy.vittify.data.nlp.ParsedTransactionDraft
+import com.reddy.vittify.data.nlp.ReceiptTransactionParser
 
 import com.reddy.vittify.data.currency.CurrencyConversionService
 import com.reddy.vittify.data.preferences.UserPreferencesRepository
@@ -56,11 +57,22 @@ constructor(
     private val currencyConversionService: CurrencyConversionService,
     private val p2pPreferences: P2pSyncPreferencesRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val receiptTransactionParser: ReceiptTransactionParser,
     val attachmentService: AttachmentService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val sharedPrefs = context.getSharedPreferences("account_prefs", Context.MODE_PRIVATE)
+
+    // Receipt scanning states
+    private val _isScanningReceipt = MutableStateFlow(false)
+    val isScanningReceipt: StateFlow<Boolean> = _isScanningReceipt.asStateFlow()
+
+    private val _receiptScanError = MutableStateFlow<String?>(null)
+    val receiptScanError: StateFlow<String?> = _receiptScanError.asStateFlow()
+
+    private val _showAiNotConfiguredDialog = MutableStateFlow(false)
+    val showAiNotConfiguredDialog: StateFlow<Boolean> = _showAiNotConfiguredDialog.asStateFlow()
 
 
     // General UI State
@@ -580,14 +592,15 @@ constructor(
     // ─────────────────────────────────────────────────────────────────────
 
     /**
-     * Applies a [ParsedTransactionDraft] from the NLP parser to pre-fill
+     * Applies a [ParsedTransactionDraft] from the NLP parser or receipt scanner to pre-fill
      * the transaction form. Bank name matching is fuzzy (case-insensitive contains).
      *
      * This is idempotent — calling it multiple times with the same draft produces
      * the same result. The user can still edit any field before saving.
      */
     fun prefillFromNlpDraft(
-        draft: ParsedTransactionDraft
+        draft: ParsedTransactionDraft,
+        attachmentPath: String? = null
     ) {
         // Apply amount, merchant, type, notes, and date
         _transactionUiState.update { current ->
@@ -638,6 +651,92 @@ constructor(
                 }
             }
         }
+
+        // If receipt contains itemized lines, populate editable items
+        if (draft.items.isNotEmpty()) {
+            viewModelScope.launch {
+                val availableCategories = categories.filter { it.isNotEmpty() }.first()
+                val convertedItems = draft.items.map { itemDraft ->
+                    val cat = findBestMatchingCategory(availableCategories, itemDraft.category)
+                    val catName = cat?.name ?: itemDraft.category.ifBlank { "Miscellaneous" }
+                    val subName = if (cat != null && itemDraft.subcategory.isNotBlank()) {
+                        val subList = subcategoryRepository.getSubcategoriesByCategoryId(cat.id).first()
+                        val matchedSub = findBestMatchingSubcategory(subList, itemDraft.subcategory)
+                        matchedSub?.name ?: itemDraft.subcategory
+                    } else itemDraft.subcategory.ifBlank { null }
+
+                    TransactionItemEntity(
+                        transactionId = 0L,
+                        name = itemDraft.name,
+                        amount = itemDraft.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                        category = catName,
+                        subcategory = subName
+                    )
+                }
+                _transactionUiState.update { it.copy(items = convertedItems) }
+            }
+        }
+
+        // Add attachment path if available
+        if (attachmentPath != null) {
+            addTransactionAttachment(attachmentPath)
+        }
+    }
+
+    /**
+     * Checks AI configuration before initiating receipt scanning.
+     * If configured, invokes [onLaunchScanner]; otherwise shows AI configuration prompt dialog.
+     */
+    fun onScanReceiptClicked(onLaunchScanner: () -> Unit) {
+        viewModelScope.launch {
+            if (receiptTransactionParser.isAiConfigured()) {
+                onLaunchScanner()
+            } else {
+                _showAiNotConfiguredDialog.value = true
+            }
+        }
+    }
+
+    /**
+     * Analyzes a scanned receipt image with Gemini AI and auto-fills transaction fields & items.
+     */
+    fun processScannedReceipt(uri: Uri) {
+        viewModelScope.launch {
+            _isScanningReceipt.value = true
+            _receiptScanError.value = null
+            try {
+                // Save attachment image first into internal storage
+                val savedPath = attachmentService.saveAttachment(uri, 0L)
+                val savedFile = savedPath?.let { java.io.File(context.filesDir, it) }
+                val parseResult = receiptTransactionParser.parseReceipt(uri, savedFile)
+                parseResult.fold(
+                    onSuccess = { draft ->
+                        prefillFromNlpDraft(draft, savedPath)
+                        _isScanningReceipt.value = false
+                    },
+                    onFailure = { error ->
+                        Log.e("AddViewModel", "Receipt scan failed", error)
+                        if (savedPath != null) {
+                            addTransactionAttachment(savedPath)
+                        }
+                        _receiptScanError.value = error.message ?: "Failed to read receipt"
+                        _isScanningReceipt.value = false
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("AddViewModel", "Unexpected error scanning receipt", e)
+                _receiptScanError.value = e.message ?: "Failed to read receipt"
+                _isScanningReceipt.value = false
+            }
+        }
+    }
+
+    fun clearReceiptScanError() {
+        _receiptScanError.value = null
+    }
+
+    fun dismissAiNotConfiguredDialog() {
+        _showAiNotConfiguredDialog.value = false
     }
 
     private fun findBestMatchingCategory(

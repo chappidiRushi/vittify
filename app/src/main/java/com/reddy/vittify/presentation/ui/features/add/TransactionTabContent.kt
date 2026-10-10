@@ -102,6 +102,7 @@ import com.reddy.vittify.presentation.ui.components.AttachmentSection
 import com.reddy.vittify.presentation.ui.components.BrandIcon
 import com.reddy.vittify.presentation.ui.components.CategorySelectionSheet
 import com.reddy.vittify.presentation.ui.components.DatePicker
+import com.reddy.vittify.presentation.ui.components.ReceiptScanPlatter
 import com.reddy.vittify.presentation.ui.components.TimePicker
 import com.reddy.vittify.presentation.ui.features.accounts.NumberPad
 import com.reddy.vittify.presentation.ui.features.categories.EditSubcategorySheet
@@ -272,6 +273,7 @@ private fun EditableItemRow(
 fun TransactionTabContent(
     viewModel: AddViewModel,
     onSave: () -> Unit,
+    onScanReceipt: () -> Unit = {},
     isTransitioning: Boolean = false,
     blurEffects: Boolean,
     hazeState: HazeState
@@ -326,6 +328,11 @@ fun TransactionTabContent(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Scan Receipt Option
+            ReceiptScanPlatter(
+                onClick = onScanReceipt
+            )
+
             // Amount Input
             AmountInput(
                 amount = uiState.amount.ifEmpty { "0" },

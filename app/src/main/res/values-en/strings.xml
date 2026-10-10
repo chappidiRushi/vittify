@@ -1287,5 +1287,17 @@
     <string name="bg_style_constellation">Constellation</string>
     <string name="bg_style_ripples">Ripples</string>
     <string name="bg_style_aurora">Aurora</string>
+
+    <!-- Receipt Scanning -->
+    <string name="scan_receipt">Scan Receipt</string>
+    <string name="scan_receipt_cd">Scan receipt</string>
+    <string name="scan_receipt_desc">Auto-crop, straighten, and enhance receipts</string>
+    <string name="scan_receipt_ai_subtitle">Auto-fill transaction &amp; items with AI</string>
+    <string name="analyzing_receipt_title">Analyzing Receipt</string>
+    <string name="analyzing_receipt_desc">Extracting merchant, date, amounts, and item details with Gemini AI…</string>
+    <string name="ai_not_configured_title">Gemini AI Required</string>
+    <string name="ai_not_configured_receipt_desc">Receipt scanning uses Google Gemini to read receipts and extract transaction items. Please configure your Gemini API key in AI Settings.</string>
+    <string name="open_ai_settings">AI Settings</string>
+    <string name="receipt_scan_failed_title">Receipt Scan Failed</string>
 </resources>
 
