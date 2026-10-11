@@ -54,4 +54,49 @@ class ReceiptTransactionParserTest {
         }
         assertEquals("7.75", total.stripTrailingZeros().toPlainString())
     }
+
+    @Test
+    fun testMultipleItemsSplitsCategoryAndClearsSubcategory() {
+        val json = """
+            {
+                "amount": "15.50",
+                "merchant": "Whole Foods",
+                "type": "EXPENSE",
+                "category": "Groceries",
+                "subcategory": "Produce",
+                "items": [
+                    { "name": "Apples", "amount": "5.50", "category": "Groceries", "subcategory": "Fruits" },
+                    { "name": "Shampoo", "amount": "10.00", "category": "Personal", "subcategory": "Hygiene" }
+                ]
+            }
+        """.trimIndent()
+
+        val draft = ReceiptTransactionParser.parseJsonDraft(json)
+        assertEquals("Split", draft.category)
+        assertEquals("", draft.subcategory)
+        assertEquals(2, draft.items.size)
+        assertEquals("15.50", draft.amount)
+        assertEquals("Whole Foods", draft.merchant)
+    }
+
+    @Test
+    fun testSingleItemPreservesCategoryAndSubcategory() {
+        val json = """
+            {
+                "amount": "5.50",
+                "merchant": "Fruit Market",
+                "type": "EXPENSE",
+                "category": "Groceries",
+                "subcategory": "Fruits",
+                "items": [
+                    { "name": "Apples", "amount": "5.50", "category": "Groceries", "subcategory": "Fruits" }
+                ]
+            }
+        """.trimIndent()
+
+        val draft = ReceiptTransactionParser.parseJsonDraft(json)
+        assertEquals("Groceries", draft.category)
+        assertEquals("Fruits", draft.subcategory)
+        assertEquals(1, draft.items.size)
+    }
 }

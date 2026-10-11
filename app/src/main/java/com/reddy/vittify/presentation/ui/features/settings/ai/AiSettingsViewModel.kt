@@ -73,6 +73,7 @@ class AiSettingsViewModel @Inject constructor(
     fun onModelSelected(model: String) {
         viewModelScope.launch {
             aiPreferencesRepository.setGeminiSelectedModel(model)
+            _uiState.update { it.copy(testState = ConnectionTestState.Idle) }
         }
     }
 
@@ -93,7 +94,7 @@ class AiSettingsViewModel @Inject constructor(
                         aiPreferencesRepository.setGeminiAvailableModels(cleanNames)
                         val currentSelected = _uiState.value.geminiConfig.selectedModel
                         if (currentSelected.isBlank() || currentSelected !in cleanNames) {
-                            val preferred = cleanNames.firstOrNull { it.contains("flash", ignoreCase = true) }
+                            val preferred = cleanNames.firstOrNull { it.contains("flash", ignoreCase = true) && !it.contains("exp", ignoreCase = true) && !it.contains("preview", ignoreCase = true) }
                                 ?: cleanNames.first()
                             aiPreferencesRepository.setGeminiSelectedModel(preferred)
                         }

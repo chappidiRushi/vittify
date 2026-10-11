@@ -99,12 +99,19 @@ class AiPreferencesRepository @Inject constructor(
 
         val modelsJson = preferences[Keys.GEMINI_AVAILABLE_MODELS_JSON]
         val modelsList = if (modelsJson != null) {
-            runCatching { Json.decodeFromString<List<String>>(modelsJson) }.getOrElse { emptyList() }
+            runCatching { Json.decodeFromString<List<String>>(modelsJson) }.getOrElse { GeminiModelHelper.DEFAULT_MODELS }
         } else {
-            emptyList()
+            GeminiModelHelper.DEFAULT_MODELS
         }
 
-        val selectedModel = preferences[Keys.GEMINI_SELECTED_MODEL] ?: (modelsList.firstOrNull() ?: "")
+        val storedSelectedModel = preferences[Keys.GEMINI_SELECTED_MODEL]
+        val selectedModel = if (!storedSelectedModel.isNullOrBlank()) {
+            storedSelectedModel
+        } else {
+            modelsList.firstOrNull { it.contains("flash", ignoreCase = true) && !it.contains("exp", ignoreCase = true) }
+                ?: modelsList.firstOrNull()
+                ?: GeminiModelHelper.DEFAULT_MODEL
+        }
 
         GeminiConfig(
             apiKey = effectiveApiKey,
@@ -177,8 +184,11 @@ class AiPreferencesRepository @Inject constructor(
             preferences[Keys.GEMINI_LAST_TEST_MESSAGE] = message
             if (availableModels.isNotEmpty()) {
                 preferences[Keys.GEMINI_AVAILABLE_MODELS_JSON] = Json.encodeToString(availableModels)
-                if (preferences[Keys.GEMINI_SELECTED_MODEL] !in availableModels) {
-                    preferences[Keys.GEMINI_SELECTED_MODEL] = availableModels.first()
+                val current = preferences[Keys.GEMINI_SELECTED_MODEL]
+                if (current.isNullOrBlank() || current !in availableModels) {
+                    val preferred = availableModels.firstOrNull { it.contains("flash", ignoreCase = true) && !it.contains("exp", ignoreCase = true) }
+                        ?: availableModels.first()
+                    preferences[Keys.GEMINI_SELECTED_MODEL] = preferred
                 }
             }
         }

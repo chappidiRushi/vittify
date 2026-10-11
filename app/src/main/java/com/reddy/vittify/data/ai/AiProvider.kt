@@ -85,8 +85,17 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                     
                     val filteredModels = listResponse.models
                         .filter { dto ->
-                            dto.supportedGenerationMethods.isEmpty() || 
-                            dto.supportedGenerationMethods.contains("generateContent")
+                            val clean = dto.name.removePrefix("models/").lowercase()
+                            val supportsGeneration = dto.supportedGenerationMethods.isEmpty() || 
+                                dto.supportedGenerationMethods.contains("generateContent")
+
+                            supportsGeneration &&
+                                clean.contains("gemini") &&
+                                !clean.contains("embedding") &&
+                                !clean.contains("vision") &&
+                                !clean.contains("bison") &&
+                                !clean.contains("aqa") &&
+                                !clean.contains("imagen")
                         }
                         .map { dto ->
                             GeminiModelInfo(
@@ -97,11 +106,15 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                             )
                         }
 
-                    if (filteredModels.isNotEmpty()) {
-                        Result.success(filteredModels)
+                    val sortedModels = if (filteredModels.isNotEmpty()) {
+                        val sortedClassified = GeminiModelHelper.sortModels(filteredModels.map { it.cleanName }).map { it.id }
+                        val orderMap = sortedClassified.withIndex().associate { it.value to it.index }
+                        filteredModels.sortedBy { orderMap[it.cleanName] ?: Int.MAX_VALUE }
                     } else {
-                        Result.success(emptyList())
+                        GeminiModelHelper.DEFAULT_MODELS.map { GeminiModelInfo(name = it, displayName = it) }
                     }
+
+                    Result.success(sortedModels)
                 } else {
                     val errorMessage = extractErrorMessage(bodyText, status.value)
                     Result.failure(Exception(errorMessage))
@@ -130,12 +143,56 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                 modelsResult.fold(
                     onSuccess = { models ->
                         val cleanModelNames = models.map { it.cleanName }
-                        Result.success(
-                            ConnectionTestResult(
-                                isSuccess = true,
-                                message = "Successfully connected to Gemini API! ${cleanModelNames.size} models available.",
-                                availableModels = cleanModelNames
-                            )
+                        val targetModel = model.trim().removePrefix("models/").ifBlank {
+                            cleanModelNames.firstOrNull { it.contains("flash", ignoreCase = true) && !it.contains("exp", ignoreCase = true) }
+                                ?: cleanModelNames.firstOrNull()
+                                ?: GeminiModelHelper.DEFAULT_MODEL
+                        }
+
+                        // Test actual generation with the target model to verify quotas and access
+                        val testGenResult = generateContent(apiKey, targetModel, "Test connection. Reply with OK.")
+                        testGenResult.fold(
+                            onSuccess = {
+                                val classified = GeminiModelHelper.classify(targetModel)
+                                val notice = when (classified.tier) {
+                                    AiModelTier.RECOMMENDED -> "Recommended for free tier (15 RPM)."
+                                    AiModelTier.PRO -> "Note: Pro model has strict free rate limits (2 RPM)."
+                                    AiModelTier.EXPERIMENTAL -> "Note: Experimental model."
+                                    else -> ""
+                                }
+                                val fullMsg = "Successfully verified! Model '$targetModel' is working. $notice (${cleanModelNames.size} models loaded)"
+                                Result.success(
+                                    ConnectionTestResult(
+                                        isSuccess = true,
+                                        message = fullMsg.trim(),
+                                        availableModels = cleanModelNames
+                                    )
+                                )
+                            },
+                            onFailure = { genError ->
+                                val errorText = genError.message ?: ""
+                                val friendlyMessage = when {
+                                    errorText.contains("429") || errorText.contains("RESOURCE_EXHAUSTED", ignoreCase = true) || errorText.contains("quota", ignoreCase = true) -> {
+                                        "Model '$targetModel' quota or rate limit exceeded. Free tier accounts frequently run out of quota on this model. Please switch to a Recommended Flash model like 'gemini-1.5-flash' or 'gemini-2.0-flash'."
+                                    }
+                                    errorText.contains("403") || errorText.contains("PERMISSION_DENIED", ignoreCase = true) -> {
+                                        "Access denied for '$targetModel'. Your API key does not have permission for this model (may require paid billing). Switch to a Recommended model like 'gemini-1.5-flash'."
+                                    }
+                                    errorText.contains("404") || errorText.contains("NOT_FOUND", ignoreCase = true) -> {
+                                        "Model '$targetModel' was not found or is discontinued. Please select a Recommended model from the list."
+                                    }
+                                    else -> {
+                                        "Model '$targetModel' verification failed: $errorText. Try selecting a Recommended Flash model like 'gemini-1.5-flash'."
+                                    }
+                                }
+                                Result.success(
+                                    ConnectionTestResult(
+                                        isSuccess = false,
+                                        message = friendlyMessage,
+                                        availableModels = cleanModelNames
+                                    )
+                                )
+                            }
                         )
                     },
                     onFailure = { error ->

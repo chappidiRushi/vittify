@@ -1199,6 +1199,7 @@ fun VittifyNavHost(
                     initialTab = addTransaction.initialTab,
                     subscriptionId = addTransaction.subscriptionId,
                     transactionType = addTransaction.type,
+                    autoScanReceipt = addTransaction.autoScanReceipt,
                     nlpAmount = addTransaction.nlpAmount,
                     nlpMerchant = addTransaction.nlpMerchant,
                     nlpType = addTransaction.nlpType,

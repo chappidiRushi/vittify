@@ -323,6 +323,7 @@ data class Transactions(
     val initialTab: Int = 0,
     val subscriptionId: Long? = null,
     val type: String? = null,
+    val autoScanReceipt: Boolean = false,
     // NLP Quick Add prefill fields
     val nlpAmount: String? = null,
     val nlpMerchant: String? = null,

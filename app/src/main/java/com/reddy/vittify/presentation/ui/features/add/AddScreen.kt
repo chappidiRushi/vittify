@@ -27,8 +27,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -60,6 +63,7 @@ fun SharedTransitionScope.AddScreen(
     initialTab: Int = 0,
     subscriptionId: Long? = null,
     transactionType: String? = null,
+    autoScanReceipt: Boolean = false,
     // NLP Quick Add prefill fields (all optional)
     nlpAmount: String? = null,
     nlpMerchant: String? = null,
@@ -83,6 +87,7 @@ fun SharedTransitionScope.AddScreen(
     val isScanningReceipt by addViewModel.isScanningReceipt.collectAsState()
     val receiptScanError by addViewModel.receiptScanError.collectAsState()
     val showAiNotConfigured by addViewModel.showAiNotConfiguredDialog.collectAsState()
+    val isAiEnabled by addViewModel.isAiEnabled.collectAsState()
 
     val launchReceiptScanner = com.reddy.vittify.presentation.ui.components.rememberReceiptScannerLauncher { imageUri ->
         addViewModel.processScannedReceipt(imageUri)
@@ -92,6 +97,16 @@ fun SharedTransitionScope.AddScreen(
     // Skip reset when NLP prefill fields are present so they are not wiped.
     val hasNlpData = nlpAmount != null || nlpMerchant != null || nlpType != null || nlpCategory != null || nlpSubcategory != null || nlpDate != null
     val accounts by addViewModel.accounts.collectAsState()
+
+    var hasTriggeredAutoScan by rememberSaveable(autoScanReceipt) { mutableStateOf(false) }
+    LaunchedEffect(autoScanReceipt) {
+        if (autoScanReceipt && !hasTriggeredAutoScan) {
+            hasTriggeredAutoScan = true
+            addViewModel.onScanReceiptClicked {
+                launchReceiptScanner()
+            }
+        }
+    }
 
     LaunchedEffect(subscriptionId, transactionType, nlpAmount, nlpMerchant, nlpType, nlpCategory, nlpSubcategory, nlpDate) {
         if (subscriptionId == null && transactionType == null && !hasNlpData) {
@@ -187,7 +202,7 @@ fun SharedTransitionScope.AddScreen(
                     hasActionButton = true,
                     actionContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (pagerState.currentPage == 0) {
+                            if (pagerState.currentPage == 0 && isAiEnabled) {
                                 IconButton(
                                     onClick = {
                                         if (!isTransitioning) {
