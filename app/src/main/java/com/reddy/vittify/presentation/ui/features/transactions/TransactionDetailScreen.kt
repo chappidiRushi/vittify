@@ -276,6 +276,7 @@ fun SharedTransitionScope.TransactionDetailScreen(
     val isScanningReceipt by transactionDetailViewModel.isScanningReceipt.collectAsStateWithLifecycle()
     val receiptScanError by transactionDetailViewModel.receiptScanError.collectAsStateWithLifecycle()
     val showAiNotConfigured by transactionDetailViewModel.showAiNotConfiguredDialog.collectAsStateWithLifecycle()
+    val isAiEnabled by transactionDetailViewModel.isAiEnabled.collectAsStateWithLifecycle()
 
     val launchReceiptScanner = com.reddy.vittify.presentation.ui.components.rememberReceiptScannerLauncher { imageUri ->
         transactionDetailViewModel.processScannedReceipt(imageUri)
@@ -624,7 +625,7 @@ fun SharedTransitionScope.TransactionDetailScreen(
                                 )
                             }
                         }
-                    } else {
+                    } else if (isAiEnabled) {
                         Box(
                             modifier = Modifier
                                 .animateContentSize()
@@ -1270,10 +1271,13 @@ private fun TransactionDetailContent(
                 )
 
                 // Scan Receipt in Edit Mode
-                Spacer(modifier = Modifier.height(Spacing.md))
-                com.reddy.vittify.presentation.ui.components.ReceiptScanPlatter(
-                    onClick = onScanReceipt
-                )
+                val isAiEnabled by viewModel.isAiEnabled.collectAsStateWithLifecycle()
+                if (isAiEnabled) {
+                    Spacer(modifier = Modifier.height(Spacing.md))
+                    com.reddy.vittify.presentation.ui.components.ReceiptScanPlatter(
+                        onClick = onScanReceipt
+                    )
+                }
 
                 // Attachments Section in Edit Mode
                 Spacer(modifier = Modifier.height(Spacing.md))

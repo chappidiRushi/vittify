@@ -98,7 +98,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reddy.vittify.R
+import com.reddy.vittify.data.ai.AiModelTier
+import com.reddy.vittify.data.ai.ClassifiedAiModel
 import com.reddy.vittify.data.ai.ConnectionTestState
+import com.reddy.vittify.data.ai.GeminiModelHelper
 import com.reddy.vittify.presentation.effects.overScrollVertical
 import com.reddy.vittify.presentation.navigation.SettingsDeepLink
 import com.reddy.vittify.presentation.ui.components.CustomTitleTopAppBar
@@ -111,6 +114,8 @@ import com.reddy.vittify.presentation.ui.theme.Spacing
 import com.reddy.vittify.presentation.ui.theme.VittifyShapes
 import com.reddy.vittify.presentation.ui.theme.green_dark
 import com.reddy.vittify.presentation.ui.theme.green_light
+import com.reddy.vittify.presentation.ui.theme.orange_dark
+import com.reddy.vittify.presentation.ui.theme.orange_light
 import com.reddy.vittify.presentation.ui.theme.purple_dark
 import com.reddy.vittify.presentation.ui.theme.purple_light
 import dev.chrisbanes.haze.HazeState
@@ -562,6 +567,20 @@ fun AiSettingsScreen(
                             )
 
                             // AI Model Selector Dropdown Row
+                            val effectiveModels = remember(uiState.geminiConfig.availableModels) {
+                                if (uiState.geminiConfig.availableModels.isNotEmpty()) {
+                                    uiState.geminiConfig.availableModels
+                                } else {
+                                    GeminiModelHelper.DEFAULT_MODELS
+                                }
+                            }
+                            val classifiedModels = remember(effectiveModels) {
+                                GeminiModelHelper.sortModels(effectiveModels)
+                            }
+                            val selectedModelInfo = remember(uiState.geminiConfig.selectedModel) {
+                                GeminiModelHelper.classify(uiState.geminiConfig.selectedModel)
+                            }
+
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -618,40 +637,6 @@ fun AiSettingsScreen(
                                                 )
                                             }
                                         }
-                                    } else if (uiState.geminiConfig.availableModels.isEmpty()) {
-                                        Surface(
-                                            modifier = Modifier
-                                                .clip(VittifyShapes.pill)
-                                                .clickable {
-                                                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                                                    viewModel.onFetchModels()
-                                                },
-                                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                            shape = VittifyShapes.pill
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                Text(
-                                                    text = if (uiState.geminiConfig.apiKey.isBlank()) {
-                                                        stringResource(R.string.select_model)
-                                                    } else {
-                                                        "Fetch Models"
-                                                    },
-                                                    style = MaterialTheme.typography.labelMedium,
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                                Icon(
-                                                    imageVector = Icons.Rounded.ArrowDropDown,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
                                     } else {
                                         Surface(
                                             modifier = Modifier
@@ -664,9 +649,9 @@ fun AiSettingsScreen(
                                             shape = VittifyShapes.pill
                                         ) {
                                             Row(
-                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                                             ) {
                                                 Text(
                                                     text = uiState.geminiConfig.selectedModel.ifBlank { stringResource(R.string.select_model) },
@@ -675,8 +660,11 @@ fun AiSettingsScreen(
                                                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis,
-                                                    modifier = Modifier.widthIn(max = 160.dp)
+                                                    modifier = Modifier.widthIn(max = 130.dp)
                                                 )
+                                                if (uiState.geminiConfig.selectedModel.isNotBlank()) {
+                                                    ModelBadge(tier = selectedModelInfo.tier)
+                                                }
                                                 Icon(
                                                     imageVector = Icons.Rounded.ArrowDropDown,
                                                     contentDescription = null,
@@ -689,35 +677,90 @@ fun AiSettingsScreen(
                                         DropdownMenu(
                                             expanded = isModelMenuExpanded,
                                             onDismissRequest = { isModelMenuExpanded = false },
-                                            modifier = Modifier.heightIn(max = 350.dp)
+                                            modifier = Modifier
+                                                .widthIn(min = 280.dp, max = 340.dp)
+                                                .heightIn(max = 450.dp)
                                         ) {
-                                            uiState.geminiConfig.availableModels.forEach { model ->
-                                                val isSelected = uiState.geminiConfig.selectedModel == model
-                                                DropdownMenuItem(
-                                                    text = {
-                                                        Text(
-                                                            text = model,
-                                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                            style = MaterialTheme.typography.bodyMedium
-                                                        )
-                                                    },
-                                                    leadingIcon = if (isSelected) {
-                                                        {
-                                                            Icon(
-                                                                imageVector = Icons.Rounded.Check,
-                                                                contentDescription = null,
-                                                                tint = MaterialTheme.colorScheme.primary,
-                                                                modifier = Modifier.size(16.dp)
-                                                            )
-                                                        }
-                                                    } else null,
-                                                    onClick = {
-                                                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                                                        viewModel.onModelSelected(model)
-                                                        isModelMenuExpanded = false
-                                                    }
+                                            val recommendedList = classifiedModels.filter { it.tier == AiModelTier.RECOMMENDED }
+                                            val proList = classifiedModels.filter { it.tier == AiModelTier.PRO }
+                                            val expList = classifiedModels.filter { it.tier == AiModelTier.EXPERIMENTAL }
+                                            val otherList = classifiedModels.filter { it.tier == AiModelTier.OTHER }
+
+                                            if (recommendedList.isNotEmpty()) {
+                                                ModelDropdownSectionHeader(
+                                                    title = stringResource(R.string.model_tier_recommended),
+                                                    subtitle = stringResource(R.string.model_tier_recommended_sub)
                                                 )
+                                                recommendedList.forEach { model ->
+                                                    ModelDropdownItem(
+                                                        model = model,
+                                                        isSelected = uiState.geminiConfig.selectedModel == model.id,
+                                                        onClick = {
+                                                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                                            viewModel.onModelSelected(model.id)
+                                                            isModelMenuExpanded = false
+                                                        }
+                                                    )
+                                                }
                                             }
+
+                                            if (proList.isNotEmpty()) {
+                                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                                ModelDropdownSectionHeader(
+                                                    title = stringResource(R.string.model_tier_pro),
+                                                    subtitle = stringResource(R.string.model_tier_pro_sub)
+                                                )
+                                                proList.forEach { model ->
+                                                    ModelDropdownItem(
+                                                        model = model,
+                                                        isSelected = uiState.geminiConfig.selectedModel == model.id,
+                                                        onClick = {
+                                                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                                            viewModel.onModelSelected(model.id)
+                                                            isModelMenuExpanded = false
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                            if (expList.isNotEmpty()) {
+                                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                                ModelDropdownSectionHeader(
+                                                    title = stringResource(R.string.model_tier_experimental),
+                                                    subtitle = stringResource(R.string.model_tier_experimental_sub)
+                                                )
+                                                expList.forEach { model ->
+                                                    ModelDropdownItem(
+                                                        model = model,
+                                                        isSelected = uiState.geminiConfig.selectedModel == model.id,
+                                                        onClick = {
+                                                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                                            viewModel.onModelSelected(model.id)
+                                                            isModelMenuExpanded = false
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                            if (otherList.isNotEmpty()) {
+                                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                                ModelDropdownSectionHeader(
+                                                    title = stringResource(R.string.model_tier_other),
+                                                    subtitle = null
+                                                )
+                                                otherList.forEach { model ->
+                                                    ModelDropdownItem(
+                                                        model = model,
+                                                        isSelected = uiState.geminiConfig.selectedModel == model.id,
+                                                        onClick = {
+                                                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                                            viewModel.onModelSelected(model.id)
+                                                            isModelMenuExpanded = false
+                                                        }
+                                                    )
+                                                }
+                                            }
+
                                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                                             DropdownMenuItem(
                                                 text = {
@@ -743,6 +786,115 @@ fun AiSettingsScreen(
                                             )
                                         }
                                     }
+                                }
+                            }
+
+                            // Model Status & Quota Guidance Banner
+                            if (uiState.geminiConfig.selectedModel.isNotBlank()) {
+                                when (selectedModelInfo.tier) {
+                                    AiModelTier.RECOMMENDED -> {
+                                        Surface(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            color = green_light.copy(alpha = 0.5f),
+                                            shape = VittifyShapes.medium,
+                                            border = BorderStroke(1.dp, green_dark.copy(alpha = 0.25f))
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(12.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.CheckCircle,
+                                                    contentDescription = null,
+                                                    tint = green_dark,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Column {
+                                                    Text(
+                                                        text = stringResource(R.string.model_status_recommended_title),
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = green_dark
+                                                    )
+                                                    Text(
+                                                        text = stringResource(R.string.model_status_recommended_desc),
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = green_dark
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    AiModelTier.PRO -> {
+                                        Surface(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            color = orange_light.copy(alpha = 0.5f),
+                                            shape = VittifyShapes.medium,
+                                            border = BorderStroke(1.dp, orange_dark.copy(alpha = 0.25f))
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(12.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Warning,
+                                                    contentDescription = null,
+                                                    tint = orange_dark,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Column {
+                                                    Text(
+                                                        text = stringResource(R.string.model_status_pro_title),
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = orange_dark
+                                                    )
+                                                    Text(
+                                                        text = stringResource(R.string.model_status_pro_desc),
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = orange_dark
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    AiModelTier.EXPERIMENTAL -> {
+                                        Surface(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            color = purple_light.copy(alpha = 0.5f),
+                                            shape = VittifyShapes.medium,
+                                            border = BorderStroke(1.dp, purple_dark.copy(alpha = 0.25f))
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(12.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.AutoAwesome,
+                                                    contentDescription = null,
+                                                    tint = purple_dark,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Column {
+                                                    Text(
+                                                        text = stringResource(R.string.model_status_experimental_title),
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = purple_dark
+                                                    )
+                                                    Text(
+                                                        text = stringResource(R.string.model_status_experimental_desc),
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = purple_dark
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    AiModelTier.OTHER -> {}
                                 }
                             }
 
@@ -1245,3 +1397,111 @@ private fun formatTokenCount(tokens: Long): String {
         else -> tokens.toString()
     }
 }
+
+@Composable
+private fun ModelBadge(
+    tier: AiModelTier,
+    modifier: Modifier = Modifier
+) {
+    val (bgColor, textColor, textRes) = when (tier) {
+        AiModelTier.RECOMMENDED -> Triple(green_light, green_dark, R.string.model_badge_free_tier)
+        AiModelTier.PRO -> Triple(orange_light, orange_dark, R.string.model_badge_pro)
+        AiModelTier.EXPERIMENTAL -> Triple(purple_light, purple_dark, R.string.model_badge_experimental)
+        AiModelTier.OTHER -> Triple(
+            MaterialTheme.colorScheme.surfaceContainerHighest,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+            R.string.model_selection
+        )
+    }
+
+    Surface(
+        modifier = modifier,
+        color = bgColor,
+        shape = VittifyShapes.pill
+    ) {
+        Text(
+            text = stringResource(textRes),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = textColor,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+        )
+    }
+}
+
+@Composable
+private fun ModelDropdownSectionHeader(
+    title: String,
+    subtitle: String?
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        if (!subtitle.isNullOrBlank()) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun ModelDropdownItem(
+    model: ClassifiedAiModel,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    DropdownMenuItem(
+        text = {
+            Column(
+                modifier = Modifier.padding(vertical = 2.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = model.id,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    ModelBadge(tier = model.tier)
+                }
+                Text(
+                    text = model.subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        },
+        leadingIcon = if (isSelected) {
+            {
+                Icon(
+                    imageVector = Icons.Rounded.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        } else null,
+        onClick = onClick
+    )
+}
+

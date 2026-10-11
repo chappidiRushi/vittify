@@ -12,8 +12,11 @@ import com.reddy.vittify.data.repository.SubcategoryRepository
 import com.reddy.vittify.utils.ReceiptImageUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -63,6 +66,119 @@ class ReceiptTransactionParser @Inject constructor(
             DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH),
             DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH)
         )
+
+        private val JSON_PARSER = Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
+
+        internal fun parseJsonDraft(jsonString: String): ParsedTransactionDraft {
+            val jsonElement = runCatching {
+                JSON_PARSER.parseToJsonElement(jsonString).jsonObject
+            }.getOrNull()
+
+            val rawAmount = jsonElement?.get("amount")?.jsonPrimitive?.contentOrNull ?: ""
+            var cleanAmount = rawAmount.replace(Regex("""[^0-9.]"""), "").trim()
+            val merchant = jsonElement?.get("merchant")?.jsonPrimitive?.contentOrNull?.trim() ?: ""
+            val typeStr = jsonElement?.get("type")?.jsonPrimitive?.contentOrNull?.trim() ?: "EXPENSE"
+            val rawBankName = jsonElement?.get("bankName")?.jsonPrimitive?.contentOrNull?.trim() ?: ""
+            val rawCategory = jsonElement?.get("category")?.jsonPrimitive?.contentOrNull?.trim()?.ifBlank { "Miscellaneous" } ?: "Miscellaneous"
+            val rawSubcategory = jsonElement?.get("subcategory")?.jsonPrimitive?.contentOrNull?.trim() ?: ""
+            val rawDate = jsonElement?.get("date")?.jsonPrimitive?.contentOrNull?.trim() ?: ""
+            val notes = jsonElement?.get("notes")?.jsonPrimitive?.contentOrNull?.trim() ?: ""
+
+            val type = try {
+                TransactionType.valueOf(typeStr.uppercase())
+            } catch (_: Exception) {
+                TransactionType.EXPENSE
+            }
+
+            val parsedDate = parseReceiptDate(rawDate)
+
+            // Parse itemized lines
+            val itemsList = mutableListOf<ParsedReceiptItemDraft>()
+            val jsonItems = runCatching { jsonElement?.get("items")?.jsonArray }.getOrNull()
+            if (jsonItems != null) {
+                for (itemElement in jsonItems) {
+                    val itemObj = runCatching { itemElement.jsonObject }.getOrNull() ?: continue
+                    val itemName = itemObj["name"]?.jsonPrimitive?.contentOrNull?.trim() ?: ""
+                    val itemRawAmount = itemObj["amount"]?.jsonPrimitive?.contentOrNull ?: ""
+                    val itemCleanAmount = itemRawAmount.replace(Regex("""[^0-9.]"""), "").trim()
+                    val itemCat = itemObj["category"]?.jsonPrimitive?.contentOrNull?.trim()?.ifBlank { rawCategory } ?: rawCategory
+                    val itemSub = itemObj["subcategory"]?.jsonPrimitive?.contentOrNull?.trim() ?: ""
+
+                    if (itemName.isNotBlank() || itemCleanAmount.isNotBlank()) {
+                        itemsList.add(
+                            ParsedReceiptItemDraft(
+                                name = itemName.ifBlank { "Item ${itemsList.size + 1}" },
+                                amount = itemCleanAmount.ifBlank { "0" },
+                                category = itemCat.ifBlank { "Miscellaneous" },
+                                subcategory = itemSub
+                            )
+                        )
+                    }
+                }
+            }
+
+            // Fallback: If amount was empty or 0, calculate from items sum
+            if ((cleanAmount.isBlank() || cleanAmount == "0" || cleanAmount == "0.0" || cleanAmount == "0.00") && itemsList.isNotEmpty()) {
+                val sum = itemsList.fold(BigDecimal.ZERO) { acc, item ->
+                    acc + (item.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                }
+                if (sum > BigDecimal.ZERO) {
+                    cleanAmount = sum.stripTrailingZeros().toPlainString()
+                }
+            }
+
+            // If receipt has multiple items, overall transaction category is Split and subcategory is removed
+            val hasMultipleItems = itemsList.size > 1
+            val finalCategory = if (hasMultipleItems) "Split" else rawCategory.ifBlank { "Miscellaneous" }
+            val finalSubcategory = if (hasMultipleItems) "" else rawSubcategory
+
+            return ParsedTransactionDraft(
+                amount = cleanAmount,
+                merchant = merchant,
+                type = type,
+                bankName = rawBankName,
+                notes = notes,
+                category = finalCategory,
+                subcategory = finalSubcategory,
+                date = parsedDate,
+                items = itemsList
+            )
+        }
+
+        private fun parseReceiptDate(rawDate: String): LocalDateTime? {
+            if (rawDate.isBlank()) return null
+
+            val trimmed = rawDate.trim()
+
+            // 1. Try date-time formatters
+            for (formatter in DATE_FORMATTERS) {
+                try {
+                    return LocalDateTime.parse(trimmed, formatter)
+                } catch (_: Exception) { }
+            }
+
+            // 2. Try with space replaced with T
+            if (trimmed.contains(' ') && !trimmed.contains('T')) {
+                val isoCandidate = trimmed.replace(' ', 'T')
+                try {
+                    return LocalDateTime.parse(isoCandidate)
+                } catch (_: Exception) { }
+            }
+
+            // 3. Try date-only formatters and combine with current time
+            val datePart = trimmed.substringBefore('T').substringBefore(' ')
+            for (formatter in DATE_ONLY_FORMATTERS) {
+                try {
+                    val date = LocalDate.parse(datePart, formatter)
+                    return date.atTime(LocalTime.now())
+                } catch (_: Exception) { }
+            }
+
+            return null
+        }
     }
 
     /**
@@ -240,106 +356,6 @@ class ReceiptTransactionParser @Inject constructor(
         if (start != -1 && end != -1 && end > start) {
             return clean.substring(start, end + 1).trim()
         }
-        return null
-    }
-
-    private fun parseJsonDraft(jsonString: String): ParsedTransactionDraft {
-        val json = JSONObject(jsonString)
-        val rawAmount = json.optString("amount", "")
-        var cleanAmount = rawAmount.replace(Regex("""[^0-9.]"""), "").trim()
-        val merchant = json.optString("merchant", "").trim()
-        val typeStr = json.optString("type", "EXPENSE")
-        val rawBankName = json.optString("bankName", "").trim()
-        val rawCategory = json.optString("category", "Miscellaneous").trim()
-        val rawSubcategory = json.optString("subcategory", "").trim()
-        val rawDate = json.optString("date", "").trim()
-        val notes = json.optString("notes", "").trim()
-
-        val type = try {
-            TransactionType.valueOf(typeStr.uppercase())
-        } catch (_: Exception) {
-            TransactionType.EXPENSE
-        }
-
-        val parsedDate = parseReceiptDate(rawDate)
-
-        // Parse itemized lines
-        val itemsList = mutableListOf<ParsedReceiptItemDraft>()
-        val jsonItems = json.optJSONArray("items")
-        if (jsonItems != null) {
-            for (i in 0 until jsonItems.length()) {
-                val itemObj = jsonItems.optJSONObject(i) ?: continue
-                val itemName = itemObj.optString("name", "").trim()
-                val itemRawAmount = itemObj.optString("amount", "")
-                val itemCleanAmount = itemRawAmount.replace(Regex("""[^0-9.]"""), "").trim()
-                val itemCategory = itemObj.optString("category", rawCategory).trim().ifBlank { rawCategory }
-                val itemSubcategory = itemObj.optString("subcategory", "").trim()
-
-                if (itemName.isNotBlank() || itemCleanAmount.isNotBlank()) {
-                    itemsList.add(
-                        ParsedReceiptItemDraft(
-                            name = itemName.ifBlank { "Item ${i + 1}" },
-                            amount = itemCleanAmount.ifBlank { "0" },
-                            category = itemCategory.ifBlank { "Miscellaneous" },
-                            subcategory = itemSubcategory
-                        )
-                    )
-                }
-            }
-        }
-
-        // Fallback: If amount was empty or 0, calculate from items sum
-        if ((cleanAmount.isBlank() || cleanAmount == "0" || cleanAmount == "0.0" || cleanAmount == "0.00") && itemsList.isNotEmpty()) {
-            val sum = itemsList.fold(BigDecimal.ZERO) { acc, item ->
-                acc + (item.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
-            }
-            if (sum > BigDecimal.ZERO) {
-                cleanAmount = sum.stripTrailingZeros().toPlainString()
-            }
-        }
-
-        return ParsedTransactionDraft(
-            amount = cleanAmount,
-            merchant = merchant,
-            type = type,
-            bankName = rawBankName,
-            notes = notes,
-            category = rawCategory.ifBlank { "Miscellaneous" },
-            subcategory = rawSubcategory,
-            date = parsedDate,
-            items = itemsList
-        )
-    }
-
-    private fun parseReceiptDate(rawDate: String): LocalDateTime? {
-        if (rawDate.isBlank()) return null
-
-        val trimmed = rawDate.trim()
-
-        // 1. Try date-time formatters
-        for (formatter in DATE_FORMATTERS) {
-            try {
-                return LocalDateTime.parse(trimmed, formatter)
-            } catch (_: Exception) { }
-        }
-
-        // 2. Try with space replaced with T
-        if (trimmed.contains(' ') && !trimmed.contains('T')) {
-            val isoCandidate = trimmed.replace(' ', 'T')
-            try {
-                return LocalDateTime.parse(isoCandidate)
-            } catch (_: Exception) { }
-        }
-
-        // 3. Try date-only formatters and combine with current time
-        val datePart = trimmed.substringBefore('T').substringBefore(' ')
-        for (formatter in DATE_ONLY_FORMATTERS) {
-            try {
-                val date = LocalDate.parse(datePart, formatter)
-                return date.atTime(LocalTime.now())
-            } catch (_: Exception) { }
-        }
-
         return null
     }
 }

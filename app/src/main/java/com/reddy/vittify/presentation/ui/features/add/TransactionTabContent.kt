@@ -283,6 +283,7 @@ fun TransactionTabContent(
     val transactionCategories by viewModel.transactionCategories.collectAsState()
     val transactionSubcategories by viewModel.transactionSubcategories.collectAsState()
     val transactionAttachments by viewModel.transactionAttachments.collectAsState()
+    val isAiEnabled by viewModel.isAiEnabled.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -329,9 +330,11 @@ fun TransactionTabContent(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Scan Receipt Option
-            ReceiptScanPlatter(
-                onClick = onScanReceipt
-            )
+            if (isAiEnabled) {
+                ReceiptScanPlatter(
+                    onClick = onScanReceipt
+                )
+            }
 
             // Amount Input
             AmountInput(
@@ -718,7 +721,7 @@ fun TransactionTabContent(
                     )
 
                     // Subcategory Display (Read-only, selected via sheet)
-                    if (uiState.subcategory != null) {
+                    if (uiState.subcategory != null && !hasItems) {
                         Spacer(modifier = Modifier.height(Spacing.md))
                         TextField(
                             value = uiState.subcategory ?: stringResource(R.string.none_label),

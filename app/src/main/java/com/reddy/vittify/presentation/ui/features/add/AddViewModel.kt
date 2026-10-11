@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import com.reddy.vittify.R
+import com.reddy.vittify.data.ai.AiPreferencesRepository
 import com.reddy.vittify.data.nlp.ParsedTransactionDraft
 import com.reddy.vittify.data.nlp.ReceiptTransactionParser
 
@@ -58,6 +59,7 @@ constructor(
     private val p2pPreferences: P2pSyncPreferencesRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val receiptTransactionParser: ReceiptTransactionParser,
+    private val aiPreferencesRepository: AiPreferencesRepository,
     val attachmentService: AttachmentService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -65,6 +67,9 @@ constructor(
     private val sharedPrefs = context.getSharedPreferences("account_prefs", Context.MODE_PRIVATE)
 
     // Receipt scanning states
+    val isAiEnabled: StateFlow<Boolean> = aiPreferencesRepository.isAiEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     private val _isScanningReceipt = MutableStateFlow(false)
     val isScanningReceipt: StateFlow<Boolean> = _isScanningReceipt.asStateFlow()
 
@@ -391,11 +396,14 @@ constructor(
 
                 val amount = BigDecimal(state.amount)
 
+                val finalCategory = if (state.items.size > 1) "Split" else state.category
+                val finalSubcategory = if (state.items.size > 1) null else state.subcategory
+
                 val transactionId = addTransactionUseCase.execute(
                     amount = amount,
                     merchant = state.merchant.trim(),
-                    category = state.category,
-                    subcategory = state.subcategory,
+                    category = finalCategory,
+                    subcategory = finalSubcategory,
                     type = state.transactionType,
                     date = state.date,
                     notes = state.notes.takeIf { it.isNotBlank() },
@@ -602,7 +610,11 @@ constructor(
         draft: ParsedTransactionDraft,
         attachmentPath: String? = null
     ) {
-        // Apply amount, merchant, type, notes, and date
+        val hasMultipleItems = draft.items.size > 1 || draft.category.equals("Split", ignoreCase = true)
+        val initialCategory = if (hasMultipleItems) "Split" else draft.category.ifBlank { _transactionUiState.value.category }
+        val initialSubcategory = if (hasMultipleItems) null else draft.subcategory.takeIf { it.isNotBlank() }
+
+        // Apply amount, merchant, type, notes, date, category and subcategory
         _transactionUiState.update { current ->
             current.copy(
                 amount = draft.amount,
@@ -611,7 +623,9 @@ constructor(
                 merchantError = validateMerchant(draft.merchant),
                 transactionType = draft.type,
                 notes = draft.notes,
-                date = draft.date ?: current.date
+                date = draft.date ?: current.date,
+                category = initialCategory,
+                subcategory = initialSubcategory
             )
         }
         if (draft.date != null) {
@@ -636,7 +650,9 @@ constructor(
         }
 
         // Match category & subcategory - imitating manual selection flow
-        if (draft.category.isNotBlank()) {
+        if (hasMultipleItems) {
+            updateTransactionCategory("Split", null)
+        } else if (draft.category.isNotBlank()) {
             viewModelScope.launch {
                 val availableCategories = categories.filter { it.isNotEmpty() }.first()
                 val cat = findBestMatchingCategory(availableCategories, draft.category)

@@ -882,6 +882,7 @@ fun SharedTransitionScope.HomeScreen(
                                                 HomeShortcutItem.SMS -> navController.safeNavigate(SmsSettings())
                                                 HomeShortcutItem.REPORTS -> navController.safeNavigate(PdfReport)
                                                 HomeShortcutItem.COUPLE -> navController.safeNavigate(CoupleTracker)
+                                                HomeShortcutItem.SCAN_RECEIPT -> navController.safeNavigate(AddTransaction(autoScanReceipt = true))
                                             }
                                         },
                                         onUpdateShortcuts = homeViewModel::updateHomeShortcuts,

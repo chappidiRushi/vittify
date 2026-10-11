@@ -44,6 +44,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.UUID
 import javax.inject.Inject
+import com.reddy.vittify.data.ai.AiPreferencesRepository
 import com.reddy.vittify.data.nlp.ParsedTransactionDraft
 import com.reddy.vittify.data.nlp.ReceiptTransactionParser
 import com.reddy.vittify.data.sync.P2pSyncPreferencesRepository
@@ -63,12 +64,16 @@ class TransactionDetailViewModel @Inject constructor(
     private val transactionBalanceService: TransactionBalanceService,
     private val p2pPreferences: P2pSyncPreferencesRepository,
     private val receiptTransactionParser: ReceiptTransactionParser,
+    private val aiPreferencesRepository: AiPreferencesRepository,
     val attachmentService: AttachmentService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TransactionDetailUiState())
     val uiState: StateFlow<TransactionDetailUiState> = _uiState.asStateFlow()
+
+    val isAiEnabled: StateFlow<Boolean> = aiPreferencesRepository.isAiEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     // Receipt scanning states
     private val _isScanningReceipt = MutableStateFlow(false)
@@ -697,7 +702,11 @@ class TransactionDetailViewModel @Inject constructor(
                 // Normalize merchant name before saving
                 // Also lazily assign a UUID if this is an old transaction that doesn't have one yet
                 val stableUuid = if (toSave.uuid.isBlank()) UUID.randomUUID().toString() else toSave.uuid
+                val finalCategory = if (state.editableItems.size > 1) "Split" else toSave.category
+                val finalSubcategory = if (state.editableItems.size > 1) null else toSave.subcategory
                 val normalizedTransaction = toSave.copy(
+                    category = finalCategory,
+                    subcategory = finalSubcategory,
                     merchantName = normalizeMerchantName(toSave.merchantName),
                     billingCycle = finalBillingCycle,
                     targetAmount = finalTargetAmount,
@@ -1176,6 +1185,9 @@ class TransactionDetailViewModel @Inject constructor(
 
         val parsedAmount = draft.amount.toBigDecimalOrNull()
         val parsedDate = draft.date ?: currentTxn.dateTime
+        val hasMultipleItems = draft.items.size > 1 || draft.category.equals("Split", ignoreCase = true)
+        val finalCategory = if (hasMultipleItems) "Split" else draft.category.ifBlank { currentTxn.category }
+        val finalSubcategory = if (hasMultipleItems) null else draft.subcategory.takeIf { it.isNotBlank() }
 
         _uiState.update { state ->
             val cur = state.editableTransaction ?: currentTxn
@@ -1185,7 +1197,9 @@ class TransactionDetailViewModel @Inject constructor(
                     merchantName = draft.merchant.ifBlank { cur.merchantName },
                     dateTime = parsedDate,
                     transactionType = draft.type,
-                    description = if (draft.notes.isNotBlank()) draft.notes else cur.description
+                    description = if (draft.notes.isNotBlank()) draft.notes else cur.description,
+                    category = finalCategory,
+                    subcategory = finalSubcategory
                 )
             )
         }
@@ -1208,7 +1222,9 @@ class TransactionDetailViewModel @Inject constructor(
         }
 
         // Match category & subcategory
-        if (draft.category.isNotBlank()) {
+        if (hasMultipleItems) {
+            updateCategory("Split", null)
+        } else if (draft.category.isNotBlank()) {
             viewModelScope.launch {
                 val availableCats = categoryRepository.getAllCategories().first()
                 val cat = availableCats.firstOrNull {

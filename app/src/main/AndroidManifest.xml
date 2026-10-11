@@ -71,6 +71,7 @@
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="com.reddy.vittify.action.ADD_TRANSACTION" />
+                <action android:name="com.reddy.vittify.action.SCAN_RECEIPT" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
@@ -342,6 +343,19 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/financial_overview_widget_info" />
+        </receiver>
+
+        <!-- Scan Receipt Widget -->
+        <receiver
+            android:name=".widget.ScanReceiptWidgetProvider"
+            android:exported="true"
+            android:label="@string/scan_receipt">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/scan_receipt_widget_info" />
         </receiver>
 
         <!-- Transparent overlay activity for the widget input -->
