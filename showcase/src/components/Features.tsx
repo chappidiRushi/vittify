@@ -110,18 +110,21 @@ function FeatureBlock({
 
 export function Features() {
   return (
-    <section id="features" className="py-28">
+    <section id="features" className="py-28" aria-label="Vittify features and capabilities">
       <div className="max-w-6xl mx-auto px-6">
         {/* Section header */}
         <div className="text-center mb-20">
           <span className="text-xs font-semibold tracking-widest uppercase text-[var(--color-accent-coral)]">
-            Features
+            Features & Capabilities
           </span>
           <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold text-[var(--color-text-primary)] tracking-tighter">
-            Everything you need.
+            Built for pure convenience.
             <br />
-            <span className="text-[var(--color-text-secondary)] font-medium">Nothing you don't.</span>
+            <span className="text-[var(--color-text-secondary)] font-medium">Everything you need, nothing you don't.</span>
           </h2>
+          <p className="mt-4 text-base text-[var(--color-text-secondary)] max-w-xl mx-auto">
+            From hands-free bank SMS parsing to 1-tap launcher widgets and on-device receipt OCR, every interaction is engineered for everyday ease of use.
+          </p>
         </div>
 
         {/* Feature blocks */}

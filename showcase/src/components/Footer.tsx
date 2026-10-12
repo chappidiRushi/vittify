@@ -18,9 +18,10 @@ const links = [
     label: 'Developers',
     items: [
       { label: 'GitHub Repository', href: 'https://github.com/chappidiRushi/vittify', external: true },
+      { label: 'Report a Bug / Issue', href: 'https://github.com/chappidiRushi/vittify/issues', external: true },
       { label: 'Contributing Guide', href: 'https://github.com/chappidiRushi/vittify/blob/main/CONTRIBUTING.md', external: true },
       { label: 'Parser Standards', href: 'https://github.com/chappidiRushi/vittify/blob/main/docs/parser-test-standards.md', external: true },
-      { label: 'Open Issues', href: 'https://github.com/chappidiRushi/vittify/issues', external: true },
+      { label: 'LLM Guide (llms.txt)', href: '/llms.txt', external: true },
     ],
   },
   {
@@ -87,7 +88,7 @@ export function Footer({ onNavigate }: FooterProps) {
               </span>
             </a>
             <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-5">
-              A tiny, smart financial companion that makes tracking money surprisingly delightful.
+              A tiny, smart financial companion built for pure convenience and daily ease of use.
             </p>
             <a
               href="https://github.com/chappidiRushi/vittify"

@@ -13,6 +13,14 @@
 
 ---
 
+# 🚀 Ready to Use & Built for Pure Convenience!
+
+> ### 📢 Note for Early Adopters & Community
+> **Vittify is ready to use!** You can install and start tracking your daily expenses right away.
+> As this is an actively evolving open-source project across hundreds of banks and Android device models, there might still be some minor bugs or edge cases. If you find any bugs or issues, **please [report them on GitHub Issues](https://github.com/chappidiRushi/vittify/issues)** — we'll investigate and fix them as soon as possible! Your feedback helps make Vittify better for everyone.
+
+---
+
 ## Vittify — Clean, 100% Private & Effortless Expense Tracker
 
 > **"A tiny, smart financial companion that makes tracking money surprisingly delightful."**
@@ -116,56 +124,63 @@ Captured directly from **Google Pixel 7 Pro** running the latest Vittify Beta bu
 ### 🤖 4. Google Gemini AI & Plain-English Quick Add (Beta)
 - **Experimental Beta Feature**: Completely optional. Vittify remains 100% functional and offline without configuring any API key.
 - **Bring Your Own Key (BYOK)**: Connect your private Google Gemini API key directly to your device—no third-party proxy servers or monthly subscriptions.
-- **Model Flexibility**: Choose between `Gemini 2.5 Flash`, `Gemini 2.5 Pro`, or lightweight models based on your preference.
+- **Model Flexibility & Guidance**: Choose between `Gemini 2.5 Flash`, `Gemini 2.5 Pro`, or lightweight models with clear guidance and custom quick add prompts.
 - **Natural Language Quick Add**: Simply type what you spent in natural English (e.g., *"Paid 450 for grocery at Blinkit via HDFC"* or *"Spent $34.50 on dinner with Sarah"*), and it automatically resolves amount, merchant, category, and payment account.
 - **Offline Token Counter**: Monitor local request and token usage directly from the in-app AI settings.
 
-### 📱 5. Home Screen Quick Add Widget
-- **Glanceable Android Widget**: Quick Add widget pinned right to your Android home launcher.
-- **Instant Logging**: Record cash spending, street purchases, or daily transit fares without launching the full application.
+### 🧾 5. Receipt Scanning, On-Device OCR & AI Extraction (New)
+- **On-Device OCR (Google ML Kit)**: Snap physical receipts, store paper bills, or invoices—extracts merchant names, totals, tax, and dates directly on your phone without sending photos to any server.
+- **Gemini AI Receipt Extraction (Optional BYOK)**: Automatically parses dense line items, itemized costs, and tax breakdowns into structured records.
+- **Split Transactions & Line Items**: Split complex receipts across multiple categories (e.g. supermarket run split into Groceries and Household Essentials) or split expenses with friends.
+- **Document & Bill Attachments**: Attach photos of bills, receipts, and invoices directly to transactions for audit and warranty records.
 
-### 🎯 6. Granular Budgets & Spending Controls
+### 📱 6. Home Screen Widgets & Launcher Shortcuts (Built for Convenience)
+- **Glanceable Quick Add Widget**: Log cash spending, street food, or transit fares in two taps directly from your home screen.
+- **Scan Receipt Widget**: One-tap camera shortcut directly on your home launcher to capture and scan receipts instantly.
+- **App Shortcuts**: Long-press app icon to immediately jump into Quick Add or Scan Receipt.
+
+### 🎯 7. Granular Budgets & Spending Controls
 - **Category-Level Limits**: Set flexible monthly spending caps for dining, groceries, shopping, travel, and more.
 - **Adaptive Daily Allowance**: Calculates how much you can spend per day to stay within budget based on current velocity and days remaining.
 - **Threshold Warnings**: Visual alerts and warning indicators when approaching 80% or 100% of your allocated limits.
 - **Historical Budget Ledger**: Review past monthly performance to identify spending habits and seasonal trends.
 
-### 🔁 7. Subscription & Recurring Payment Tracker
+### 🔁 8. Subscription & Recurring Payment Tracker
 - **Commitment Forecasting**: Track all recurring payments (Netflix, Spotify, ChatGPT Plus, Amazon Prime, broadband, rent, utilities).
 - **Monthly & Annual Projections**: Instant visibility into total annualized fixed costs.
 - **Service Identity**: Recognizes recurring merchants and displays crisp brand icons and billing cycle countdowns.
 
-### 💳 8. Multi-Currency & Advanced Account Management
+### 💳 9. Multi-Currency & Advanced Account Management
 - **Universal Multi-Currency Engine**: Native support for **INR (₹)**, **USD ($)**, **AED (د.إ)**, **EUR (€)**, **GBP (£)**, **NPR (₨)**, **THB (฿)**, **ETB (ብር)**, **TZS (TSh)**, **PKR (₨)**, and dozens more.
 - **Live Approximate Conversions**: View foreign transactions with real-time approximate local currency equivalents.
 - **Comprehensive Account Types**: Bank accounts, credit cards, investments, savings, digital wallets, and a dedicated **Cash Wallet**.
 - **Running Ledger with Balance Trend Graphs**: Visualize balance evolution over time and reconcile manual adjustments easily.
 
-### 📈 9. Interactive Analytics & Financial Heatmaps
+### 📈 10. Interactive Analytics & Financial Heatmaps
 - **Dynamic Trend Graphs**: Smooth animated bezier curves illustrating spend vs. income over custom horizons.
 - **Category Donut Visualizations**: Interactive segment breakdowns with percentage contributions and quick drill-downs.
 - **Daily Financial Heatmap**: GitHub-style activity heatmaps showing transaction intensity across every day of the month.
 - **Flexible Time Horizons**: Switch between *Today*, *This Week*, *This Month*, *Last Month*, *Quarter*, *Year-to-Date*, or *Custom Date Range*.
 
-### ⚙️ 10. Smart Automation Rules & Webhooks
+### ⚙️ 11. Smart Automation Rules & Webhooks
 - **Conditional Rule Engine**: Define triggers (e.g., *"If SMS merchant contains 'Uber' or 'Lyft', set category to Transport"*).
 - **Automatic Account Mapping**: Automatically route transactions to specific accounts based on incoming sender patterns.
 - **Outgoing HTTP Webhooks**: Fire real-time JSON webhooks to your private home automation servers, Notion databases, or custom dashboards whenever a transaction is recorded.
 
-### 🎨 11. Material 3 Expressive Design & Theming
+### 🎨 12. Material 3 Expressive Design & Theming
 - **Dynamic Monet Theming**: Adapts dynamically to your Android wallpaper palette on Android 12+.
 - **Curated Expressive Themes**: Hand-crafted themes including *Latte*, *Macchiato*, *Rosé Pine*, and high-contrast *AMOLED Pure Black*.
 - **Animated Mesh Canvas**: Optional fluid animated background canvas providing tactile ambiance.
 - **Navigation Modes**: Choose between edge-to-edge system navigation and a floating squircle navigation bar.
 - **Custom Launcher Icons**: Personalize your home screen with themed app icons.
 
-### 🔒 12. Privacy & Offline Sovereignty
+### 🔒 13. Privacy & Offline Sovereignty
 - **Zero Cloud Architecture**: No sign-ups, no user accounts, no analytics tracking, no Firebase, and no advertisements.
 - **Biometric Lock**: Protect your financial data with Android BiometricPrompt (Fingerprint / Face Unlock).
 - **Encrypted Local Storage**: Sensitive settings and credentials stored using AndroidX EncryptedSharedPreferences and cryptographic keystores.
 - **Data Sanitization**: Option to sanitize or mask sensitive account digits when sharing screenshots or exporting records.
 
-### ☁️ 13. Encrypted Multi-Cloud Backup & Restore
+### ☁️ 14. Encrypted Multi-Cloud Backup & Restore
 - **Google Drive Integration**: Direct, one-tap backup to your private Google Drive AppData folder with scheduled daily/weekly auto-backups.
 - **Nextcloud & WebDAV**: Sync with self-hosted Nextcloud instances, ownCloud, Synology NAS, or any custom WebDAV endpoint.
 - **Client-Side AES-256 Encryption**: All backup archives are encrypted locally before upload with your private passphrase. The cloud provider only ever sees ciphertext.

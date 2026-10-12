@@ -1,35 +1,35 @@
 import { useInView } from '../hooks/useInView'
 import { motion } from 'framer-motion'
-import { ShieldCheck, Globe, Sparkles, Lock } from 'lucide-react'
+import { ShieldCheck, Globe, Smartphone, Lock } from 'lucide-react'
 
 const stats = [
   {
     icon: ShieldCheck,
     value: '100%',
     label: 'On-Device Parsing',
-    detail: 'No cloud. No uploads.',
+    detail: 'Zero cloud leaks. 100% private.',
     color: 'var(--color-accent-mint)',
   },
   {
     icon: Globe,
-    value: '155+',
+    value: '157+',
     label: 'Banks Supported',
-    detail: '30+ countries worldwide',
+    detail: '24+ countries worldwide',
     color: 'var(--color-accent-amber)',
   },
   {
-    icon: Sparkles,
-    value: 'M3',
-    label: 'Expressive Design',
-    detail: 'Material 3 Expressive UI',
-    color: 'var(--color-accent-lavender)',
+    icon: Smartphone,
+    value: '1-Tap',
+    label: 'Built for Convenience',
+    detail: 'Home widgets & zero friction',
+    color: 'var(--color-accent-coral)',
   },
   {
     icon: Lock,
     value: 'AGPL',
-    label: 'Open Source',
-    detail: 'Fully auditable code',
-    color: 'var(--color-accent-teal)',
+    label: 'Open Source & Ready',
+    detail: 'Auditable code & community built',
+    color: 'var(--color-accent-lavender)',
   },
 ]
 

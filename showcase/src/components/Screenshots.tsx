@@ -166,8 +166,13 @@ export function Screenshots() {
                 onClick={() => setLightboxIndex(i)}
                 role="button"
                 tabIndex={0}
-                aria-label={`Open ${item.caption} screenshot`}
-                onKeyDown={(e) => e.key === 'Enter' && setLightboxIndex(i)}
+                aria-label={`Open ${item.caption} screenshot preview`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setLightboxIndex(i)
+                  }
+                }}
               >
                 <div
                   className={`relative w-full h-80 rounded-3xl overflow-hidden border transition-all duration-300 ${

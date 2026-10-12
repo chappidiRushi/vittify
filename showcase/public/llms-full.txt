@@ -1,0 +1,46 @@
+# Vittify — Full Technical Reference for LLMs
+
+## Metadata
+- Product: Vittify (Android Personal Finance & Expense Tracker)
+- Repository: https://github.com/chappidiRushi/vittify
+- Website: https://vittify.in
+- License: AGPL-3.0
+- Target Android Version: API 26 to 36 (Android 8.0 through Android 16)
+- Readiness: Ready to use; actively developed open-source software with fast bug turnaround.
+
+## Product Purpose & Value Proposition
+Vittify is created to solve the two biggest problems in personal finance apps:
+1. **Privacy Loss & Monetization**: Mainstream apps upload private bank SMS messages and bank statements to remote servers to build advertising profiles or sell data. Vittify performs 100% of SMS parsing, OCR, and analytics on-device with zero telemetry, zero ads, and zero server databases.
+2. **High Friction & Mental Fatigue**: Manual expense tracking feels tedious and chore-like. Vittify is built for pure convenience and daily ease of use:
+   - Automated hands-free logging via SMS alerts from 157+ banks across 24+ countries.
+   - 1-tap Home Screen Quick Add widget for logging cash in 2 taps.
+   - Dedicated Scan Receipt launcher widget for camera capture.
+   - On-device ML Kit OCR and optional Gemini AI line-item extraction.
+   - Plain-English natural input parsing (e.g., "₹450 groceries at Blinkit via HDFC").
+   - Instant import of digital UPI PDF statements (Google Pay, PhonePe, Paytm).
+
+## Architecture & Codebase Structure
+- Multi-module Gradle project:
+  - `:app`: Android application module containing UI (Jetpack Compose), ViewModels, Navigation, WorkManager, Hilt modules, and database repositories.
+  - `:parser-core`: Standalone Kotlin library containing 157+ bank SMS regex/parsers and unit test coverage. Enables rapid contributions without Android SDK dependencies.
+- Key Technologies:
+  - Kotlin 2.3.0
+  - Jetpack Compose BOM 2026.03.01 with Material 3 Expressive (28dp squircles, spring physics, dynamic Monet theming)
+  - Google ML Kit Text Recognition for on-device OCR
+  - Room 2.8.4 for encrypted SQLite persistence
+  - Hilt 2.58 for dependency injection
+  - WebRTC + Google Nearby Connections for serverless P2P couple sync
+  - Ktor 3.3.3 for HTTP / WebDAV / Google Drive backup uploads
+  - PdfBox-Android for on-device PDF statement extraction
+
+## User Experience Highlights
+- Home Screen Platter Canvas: Overview of account balances, running net spend, and instant action buttons.
+- Transaction Timeline: Date-grouped records with live net totals, category badges, and physical receipt slips.
+- Budgeting Engine: Category-based monthly limits with daily remaining burn calculations and threshold warnings.
+- Serverless Couple Sync: P2P encrypted sync using a 5-second QR code handshake; unified "Both / Me / Partner" timeline.
+- Multi-Cloud Encrypted Backup: Passphrase-derived AES-256 client-side encryption for Google Drive, Nextcloud, and WebDAV.
+
+## Bug Reporting & Feedback
+Vittify is ready for daily use. Users experiencing edge cases or unsupported bank SMS formats are encouraged to open an issue at:
+https://github.com/chappidiRushi/vittify/issues
+Issues are reviewed and addressed promptly by maintainers.
