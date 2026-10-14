@@ -280,7 +280,6 @@ Užitočné pre dlhodobé rozpočty cez viacero období</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Viac možností</string>
     <string name="clear_chat">Vymazať chat</string>
-    <string name="qwen_model_required">Vyžaduje sa model Qwen</string>
     <string name="download_ai_model_prompt">Stiahnite si AI model v Nastaveniach, aby ste mohli začať chatovať</string>
     <string name="go_to_settings">Prejsť do Nastavení</string>
     <string name="model_required">Model je vyžadovaný</string>
@@ -297,7 +296,6 @@ Užitočné pre dlhodobé rozpočty cez viacero období</string>
     <string name="chat_memory_almost_full_warning_format">Pamäť chatu je zaplnená na %1$d%%. Zvážte jej čoskoro vyčistenie.</string>
     <string name="chat_memory_usage_format">Pamäť chatu je zaplnená na %1$d%%.</string>
     <string name="clear">Vyčistiť</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d správ</string>
     <string name="tokens_format">%1$s tokenov</string>
     <string name="context_usage">Použitie kontextu</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Zelená (+) = Úspory | Červená (-) = Prečerpanie</string>
     <string name="smart_rules_subtitle">Automatická kategorizácia transakcií</string>
     <string name="data_privacy_subtitle">Spravovať svoje údaje a nastavenia ochrany súkromia</string>
     <string name="ai_chat_assistant">AI Chat Asistent</string>
-    <string name="ai_chat_subtitle_not_downloaded">Stiahnuť model Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Sťahovanie… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Sťahovanie pozastavené. Klepnite pre pokračovanie.</string>
-    <string name="ai_chat_subtitle_completed">Qwen pripravený na chat</string>
     <string name="ai_chat_subtitle_failed">Sťahovanie zlyhalo. Klepnite pre opakovanie.</string>
     <string name="ai_chat_subtitle_insufficient_space">Nedostatok úložného priestoru</string>
     <string name="notifications">Oznámenia</string>

@@ -246,7 +246,7 @@ dependencies {
     
     // Color Picker for Compose
     implementation(libs.colorpicker.compose)
-    implementation(libs.haze)
+    // Haze library removed in favor of zero-overhead lightweight glassmorphism (no-op blur passes)
     
     // Splash Screen API
     implementation(libs.androidx.core.splashscreen)
@@ -299,10 +299,6 @@ dependencies {
     // Hilt WorkManager integration
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
-    
-    // LiteRT-LM for on-device LLM inference
-
-
     
     // Google Play In-App Updates (only for standard flavor)
     "standardImplementation"(libs.app.update)

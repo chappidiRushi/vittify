@@ -280,7 +280,6 @@ Birden fazla dönem boyunca uzun vadeli bütçeler için kullanışlı</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Daha fazla seçenek</string>
     <string name="clear_chat">Sohbeti Temizle</string>
-    <string name="qwen_model_required">Qwen Modeli Gerekli</string>
     <string name="download_ai_model_prompt">Sohbete başlamak için Ayarlar\'dan AI modelini indirin</string>
     <string name="go_to_settings">Ayarlara Git</string>
     <string name="model_required">Model Gerekli</string>
@@ -297,7 +296,6 @@ Birden fazla dönem boyunca uzun vadeli bütçeler için kullanışlı</string>
     <string name="chat_memory_almost_full_warning_format">Sohbet belleği %1$d%%dolu. Yakında temizlemeyi düşünün.</string>
     <string name="chat_memory_usage_format">Sohbet belleği %1$d%%dolu.</string>
     <string name="clear">Temizle</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d mesaj</string>
     <string name="tokens_format">%1$s jeton</string>
     <string name="context_usage">Kapsam Kullanımı</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Yeşil (+) = Tasarruf | Kırmızı (-) = Harcama Fazlası</string>
     <string name="smart_rules_subtitle">Otomatik işlem kategorilendirme</string>
     <string name="data_privacy_subtitle">Veri ve gizlilik ayarlarınızı yönetin</string>
     <string name="ai_chat_assistant">AI Sohbet Asistanı</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 modelini indir (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">İndiriliyor… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">İndirme duraklatıldı. Tekrar başlatmak için dokunun.</string>
-    <string name="ai_chat_subtitle_completed">Qwen sohbete hazır</string>
     <string name="ai_chat_subtitle_failed">İndirme başarısız oldu. Tekrar denemek için dokunun.</string>
     <string name="ai_chat_subtitle_insufficient_space">Yeterli depolama alanı yok</string>
     <string name="notifications">Bildirimler</string>

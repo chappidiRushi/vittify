@@ -280,7 +280,6 @@ Uporabno za dolgoročne proračune čez več obdobij</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Več možnosti</string>
     <string name="clear_chat">Počisti klepet</string>
-    <string name="qwen_model_required">Potreben je Qwen model</string>
     <string name="download_ai_model_prompt">Prenesite AI model iz Nastavitev, da začnete klepet</string>
     <string name="go_to_settings">Pojdi v Nastavitve</string>
     <string name="model_required">Potreben model</string>
@@ -297,7 +296,6 @@ Uporabno za dolgoročne proračune čez več obdobij</string>
     <string name="chat_memory_almost_full_warning_format">Pogovorni spomin je %1$d%% poln. Razmislite o čiščenju kmalu.</string>
     <string name="chat_memory_usage_format">Pogovorni spomin je %1$d%% poln.</string>
     <string name="clear">Počisti</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d sporočil</string>
     <string name="tokens_format">%1$s žetoni</string>
     <string name="context_usage">Uporaba konteksta</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Zeleno (+) = Prihranek | Rdeče (-) = Prekomerna poraba</string>
     <string name="smart_rules_subtitle">Samodejna kategorizacija transakcij</string>
     <string name="data_privacy_subtitle">Upravljaj svoje podatke in nastavitve zasebnosti</string>
     <string name="ai_chat_assistant">AI pogovorni pomočnik</string>
-    <string name="ai_chat_subtitle_not_downloaded">Prenesi model Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Prenašanje… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Prenos ustavljen. Tapni za nadaljevanje.</string>
-    <string name="ai_chat_subtitle_completed">Qwen pripravljen za pogovor</string>
     <string name="ai_chat_subtitle_failed">Prenos ni uspel. Tapni za ponovni poskus.</string>
     <string name="ai_chat_subtitle_insufficient_space">Premalo prostora za shranjevanje</string>
     <string name="notifications">Obvestila</string>

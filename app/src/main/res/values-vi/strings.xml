@@ -280,7 +280,6 @@ Hữu ích cho ngân sách dài hạn qua nhiều kỳ</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Thêm tùy chọn</string>
     <string name="clear_chat">Xóa trò chuyện</string>
-    <string name="qwen_model_required">Yêu cầu Mô hình Qwen</string>
     <string name="download_ai_model_prompt">Tải mô hình AI từ Cài đặt để bắt đầu trò chuyện</string>
     <string name="go_to_settings">Đi tới Cài đặt</string>
     <string name="model_required">Yêu cầu Mô hình</string>
@@ -297,7 +296,6 @@ Hữu ích cho ngân sách dài hạn qua nhiều kỳ</string>
     <string name="chat_memory_almost_full_warning_format">Bộ nhớ trò chuyện đã đầy %1$d%%. Hãy xem xét xóa sớm.</string>
     <string name="chat_memory_usage_format">Bộ nhớ trò chuyện đã đầy %1$d%%.</string>
     <string name="clear">Xóa</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d tin nhắn</string>
     <string name="tokens_format">%1$s token</string>
     <string name="context_usage">Sử dụng ngữ cảnh</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Xanh (+) = Tiết kiệm | Đỏ (-) = Chi tiêu vượt mức</string>
     <string name="smart_rules_subtitle">Phân loại giao dịch tự động</string>
     <string name="data_privacy_subtitle">Quản lý dữ liệu và cài đặt quyền riêng tư của bạn</string>
     <string name="ai_chat_assistant">Trợ lý Chat AI</string>
-    <string name="ai_chat_subtitle_not_downloaded">Tải mô hình Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Đang tải xuống… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Tải xuống tạm dừng. Nhấn để tiếp tục.</string>
-    <string name="ai_chat_subtitle_completed">Qwen sẵn sàng để trò chuyện</string>
     <string name="ai_chat_subtitle_failed">Tải xuống thất bại. Nhấn để thử lại.</string>
     <string name="ai_chat_subtitle_insufficient_space">Không đủ dung lượng lưu trữ</string>
     <string name="notifications">Thông báo</string>

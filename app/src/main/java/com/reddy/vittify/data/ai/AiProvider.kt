@@ -1,5 +1,6 @@
 package com.reddy.vittify.data.ai
 
+import android.util.Base64
 import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -24,6 +25,13 @@ interface AiProvider {
     suspend fun fetchAvailableModels(apiKey: String): Result<List<GeminiModelInfo>>
     suspend fun testConnection(apiKey: String, model: String): Result<ConnectionTestResult>
     suspend fun generateContent(apiKey: String, model: String, prompt: String): Result<AiGenerationResult>
+    suspend fun generateContentWithImage(
+        apiKey: String,
+        model: String,
+        prompt: String,
+        imageBytes: ByteArray,
+        mimeType: String = "image/jpeg"
+    ): Result<AiGenerationResult>
 }
 
 data class ConnectionTestResult(
@@ -49,6 +57,7 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                 ignoreUnknownKeys = true
                 isLenient = true
                 coerceInputValues = true
+                explicitNulls = false
             })
         }
     }
@@ -76,8 +85,17 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                     
                     val filteredModels = listResponse.models
                         .filter { dto ->
-                            dto.supportedGenerationMethods.isEmpty() || 
-                            dto.supportedGenerationMethods.contains("generateContent")
+                            val clean = dto.name.removePrefix("models/").lowercase()
+                            val supportsGeneration = dto.supportedGenerationMethods.isEmpty() || 
+                                dto.supportedGenerationMethods.contains("generateContent")
+
+                            supportsGeneration &&
+                                clean.contains("gemini") &&
+                                !clean.contains("embedding") &&
+                                !clean.contains("vision") &&
+                                !clean.contains("bison") &&
+                                !clean.contains("aqa") &&
+                                !clean.contains("imagen")
                         }
                         .map { dto ->
                             GeminiModelInfo(
@@ -88,11 +106,15 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                             )
                         }
 
-                    if (filteredModels.isNotEmpty()) {
-                        Result.success(filteredModels)
+                    val sortedModels = if (filteredModels.isNotEmpty()) {
+                        val sortedClassified = GeminiModelHelper.sortModels(filteredModels.map { it.cleanName }).map { it.id }
+                        val orderMap = sortedClassified.withIndex().associate { it.value to it.index }
+                        filteredModels.sortedBy { orderMap[it.cleanName] ?: Int.MAX_VALUE }
                     } else {
-                        Result.success(emptyList())
+                        GeminiModelHelper.DEFAULT_MODELS.map { GeminiModelInfo(name = it, displayName = it) }
                     }
+
+                    Result.success(sortedModels)
                 } else {
                     val errorMessage = extractErrorMessage(bodyText, status.value)
                     Result.failure(Exception(errorMessage))
@@ -121,12 +143,56 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                 modelsResult.fold(
                     onSuccess = { models ->
                         val cleanModelNames = models.map { it.cleanName }
-                        Result.success(
-                            ConnectionTestResult(
-                                isSuccess = true,
-                                message = "Successfully connected to Gemini API! ${cleanModelNames.size} models available.",
-                                availableModels = cleanModelNames
-                            )
+                        val targetModel = model.trim().removePrefix("models/").ifBlank {
+                            cleanModelNames.firstOrNull { it.contains("flash", ignoreCase = true) && !it.contains("exp", ignoreCase = true) }
+                                ?: cleanModelNames.firstOrNull()
+                                ?: GeminiModelHelper.DEFAULT_MODEL
+                        }
+
+                        // Test actual generation with the target model to verify quotas and access
+                        val testGenResult = generateContent(apiKey, targetModel, "Test connection. Reply with OK.")
+                        testGenResult.fold(
+                            onSuccess = {
+                                val classified = GeminiModelHelper.classify(targetModel)
+                                val notice = when (classified.tier) {
+                                    AiModelTier.RECOMMENDED -> "Recommended for free tier (15 RPM)."
+                                    AiModelTier.PRO -> "Note: Pro model has strict free rate limits (2 RPM)."
+                                    AiModelTier.EXPERIMENTAL -> "Note: Experimental model."
+                                    else -> ""
+                                }
+                                val fullMsg = "Successfully verified! Model '$targetModel' is working. $notice (${cleanModelNames.size} models loaded)"
+                                Result.success(
+                                    ConnectionTestResult(
+                                        isSuccess = true,
+                                        message = fullMsg.trim(),
+                                        availableModels = cleanModelNames
+                                    )
+                                )
+                            },
+                            onFailure = { genError ->
+                                val errorText = genError.message ?: ""
+                                val friendlyMessage = when {
+                                    errorText.contains("429") || errorText.contains("RESOURCE_EXHAUSTED", ignoreCase = true) || errorText.contains("quota", ignoreCase = true) -> {
+                                        "Model '$targetModel' quota or rate limit exceeded. Free tier accounts frequently run out of quota on this model. Please switch to a Recommended Flash model like 'gemini-1.5-flash' or 'gemini-2.0-flash'."
+                                    }
+                                    errorText.contains("403") || errorText.contains("PERMISSION_DENIED", ignoreCase = true) -> {
+                                        "Access denied for '$targetModel'. Your API key does not have permission for this model (may require paid billing). Switch to a Recommended model like 'gemini-1.5-flash'."
+                                    }
+                                    errorText.contains("404") || errorText.contains("NOT_FOUND", ignoreCase = true) -> {
+                                        "Model '$targetModel' was not found or is discontinued. Please select a Recommended model from the list."
+                                    }
+                                    else -> {
+                                        "Model '$targetModel' verification failed: $errorText. Try selecting a Recommended Flash model like 'gemini-1.5-flash'."
+                                    }
+                                }
+                                Result.success(
+                                    ConnectionTestResult(
+                                        isSuccess = false,
+                                        message = friendlyMessage,
+                                        availableModels = cleanModelNames
+                                    )
+                                )
+                            }
                         )
                     },
                     onFailure = { error ->
@@ -212,6 +278,112 @@ class GeminiAiProvider @Inject constructor() : AiProvider {
                 }
             } catch (e: Exception) {
                 Log.e("GeminiAiProvider", "generateContent request failed", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+    override suspend fun generateContentWithImage(
+        apiKey: String,
+        model: String,
+        prompt: String,
+        imageBytes: ByteArray,
+        mimeType: String
+    ): Result<AiGenerationResult> {
+        val trimmedKey = apiKey.trim()
+        if (trimmedKey.isBlank()) {
+            return Result.failure(IllegalArgumentException("Gemini API key is required"))
+        }
+
+        val cleanModel = model.trim().removePrefix("models/").ifBlank { "gemini-1.5-flash" }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val base64Data = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
+
+                val requestBody = GeminiGenerateRequest(
+                    contents = listOf(
+                        GeminiRequestContent(
+                            parts = listOf(
+                                GeminiRequestPart(
+                                    inlineData = GeminiBlob(
+                                        mimeType = mimeType,
+                                        data = base64Data
+                                    )
+                                ),
+                                GeminiRequestPart(text = prompt)
+                            )
+                        )
+                    ),
+                    generationConfig = GeminiGenerationConfig(
+                        responseMimeType = "application/json",
+                        temperature = 0.1f
+                    )
+                )
+
+                var response: HttpResponse = client.post("$BASE_URL/models/$cleanModel:generateContent") {
+                    parameter("key", trimmedKey)
+                    contentType(ContentType.Application.Json)
+                    setBody(requestBody)
+                }
+
+                var bodyText = response.body<String>()
+
+                // Fallback 1: If responseMimeType is not supported by the model, retry without it
+                if (response.status.value in 400..499 && bodyText.contains("responseMimeType", ignoreCase = true)) {
+                    val fallbackBody = GeminiGenerateRequest(
+                        contents = requestBody.contents,
+                        generationConfig = GeminiGenerationConfig(temperature = 0.1f)
+                    )
+                    response = client.post("$BASE_URL/models/$cleanModel:generateContent") {
+                        parameter("key", trimmedKey)
+                        contentType(ContentType.Application.Json)
+                        setBody(fallbackBody)
+                    }
+                    bodyText = response.body<String>()
+                }
+
+                // Fallback 2: If the custom model is not found or unsupported for vision, retry with default flash model
+                if (response.status.value in 400..499 && cleanModel != "gemini-1.5-flash" && cleanModel != "gemini-2.5-flash") {
+                    Log.w("GeminiAiProvider", "Model $cleanModel failed (${response.status.value}), attempting fallback to gemini-1.5-flash")
+                    response = client.post("$BASE_URL/models/gemini-1.5-flash:generateContent") {
+                        parameter("key", trimmedKey)
+                        contentType(ContentType.Application.Json)
+                        setBody(requestBody)
+                    }
+                    bodyText = response.body<String>()
+                }
+
+                if (response.status.value in 200..299) {
+                    val json = Json { ignoreUnknownKeys = true }
+                    val jsonElement = json.parseToJsonElement(bodyText).jsonObject
+
+                    val text = jsonElement["candidates"]
+                        ?.jsonArray?.firstOrNull()?.jsonObject
+                        ?.get("content")?.jsonObject
+                        ?.get("parts")?.jsonArray?.firstOrNull()?.jsonObject
+                        ?.get("text")?.jsonPrimitive?.content ?: ""
+
+                    val usageMetadata = jsonElement["usageMetadata"]?.jsonObject
+                    val promptTokens = usageMetadata?.get("promptTokenCount")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                    val candidateTokens = usageMetadata?.get("candidatesTokenCount")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                    val totalTokens = usageMetadata?.get("totalTokenCount")?.jsonPrimitive?.content?.toIntOrNull() ?: (promptTokens + candidateTokens)
+
+                    Result.success(
+                        AiGenerationResult(
+                            text = text,
+                            promptTokens = promptTokens,
+                            candidateTokens = candidateTokens,
+                            totalTokens = totalTokens
+                        )
+                    )
+                } else {
+                    val errorMessage = extractErrorMessage(bodyText, response.status.value)
+                    Log.e("GeminiAiProvider", "generateContentWithImage HTTP error: $errorMessage, body: $bodyText")
+                    Result.failure(Exception(errorMessage))
+                }
+            } catch (e: Exception) {
+                Log.e("GeminiAiProvider", "generateContentWithImage request failed", e)
                 Result.failure(e)
             }
         }

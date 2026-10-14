@@ -280,7 +280,6 @@ Berguna untuk anggaran jangka panjang selama beberapa periode</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Opsi lainnya</string>
     <string name="clear_chat">Bersihkan Obrolan</string>
-    <string name="qwen_model_required">Model Qwen Diperlukan</string>
     <string name="download_ai_model_prompt">Unduh model AI dari Pengaturan untuk mulai mengobrol</string>
     <string name="go_to_settings">Pergi ke Pengaturan</string>
     <string name="model_required">Model Diperlukan</string>
@@ -297,7 +296,6 @@ Berguna untuk anggaran jangka panjang selama beberapa periode</string>
     <string name="chat_memory_almost_full_warning_format">Memori obrolan %1$d%% penuh. Pertimbangkan untuk segera mengosongkannya.</string>
     <string name="chat_memory_usage_format">Memori obrolan %1$d%% penuh.</string>
     <string name="clear">Bersihkan</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d pesan</string>
     <string name="tokens_format">%1$s token</string>
     <string name="context_usage">Penggunaan Konteks</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -752,10 +750,8 @@ Berguna untuk anggaran jangka panjang selama beberapa periode</string>
     <string name="smart_rules_subtitle">Kategorisasi transaksi otomatis</string>
     <string name="data_privacy_subtitle">Kelola data dan pengaturan privasi Anda</string>
     <string name="ai_chat_assistant">Asisten Obrolan AI</string>
-    <string name="ai_chat_subtitle_not_downloaded">Unduh model Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Mengunduh… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Unduhan dijeda. Ketuk untuk melanjutkan.</string>
-    <string name="ai_chat_subtitle_completed">Qwen siap untuk mengobrol</string>
     <string name="ai_chat_subtitle_failed">Unduhan gagal. Ketuk untuk mencoba lagi.</string>
     <string name="ai_chat_subtitle_insufficient_space">Ruang penyimpanan tidak cukup</string>
     <string name="notifications">Notifikasi</string>

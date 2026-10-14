@@ -22,6 +22,17 @@ enum class NlpParsingMode {
 }
 
 /**
+ * Parsed item draft from a receipt.
+ * Matches TransactionItemEntity schema: name, amount, category, subcategory.
+ */
+data class ParsedReceiptItemDraft(
+    val name: String = "",
+    val amount: String = "",
+    val category: String = "Miscellaneous",
+    val subcategory: String = ""
+)
+
+/**
  * Parsed draft that pre-fills the AddTransaction screen.
  * All fields are optional — empty string means "not detected".
  */
@@ -33,7 +44,8 @@ data class ParsedTransactionDraft(
     val notes: String = "",
     val category: String = "Miscellaneous",
     val subcategory: String = "",
-    val date: LocalDateTime? = null
+    val date: LocalDateTime? = null,
+    val items: List<ParsedReceiptItemDraft> = emptyList()
 )
 
 

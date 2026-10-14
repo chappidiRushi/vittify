@@ -30,6 +30,16 @@
             android:targetPackage="@string/app_package_name"
             android:targetClass="com.reddy.vittify.MainActivity" />
     </shortcut>
+    <shortcut
+        android:shortcutId="scan_receipt"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_scan_receipt"
+        android:shortcutShortLabel="@string/scan_receipt">
+        <intent
+            android:action="com.reddy.vittify.action.SCAN_RECEIPT"
+            android:targetPackage="@string/app_package_name"
+            android:targetClass="com.reddy.vittify.MainActivity" />
+    </shortcut>
 
     <!-- Google Assistant Capabilities -->
     <capability android:name="actions.intent.RECORD_EXPENSE">

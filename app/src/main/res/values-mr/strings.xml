@@ -280,7 +280,6 @@
     <string name="vittify_ai">कॅशिरो AI</string>
     <string name="more_options">अधिक पर्याय</string>
     <string name="clear_chat">संवाद साफ करा</string>
-    <string name="qwen_model_required">Qwen मॉडेल आवश्यक</string>
     <string name="download_ai_model_prompt">संवाद सुरू करण्यासाठी सेटिंग्जमधून AI मॉडेल डाउनलोड करा</string>
     <string name="go_to_settings">सेटिंग्जवर जा</string>
     <string name="model_required">मॉडेल आवश्यक</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">चॅट मेमरी %1$d%% भरलेली आहे. लवकरच साफ करण्याचा विचार करा.</string>
     <string name="chat_memory_usage_format">चॅट मेमरी %1$d%% भरलेली आहे.</string>
     <string name="clear">साफ करा</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d संदेश</string>
     <string name="tokens_format">%1$s टोकन्स</string>
     <string name="context_usage">संदर्भ वापर</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">स्वयंचलित व्यवहार वर्गीकरण</string>
     <string name="data_privacy_subtitle">आपला डेटा आणि गुप्तता सेटिंग्ज व्यवस्थापित करा</string>
     <string name="ai_chat_assistant">एआय चॅट सहाय्यक</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 मॉडेल डाउनलोड करा (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">डाउनलोड करत आहे… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">डाउनलोड थांबवले. पुन्हा सुरू करण्यासाठी टॅप करा.</string>
-    <string name="ai_chat_subtitle_completed">चॅटसाठी Qwen तयार</string>
     <string name="ai_chat_subtitle_failed">डाउनलोड अयशस्वी. पुन्हा प्रयत्न करण्यासाठी टॅप करा.</string>
     <string name="ai_chat_subtitle_insufficient_space">पुरेशी संचयन जागा नाही</string>
     <string name="notifications">सूचना</string>

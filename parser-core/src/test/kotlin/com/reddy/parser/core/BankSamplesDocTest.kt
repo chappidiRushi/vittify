@@ -9,7 +9,7 @@ import java.io.File
  * Generates `bank-samples.json` — one real, already-anonymised sample SMS per bank,
  * together with what the live parser actually extracts from it.
  *
- * pennywise-web's per-bank landing pages render this as the centrepiece: the raw message
+ * vittify-web's per-bank landing pages render this as the centrepiece: the raw message
  * on top, the parsed fields below, with the substrings that produced each field
  * highlighted. Because both halves come from the real [BankParserFactory] rather than
  * hand-written marketing copy, the demo can never claim an extraction the app wouldn't
@@ -299,7 +299,7 @@ class BankSamplesDocTest {
         val json = render(samples)
         val target = File(
             repoRoot(),
-            "pennywise-web/server/src/main/resources/bank-samples.json"
+            "vittify-web/server/src/main/resources/bank-samples.json"
         )
 
         if (System.getenv("UPDATE_SUPPORTED_BANKS") == "true") {

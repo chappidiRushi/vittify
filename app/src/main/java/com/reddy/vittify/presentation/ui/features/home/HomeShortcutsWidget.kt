@@ -63,6 +63,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.reddy.vittify.presentation.ui.theme.Spacing
+import com.reddy.vittify.presentation.ui.icons.Iconax
+import com.reddy.vittify.presentation.ui.icons.ReceiptSearch
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 
@@ -80,7 +82,8 @@ enum class HomeShortcutItem(
     ANALYTICS("ANALYTICS", "Analytics", Icons.Rounded.BarChart),
     SMS("SMS", "SMS Rules", Icons.Rounded.Sms),
     REPORTS("REPORTS", "Reports", Icons.Rounded.Description),
-    COUPLE("COUPLE", "Couple", Icons.Rounded.Favorite);
+    COUPLE("COUPLE", "Couple", Icons.Rounded.Favorite),
+    SCAN_RECEIPT("SCAN_RECEIPT", "Scan Receipt", Iconax.ReceiptSearch);
 
     companion object {
         fun fromKey(key: String): HomeShortcutItem? = entries.firstOrNull { it.key == key }

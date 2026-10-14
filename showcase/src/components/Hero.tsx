@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Github, ArrowRight, Shield, Zap, Sparkles } from 'lucide-react'
+import { Github, ArrowRight, Shield, Zap, Sparkles, Smartphone, Bug } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 const heroScreenshots = [
   'home.png',
   'transactions.png',
+  'transaction_detail.png',
+  'add_transaction.png',
   'analytics.png',
   'budgets.png',
   'partner_sync.png',
@@ -12,8 +14,9 @@ const heroScreenshots = [
 
 const floatingCards = [
   { emoji: '🛒', merchant: 'Swiggy', amount: '↓ ₹540', sub: 'Food · HDFC', color: 'var(--color-accent-coral)' },
+  { emoji: '🧾', merchant: 'Supermarket Bill', amount: '↓ ₹2,150', sub: 'Receipt OCR · Split Items', color: 'var(--color-accent-lavender)' },
   { emoji: '💼', merchant: 'Salary', amount: '↑ ₹85,000', sub: 'Income · SBI', color: 'var(--color-accent-mint)' },
-  { emoji: '☕', merchant: 'Blue Tokai', amount: '↓ ₹420', sub: 'Café · Kotak', color: 'var(--color-accent-coral)' },
+  { emoji: '☕', merchant: 'Blue Tokai', amount: '↓ ₹420', sub: 'Quick Add Widget · Kotak', color: 'var(--color-accent-coral)' },
   { emoji: '🎬', merchant: 'Netflix', amount: '↓ ₹649', sub: 'Subscription · ICICI', color: 'var(--color-accent-lavender)' },
   { emoji: '🛵', merchant: 'Blinkit', amount: '↓ ₹1,240', sub: 'Groceries · Axis', color: 'var(--color-accent-coral)' },
 ]
@@ -173,9 +176,10 @@ function PhoneMockup() {
 }
 
 const badges = [
-  { icon: Shield, label: '100% On-Device', color: 'var(--color-accent-mint)' },
-  { icon: Zap, label: '155+ Banks', color: 'var(--color-accent-amber)' },
-  { icon: Sparkles, label: 'Material 3 Expressive', color: 'var(--color-accent-lavender)' },
+  { icon: Shield, label: '100% On-Device Privacy', color: 'var(--color-accent-mint)' },
+  { icon: Zap, label: '157+ Banks Auto-Parsed', color: 'var(--color-accent-amber)' },
+  { icon: Smartphone, label: 'Built for Convenience', color: 'var(--color-accent-coral)' },
+  { icon: Sparkles, label: 'Receipt OCR & Optional AI', color: 'var(--color-accent-lavender)' },
 ]
 
 export function Hero() {
@@ -203,6 +207,34 @@ export function Hero() {
       </div>
 
       <div className="relative max-w-6xl mx-auto px-6 py-24 w-full">
+        {/* Ready to use banner */}
+        <motion.div
+          initial={shouldReduceMotion ? {} : { opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-[var(--color-accent-coral)]/10 via-[var(--color-surface)] to-[var(--color-accent-lavender)]/10 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg"
+          role="region"
+          aria-label="Release and feedback announcement"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="flex-shrink-0 text-base" aria-hidden="true">🚀</span>
+            <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] leading-relaxed">
+              <strong className="text-[var(--color-text-primary)] font-semibold">Vittify is ready to use!</strong>{' '}
+              Built for daily expense tracking. If you find any bugs or edge cases, please report them — we'll fix them as soon as possible!
+            </p>
+          </div>
+          <a
+            href="https://github.com/chappidiRushi/vittify/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-primary)] bg-[var(--color-surface-high)] hover:bg-[var(--color-surface-highest)] border border-white/10 rounded-xl transition-all self-start sm:self-auto"
+            aria-label="Report a bug or issue on GitHub"
+          >
+            <Bug size={13} className="text-[var(--color-accent-coral)]" />
+            Report an Issue
+          </a>
+        </motion.div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left column — copy */}
           <div className="flex flex-col gap-8">
@@ -211,9 +243,13 @@ export function Hero() {
               initial={shouldReduceMotion ? {} : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
+              className="flex flex-wrap items-center gap-2"
             >
               <span className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-[var(--color-accent-coral)] bg-[var(--color-accent-coral)]/10 border border-[var(--color-accent-coral)]/20 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent-coral)] animate-pulse" />
+                Built for Convenience & Daily Ease of Use
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--color-accent-mint)] bg-[var(--color-accent-mint)]/10 border border-[var(--color-accent-mint)]/20 rounded-full">
                 Open Source · AGPL-3.0
               </span>
             </motion.div>
@@ -240,9 +276,9 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg text-[var(--color-text-secondary)] leading-relaxed max-w-md"
             >
-              Vittify reads your bank SMS on-device, auto-categorizes every transaction,
-              and presents your spending as a clean, actionable financial timeline.{' '}
-              <strong className="text-[var(--color-text-primary)] font-medium">No cloud. No accounts. No compromise.</strong>
+              Vittify turns cryptic bank SMS notifications and paper receipts into an effortless, actionable timeline.{' '}
+              <strong className="text-[var(--color-text-primary)] font-medium">Built for pure convenience</strong> with 1-tap launcher widgets, on-device OCR, and instant UPI imports.{' '}
+              <span className="text-[var(--color-text-primary)] font-medium">Zero cloud accounts. Zero friction.</span>
             </motion.p>
 
             {/* CTAs */}
@@ -256,16 +292,16 @@ export function Hero() {
                 href="https://github.com/chappidiRushi/vittify"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold bg-[var(--color-text-primary)] text-[var(--color-bg)] rounded-full hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold bg-[var(--color-text-primary)] text-[var(--color-bg)] rounded-full hover:opacity-90 transition-opacity shadow-lg"
               >
                 <Github size={16} />
                 View on GitHub
               </a>
               <a
-                href="#screenshots"
+                href="#features"
                 className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-[var(--color-text-primary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full hover:bg-[var(--color-surface-high)] hover:border-white/10 transition-all"
               >
-                See Screenshots
+                Explore Features
                 <ArrowRight size={14} />
               </a>
             </motion.div>
@@ -275,14 +311,14 @@ export function Hero() {
               initial={shouldReduceMotion ? {} : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex flex-wrap gap-3 pt-2"
+              className="flex flex-wrap gap-2.5 pt-2"
             >
               {badges.map(({ icon: Icon, label, color }) => (
                 <div
                   key={label}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full shadow-sm"
                 >
-                  <Icon size={12} style={{ color }} />
+                  <Icon size={13} style={{ color }} />
                   {label}
                 </div>
               ))}

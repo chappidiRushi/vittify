@@ -8,6 +8,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -15,7 +16,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -136,14 +139,28 @@ fun PlayfulBackgroundCanvas(
         }
     )
 
+    // Lifecycle awareness to pause animation loop when app is paused/backgrounded
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var isAppResumed by remember { mutableStateOf(true) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            isAppResumed = event.targetState.isAtLeast(Lifecycle.State.RESUMED)
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     // Reusable Paths to avoid per-frame allocations
     val wavePath = remember { Path() }
     val auroraPath = remember { Path() }
 
-    // Particles initialization (Floating Dust / Fireflies)
+    // Particles initialization (Floating Dust / Fireflies) - budget-optimized count
     val particles = remember {
         val random = Random(1337)
-        List(42) { index ->
+        List(24) { index ->
             FloatingParticle(
                 xRatio = random.nextFloat(),
                 yRatio = random.nextFloat() * 1.1f - 0.05f,
@@ -158,10 +175,10 @@ fun PlayfulBackgroundCanvas(
         }
     }
 
-    // Twinkling stars for Shooting Stars background
+    // Twinkling stars for Shooting Stars background - budget-optimized count
     val shootingStarTwinkles = remember {
         val random = Random(2026)
-        List(48) {
+        List(28) {
             Star(
                 xRatio = random.nextFloat(),
                 yRatio = random.nextFloat(),
@@ -175,20 +192,20 @@ fun PlayfulBackgroundCanvas(
     // Meteors for Shooting Stars background
     val meteors = remember {
         val random = Random(777)
-        List(3) { index ->
+        List(2) { index ->
             Meteor(
                 active = false,
-                waitTime = 0.5f + index * 1.2f + random.nextFloat() * 0.8f
+                waitTime = 0.8f + index * 1.5f + random.nextFloat() * 0.8f
             )
         }
     }
 
-    // Space scene stars (multi-depth)
+    // Space scene stars (multi-depth) - budget-optimized counts
     val spaceStars = remember {
         val random = Random(4242)
         buildList {
             // Layer 1: Distant micro stars
-            repeat(40) {
+            repeat(24) {
                 add(
                     Star(
                         xRatio = random.nextFloat(),
@@ -201,7 +218,7 @@ fun PlayfulBackgroundCanvas(
                 )
             }
             // Layer 2: Mid-ground stars
-            repeat(25) {
+            repeat(14) {
                 add(
                     Star(
                         xRatio = random.nextFloat(),
@@ -214,7 +231,7 @@ fun PlayfulBackgroundCanvas(
                 )
             }
             // Layer 3: Prominent beacon stars with cross diffraction spikes
-            repeat(8) {
+            repeat(5) {
                 add(
                     Star(
                         xRatio = 0.08f + random.nextFloat() * 0.84f,
@@ -229,10 +246,10 @@ fun PlayfulBackgroundCanvas(
         }
     }
 
-    // Constellation dynamic nodes
+    // Constellation dynamic nodes - budget-optimized count
     val constellationNodes = remember {
         val random = Random(888)
-        List(24) {
+        List(16) {
             ConstellationNode(
                 baseXRatio = 0.08f + random.nextFloat() * 0.84f,
                 baseYRatio = 0.10f + random.nextFloat() * 0.82f,
@@ -258,50 +275,54 @@ fun PlayfulBackgroundCanvas(
     }
 
     var animationTime by remember { mutableFloatStateOf(0f) }
+    val shouldAnimate = isStarted && isAppResumed && effectiveOpacity > 0.01f &&
+            currentStyle != "STATIC" && currentStyle != "OFF" && currentStyle != "NONE"
 
-    LaunchedEffect(isStarted) {
-        if (!isStarted) return@LaunchedEffect
-        var lastTime = withFrameNanos { it }
+    LaunchedEffect(shouldAnimate, currentStyle) {
+        if (!shouldAnimate) return@LaunchedEffect
+        var lastTime = System.nanoTime()
         while (isActive) {
-            withFrameNanos { frameTime ->
-                val dt = ((frameTime - lastTime) / 1_000_000_000f).coerceIn(0.001f, 0.05f)
-                lastTime = frameTime
-                animationTime += dt
+            val now = System.nanoTime()
+            val dt = ((now - lastTime) / 1_000_000_000f).coerceIn(0.016f, 0.066f)
+            lastTime = now
+            animationTime += dt
 
-                when (currentStyle) {
-                    "PARTICLES" -> {
-                        particles.forEach { p ->
-                            p.yRatio -= p.speedY * dt
-                            if (p.yRatio < -0.05f) {
-                                p.yRatio = 1.05f
-                                p.xRatio = Random.nextFloat()
-                            }
+            when (currentStyle) {
+                "PARTICLES" -> {
+                    particles.forEach { p ->
+                        p.yRatio -= p.speedY * dt
+                        if (p.yRatio < -0.05f) {
+                            p.yRatio = 1.05f
+                            p.xRatio = Random.nextFloat()
                         }
                     }
-                    "SHOOTING_STARS" -> {
-                        meteors.forEach { m ->
-                            if (!m.active) {
-                                m.waitTime -= dt
-                                if (m.waitTime <= 0f) {
-                                    m.active = true
-                                    m.progress = 0f
-                                    m.startXRatio = 0.05f + Random.nextFloat() * 0.70f
-                                    m.startYRatio = 0.02f + Random.nextFloat() * 0.40f
-                                    m.angleRad = 0.55f + Random.nextFloat() * 0.25f
-                                    m.speed = 0.75f + Random.nextFloat() * 0.60f
-                                    m.lengthPx = 140f + Random.nextFloat() * 120f
-                                }
-                            } else {
-                                m.progress += m.speed * dt
-                                if (m.progress >= 1.25f) {
-                                    m.active = false
-                                    m.waitTime = 0.6f + Random.nextFloat() * 2.2f
-                                }
+                }
+                "SHOOTING_STARS" -> {
+                    meteors.forEach { m ->
+                        if (!m.active) {
+                            m.waitTime -= dt
+                            if (m.waitTime <= 0f) {
+                                m.active = true
+                                m.progress = 0f
+                                m.startXRatio = 0.05f + Random.nextFloat() * 0.70f
+                                m.startYRatio = 0.02f + Random.nextFloat() * 0.40f
+                                m.angleRad = 0.55f + Random.nextFloat() * 0.25f
+                                m.speed = 0.75f + Random.nextFloat() * 0.60f
+                                m.lengthPx = 140f + Random.nextFloat() * 120f
+                            }
+                        } else {
+                            m.progress += m.speed * dt
+                            if (m.progress >= 1.25f) {
+                                m.active = false
+                                m.waitTime = 0.6f + Random.nextFloat() * 2.2f
                             }
                         }
                     }
                 }
             }
+
+            // Throttle animation loop to ~30 FPS (32ms delay) to keep CPU at 20-30% instead of 100%+
+            delay(32L)
         }
     }
 
@@ -334,7 +355,7 @@ fun PlayfulBackgroundCanvas(
                                 sin((x / waveLength) * 2 * Math.PI.toFloat() + animationTime * speed + phase) * waveHeight +
                                 cos((x / (waveLength * 0.6f)) * 2 * Math.PI.toFloat() + animationTime * (speed * 0.7f) + phase * 1.3f) * (waveHeight * 0.35f)
                         wavePath.lineTo(x, y)
-                        x += 16f
+                        x += 24f
                     }
                     drawPath(
                         path = wavePath,
@@ -700,7 +721,7 @@ fun PlayfulBackgroundCanvas(
                                 sin((x / waveLength) * 2 * Math.PI.toFloat() + animationTime * speed + phase) * waveHeight +
                                 cos((x / (waveLength * 0.6f)) * 2 * Math.PI.toFloat() + animationTime * (speed * 0.7f) + phase * 1.3f) * (waveHeight * 0.35f)
                         wavePath.lineTo(x, y)
-                        x += 16f
+                        x += 24f
                     }
                     drawPath(
                         path = wavePath,

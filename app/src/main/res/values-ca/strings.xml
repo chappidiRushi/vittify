@@ -280,7 +280,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Més opcions</string>
     <string name="clear_chat">Netejar xat</string>
-    <string name="qwen_model_required">Model Qwen requerit</string>
     <string name="download_ai_model_prompt">Descarrega el model d\'IA des de Configuració per començar a xatejar</string>
     <string name="go_to_settings">Ves a Configuració</string>
     <string name="model_required">Model requerit</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">La memòria del xat està %1$d%% plena. Considera esborrar-la aviat.</string>
     <string name="chat_memory_usage_format">La memòria del xat està %1$d%% plena.</string>
     <string name="clear">Esborra</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d missatges</string>
     <string name="tokens_format">%1$s fitxes</string>
     <string name="context_usage">Ús del context</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Verd (+) = Estalvis | Vermell (-) = Despeses excessives</string>
     <string name="smart_rules_subtitle">Categorització automàtica de transaccions</string>
     <string name="data_privacy_subtitle">Gestiona les teves dades i configuracions de privadesa</string>
     <string name="ai_chat_assistant">Assistent de xat AI</string>
-    <string name="ai_chat_subtitle_not_downloaded">Descarrega el model Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Descarregant… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Descàrrega en pausa. Toca per reprendre.</string>
-    <string name="ai_chat_subtitle_completed">Qwen llest per xatejar</string>
     <string name="ai_chat_subtitle_failed">Descàrrega fallida. Toca per tornar-ho a provar.</string>
     <string name="ai_chat_subtitle_insufficient_space">No hi ha prou espai d\'emmagatzematge</string>
     <string name="notifications">Notificacions</string>

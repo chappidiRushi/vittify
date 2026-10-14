@@ -171,32 +171,18 @@ fun VittifyBottomNavigation(
             exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
             ) {
                 HorizontalDivider(
-                    thickness = 1.5.dp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.2f)
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(0.35f)
                 )
-                val tokens = LocalVittifyTokens.current
                 NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(
-                        alpha = if (blurEffects) (0.6f * (tokens.surfaceOpacity / 0.85f)).coerceIn(0.2f, 1f) else tokens.surfaceOpacity
-                    ),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     tonalElevation = 2.dp,
-                    modifier = Modifier.then(
-                        if (blurEffects) Modifier.hazeEffect(
-                            state = hazeState,
-                            block = fun HazeEffectScope.() {
-                                style = HazeDefaults.style(
-                                    backgroundColor = Color.Transparent,
-                                    tint = HazeDefaults.tint(containerColor),
-                                    blurRadius = 20.dp,
-                                    noiseFactor = -1f,
-                                )
-                                blurredEdgeTreatment = BlurredEdgeTreatment.Unbounded
-                            }
-                        ) else Modifier
-                    )
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     normalNavItems.forEach { item ->
                         if (item == null) {

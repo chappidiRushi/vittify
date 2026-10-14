@@ -1104,7 +1104,7 @@ constructor(@ApplicationContext private val context: Context) {
     val homeShortcuts: Flow<Set<String>> =
         context.dataStore.data.map { preferences ->
             preferences[PreferencesKeys.ENABLED_HOME_SHORTCUTS] ?: setOf(
-                "PROFILE", "BACKUP_SYNC", "ACCOUNTS", "CATEGORIES", "BUDGETS", "RULES"
+                "PROFILE", "BACKUP_SYNC", "ACCOUNTS", "CATEGORIES", "BUDGETS", "RULES", "SCAN_RECEIPT"
             )
         }
 

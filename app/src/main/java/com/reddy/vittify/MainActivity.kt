@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         const val ACTION_ADD_TRANSACTION = "com.reddy.vittify.action.ADD_TRANSACTION"
         const val ACTION_ADD_SUBSCRIPTION = "com.reddy.vittify.action.ADD_SUBSCRIPTION"
         const val ACTION_ADD_TRANSFER = "com.reddy.vittify.action.ADD_TRANSFER"
+        const val ACTION_SCAN_RECEIPT = "com.reddy.vittify.action.SCAN_RECEIPT"
         
         const val ACTION_QUICK_ADD_PREFILL = "com.reddy.vittify.action.QUICK_ADD_PREFILL"
         const val EXTRA_NLP_AMOUNT = "extra_nlp_amount"
@@ -97,6 +98,10 @@ class MainActivity : AppCompatActivity() {
 
     // Initial transaction type to pre-select
     var addTransactionType by mutableStateOf<String?>(null)
+        private set
+
+    // Auto trigger receipt scanning in Add Screen
+    var autoScanReceipt by mutableStateOf(false)
         private set
 
     // NLP Prefill fields
@@ -179,6 +184,7 @@ class MainActivity : AppCompatActivity() {
                 onEditComplete = { editTransactionId = null },
                 addTransactionTab = addTransactionTab,
                 addTransactionType = addTransactionType,
+                autoScanReceipt = autoScanReceipt,
                 nlpAmount = nlpAmount,
                 nlpMerchant = nlpMerchant,
                 nlpType = nlpType,
@@ -190,6 +196,7 @@ class MainActivity : AppCompatActivity() {
                 onAddComplete = { 
                     addTransactionTab = null
                     addTransactionType = null
+                    autoScanReceipt = false
                     nlpAmount = null
                     nlpMerchant = null
                     nlpType = null
@@ -214,6 +221,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         // Handle intent when activity is already running
         handleIntent(intent)
     }
@@ -258,6 +266,10 @@ class MainActivity : AppCompatActivity() {
             ACTION_ADD_TRANSFER -> {
                 addTransactionTab = 0
                 addTransactionType = "TRANSFER"
+            }
+            ACTION_SCAN_RECEIPT -> {
+                addTransactionTab = 0
+                autoScanReceipt = true
             }
             ACTION_QUICK_ADD_PREFILL -> {
                 addTransactionTab = 0

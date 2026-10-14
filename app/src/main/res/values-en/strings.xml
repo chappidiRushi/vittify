@@ -295,7 +295,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">More options</string>
     <string name="clear_chat">Clear Chat</string>
-    <string name="qwen_model_required">Qwen Model Required</string>
     <string name="download_ai_model_prompt">Download the AI model from Settings to start chatting</string>
     <string name="go_to_settings">Go to Settings</string>
     <string name="model_required">Model Required</string>
@@ -312,7 +311,6 @@
     <string name="chat_memory_almost_full_warning_format">Chat memory is %1$d%% full. Consider clearing soon.</string>
     <string name="chat_memory_usage_format">Chat memory is %1$d%% full.</string>
     <string name="clear">Clear</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d messages</string>
     <string name="tokens_format">%1$s tokens</string>
     <string name="context_usage">Context Usage</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -831,10 +829,8 @@
     <string name="smart_rules_subtitle">Automatic transaction categorization</string>
     <string name="data_privacy_subtitle">Manage your data and privacy settings</string>
     <string name="ai_chat_assistant">AI Chat Assistant</string>
-    <string name="ai_chat_subtitle_not_downloaded">Download Qwen 2.5 model (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Downloading… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Download paused. Tap to resume.</string>
-    <string name="ai_chat_subtitle_completed">Qwen ready for chat</string>
     <string name="ai_chat_subtitle_failed">Download failed. Tap to retry.</string>
     <string name="ai_chat_subtitle_insufficient_space">Not enough storage space</string>
     <string name="notifications">Notifications</string>
@@ -1197,6 +1193,23 @@
     <string name="paste_from_clipboard">Paste from Clipboard</string>
     <string name="clear_key">Clear Key</string>
     <string name="fetching_models">Fetching available models for your API key...</string>
+    <string name="model_tier_recommended">✨ Recommended (Free Tier)</string>
+    <string name="model_tier_recommended_sub">High free quota (15 RPM / 1,500 RPD). Ideal for expense parsing.</string>
+    <string name="model_tier_pro">⚡ Pro Models (Strict / Paid Quota)</string>
+    <string name="model_tier_pro_sub">Strict free limit (2 RPM). Frequently causes quota errors without paid billing.</string>
+    <string name="model_tier_experimental">🧪 Experimental &amp; Preview</string>
+    <string name="model_tier_experimental_sub">Preview release. Availability and quotas may fluctuate.</string>
+    <string name="model_tier_other">Other Models</string>
+    <string name="model_badge_recommended">Recommended</string>
+    <string name="model_badge_free_tier">Free Tier</string>
+    <string name="model_badge_pro">Pro (Strict Quota)</string>
+    <string name="model_badge_experimental">Preview</string>
+    <string name="model_status_recommended_title">Recommended Model (Free Tier)</string>
+    <string name="model_status_recommended_desc">Generous free limits (15 requests/min). Fast, reliable, and requires no paid billing account.</string>
+    <string name="model_status_pro_title">Pro Model: Strict Limit (2 RPM)</string>
+    <string name="model_status_pro_desc">Free accounts often hit \"quota exceeded\" or token errors on Pro models. If parsing fails, switch to gemini-1.5-flash or gemini-2.0-flash.</string>
+    <string name="model_status_experimental_title">Experimental / Preview Model</string>
+    <string name="model_status_experimental_desc">Availability and quotas may fluctuate. For reliable daily parsing, use gemini-1.5-flash or gemini-2.0-flash.</string>
 
     <!-- Global Search & Customization -->
     <string name="customization">Customization</string>
@@ -1291,5 +1304,19 @@
     <string name="bg_style_constellation">Constellation</string>
     <string name="bg_style_ripples">Ripples</string>
     <string name="bg_style_aurora">Aurora</string>
+
+    <!-- Receipt Scanning -->
+    <string name="scan_receipt">Scan Receipt</string>
+    <string name="scan_receipt_cd">Scan receipt</string>
+    <string name="scan_receipt_desc">Auto-crop, straighten, and enhance receipts</string>
+    <string name="scan_receipt_ai_subtitle">Auto-fill transaction &amp; items with AI</string>
+    <string name="scan_receipt_widget_subtitle">Scan and extract expenses with AI</string>
+    <string name="scan_receipt_widget_desc">Scan receipts and extract expenses instantly using Gemini AI</string>
+    <string name="analyzing_receipt_title">Analyzing Receipt</string>
+    <string name="analyzing_receipt_desc">Extracting merchant, date, amounts, and item details with Gemini AI…</string>
+    <string name="ai_not_configured_title">Gemini AI Required</string>
+    <string name="ai_not_configured_receipt_desc">Receipt scanning uses Google Gemini to read receipts and extract transaction items. Please configure your Gemini API key in AI Settings.</string>
+    <string name="open_ai_settings">AI Settings</string>
+    <string name="receipt_scan_failed_title">Receipt Scan Failed</string>
 </resources>
 

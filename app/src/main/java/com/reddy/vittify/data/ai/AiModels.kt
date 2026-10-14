@@ -51,8 +51,15 @@ data class GeminiRequestContent(
 )
 
 @Serializable
+data class GeminiBlob(
+    val mimeType: String,
+    val data: String
+)
+
+@Serializable
 data class GeminiRequestPart(
-    val text: String
+    val text: String? = null,
+    val inlineData: GeminiBlob? = null
 )
 
 @Serializable
@@ -77,7 +84,90 @@ data class GeminiConfig(
     val customRules: String = ""
 )
 
-val DEFAULT_GEMINI_MODELS: List<String> = emptyList()
+enum class AiModelTier {
+    RECOMMENDED,  // High free tier quota (15 RPM), fast, stable
+    PRO,          // Strict free rate limit (2 RPM), often hits token limits or requires billing
+    EXPERIMENTAL, // Preview / Experimental model
+    OTHER         // Standard / Other model
+}
+
+data class ClassifiedAiModel(
+    val id: String,
+    val displayName: String,
+    val tier: AiModelTier,
+    val isRecommended: Boolean,
+    val subtitle: String
+)
+
+object GeminiModelHelper {
+    const val DEFAULT_MODEL = "gemini-1.5-flash"
+
+    val DEFAULT_MODELS: List<String> = listOf(
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-flash-8b",
+        "gemini-2.5-pro",
+        "gemini-1.5-pro"
+    )
+
+    fun classify(modelName: String, displayName: String? = null): ClassifiedAiModel {
+        val clean = modelName.removePrefix("models/").trim()
+        val lower = clean.lowercase()
+
+        val tier = when {
+            (lower.contains("flash") || lower.contains("flash-lite")) &&
+                !lower.contains("exp") && !lower.contains("preview") -> AiModelTier.RECOMMENDED
+            lower.contains("exp") || lower.contains("preview") || lower.contains("thinking") -> AiModelTier.EXPERIMENTAL
+            lower.contains("pro") -> AiModelTier.PRO
+            else -> AiModelTier.OTHER
+        }
+
+        val subtitle = when (tier) {
+            AiModelTier.RECOMMENDED -> "Free tier friendly (15 RPM) • Fast & reliable"
+            AiModelTier.PRO -> "Strict free quota (2 RPM) • May require paid billing"
+            AiModelTier.EXPERIMENTAL -> "Preview model • Quotas & access may fluctuate"
+            AiModelTier.OTHER -> "General Gemini model"
+        }
+
+        val cleanDisplayName = displayName?.takeIf { it.isNotBlank() } ?: clean
+
+        return ClassifiedAiModel(
+            id = clean,
+            displayName = cleanDisplayName,
+            tier = tier,
+            isRecommended = tier == AiModelTier.RECOMMENDED,
+            subtitle = subtitle
+        )
+    }
+
+    fun sortModels(modelNames: List<String>): List<ClassifiedAiModel> {
+        val classified = modelNames.map { classify(it) }
+        return classified.sortedWith(
+            compareBy<ClassifiedAiModel> {
+                when (it.tier) {
+                    AiModelTier.RECOMMENDED -> 0
+                    AiModelTier.PRO -> 1
+                    AiModelTier.EXPERIMENTAL -> 2
+                    AiModelTier.OTHER -> 3
+                }
+            }.thenBy {
+                // Deprioritize versioned snapshots (-001, -002, etc.) compared to canonical
+                if (it.id.matches(Regex(""".*-\d{3}$"""))) 1 else 0
+            }.thenBy {
+                // Prioritize 2.5 > 2.0 > 1.5
+                when {
+                    it.id.contains("2.5") -> 0
+                    it.id.contains("2.0") -> 1
+                    it.id.contains("1.5") -> 2
+                    else -> 3
+                }
+            }.thenBy { it.id }
+        )
+    }
+}
+
+val DEFAULT_GEMINI_MODELS: List<String> = GeminiModelHelper.DEFAULT_MODELS
 
 data class AiUsageMetrics(
     val totalRequests: Int = 0,

@@ -280,7 +280,6 @@ Foydali: bir necha davrlar bo\'yicha uzoq muddatli byudjetlar uchun</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Ko\'proq variantlar</string>
     <string name="clear_chat">Chatni Tozalash</string>
-    <string name="qwen_model_required">Qwen Modeli Talab etiladi</string>
     <string name="download_ai_model_prompt">Suhbatni boshlash uchun Sozlamalardan AI modelini yuklab oling</string>
     <string name="go_to_settings">Sozlamalarga o\'tish</string>
     <string name="model_required">Model Talab etiladi</string>
@@ -297,7 +296,6 @@ Foydali: bir necha davrlar bo\'yicha uzoq muddatli byudjetlar uchun</string>
     <string name="chat_memory_almost_full_warning_format">Chat xotirasi %1$d%% to‘liq. Tez orada tozalashni o‘ylab ko‘ring.</string>
     <string name="chat_memory_usage_format">Chat xotirasi %1$d%% to‘liq.</string>
     <string name="clear">Tozalash</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d xabar</string>
     <string name="tokens_format">%1$s tokenlar</string>
     <string name="context_usage">Kontekst ishlatish</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Yashil (+) = Tejash | Qizil (-) = Haddan tashqari sarflash</string>
     <string name="smart_rules_subtitle">Avtomatik tranzaksiya kategoriyalash</string>
     <string name="data_privacy_subtitle">Maʼlumotlar va maxfiylik sozlamalarini boshqarish</string>
     <string name="ai_chat_assistant">AI Chat yordamchisi</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 modelini yuklab olish (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Yuklanmoqda… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Yuklab olish to‘xtatildi. Qayta boshlash uchun bosing.</string>
-    <string name="ai_chat_subtitle_completed">Qwen chatga tayyor</string>
     <string name="ai_chat_subtitle_failed">Yuklab olish muvaffaqiyatsiz. Qayta urinib ko‘ring.</string>
     <string name="ai_chat_subtitle_insufficient_space">Yetarli saqlash joyi yo‘q</string>
     <string name="notifications">Bildirishnomalar</string>

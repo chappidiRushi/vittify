@@ -278,7 +278,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Flere alternativer</string>
     <string name="clear_chat">Fjern Chat</string>
-    <string name="qwen_model_required">Qwen modell kreves</string>
     <string name="download_ai_model_prompt">Last ned AI-modellen fra innstillingene for å begynne å chatte</string>
     <string name="go_to_settings">Gå til innstillinger</string>
     <string name="model_required">Modell nødvendig</string>
@@ -295,7 +294,6 @@
     <string name="chat_memory_almost_full_warning_format">Chatte minne er %1$d%% full. Vurder å fjerne snart.</string>
     <string name="chat_memory_usage_format">Chat-minne er %1$d%% fullt.</string>
     <string name="clear">Tøm</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d meldinger</string>
     <string name="tokens_format">%1$s tokens</string>
     <string name="context_usage">Kontekst bruk</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -750,10 +748,8 @@
     <string name="smart_rules_subtitle">Automatisk kategorisering av transaksjoner</string>
     <string name="data_privacy_subtitle">Administrer dine data- og personverninnstillinger</string>
     <string name="ai_chat_assistant">AI Chat-assistent</string>
-    <string name="ai_chat_subtitle_not_downloaded">Last ned Qwen 2.5-modell (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Laster ned… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Nedlasting satt på pause. Trykk for å gjenoppta.</string>
-    <string name="ai_chat_subtitle_completed">Qwen klar for chat</string>
     <string name="ai_chat_subtitle_failed">Nedlasting mislyktes. Trykk for å prøve igjen.</string>
     <string name="ai_chat_subtitle_insufficient_space">Ikke nok lagringsplass</string>
     <string name="notifications">Varsler</string>

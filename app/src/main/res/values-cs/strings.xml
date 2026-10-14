@@ -278,7 +278,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Další možnosti</string>
     <string name="clear_chat">Vyčistit chat</string>
-    <string name="qwen_model_required">Vyžadován Qwen model</string>
     <string name="download_ai_model_prompt">Stáhněte si AI model z nastavení a začněte chatovat</string>
     <string name="go_to_settings">Přejít do nastavení</string>
     <string name="model_required">Je vyžadován model</string>
@@ -295,7 +294,6 @@
     <string name="chat_memory_almost_full_warning_format">Paměť chatu je plná %1$d%%. Zvažte brzy.</string>
     <string name="chat_memory_usage_format">Paměť chatu je %1$d%% plná.</string>
     <string name="clear">Vyčistit</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d zpráv</string>
     <string name="tokens_format">%1$s tokeny</string>
     <string name="context_usage">Využití kontextu</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -750,10 +748,8 @@
     <string name="smart_rules_subtitle">Automatické kategorizování transakcí</string>
     <string name="data_privacy_subtitle">Spravujte svá data a nastavení soukromí</string>
     <string name="ai_chat_assistant">AI Chat Asistent</string>
-    <string name="ai_chat_subtitle_not_downloaded">Stáhnout model Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Stahování… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Stahování pozastaveno. Klepněte pro pokračování.</string>
-    <string name="ai_chat_subtitle_completed">Qwen připraven k chatu</string>
     <string name="ai_chat_subtitle_failed">Stažení selhalo. Klepněte pro opakování.</string>
     <string name="ai_chat_subtitle_insufficient_space">Nedostatek volného místa</string>
     <string name="notifications">Oznámení</string>

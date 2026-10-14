@@ -880,6 +880,7 @@ fun VittifyNavHost(
                             onEditComplete()
                             navController.safePopBackStack()
                         },
+                        onNavigateToAi = { navController.safeNavigate(AiSettings()) },
                         animatedContentScope = this@composable,
                         blurEffects = themeUiState.blurEffects,
                     )
@@ -1219,6 +1220,7 @@ fun VittifyNavHost(
                     initialTab = addTransaction.initialTab,
                     subscriptionId = addTransaction.subscriptionId,
                     transactionType = addTransaction.type,
+                    autoScanReceipt = addTransaction.autoScanReceipt,
                     nlpAmount = addTransaction.nlpAmount,
                     nlpMerchant = addTransaction.nlpMerchant,
                     nlpType = addTransaction.nlpType,
@@ -1228,6 +1230,7 @@ fun VittifyNavHost(
                     nlpSubcategory = addTransaction.nlpSubcategory,
                     nlpDate = addTransaction.nlpDate,
                     onNavigateToTransactionSettings = { navController.safeNavigate(TransactionSettings()) },
+                    onNavigateToAi = { navController.safeNavigate(AiSettings()) },
                     blurEffects = themeUiState.blurEffects,
                 )
             }

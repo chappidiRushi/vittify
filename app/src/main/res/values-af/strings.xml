@@ -280,7 +280,6 @@ Nuttig vir langtermynbegrotings oor verskeie periodes</string>
     <string name="vittify_ai">Vittify KI</string>
     <string name="more_options">Meer opsies</string>
     <string name="clear_chat">Maak Geselskap skoon</string>
-    <string name="qwen_model_required">Qwen Model Vereis</string>
     <string name="download_ai_model_prompt">Laai die KI-model vanaf Instellings om te begin gesels</string>
     <string name="go_to_settings">Gaan na Instellings</string>
     <string name="model_required">Model Vereis</string>
@@ -297,7 +296,6 @@ Nuttig vir langtermynbegrotings oor verskeie periodes</string>
     <string name="chat_memory_almost_full_warning_format">Geselskapgeheue is %1$d%% vol. Oorweeg dit om binnekort skoon te maak.</string>
     <string name="chat_memory_usage_format">Geselskapgeheue is %1$d%% vol.</string>
     <string name="clear">Skoonmaak</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d boodskappe</string>
     <string name="tokens_format">%1$s tokens</string>
     <string name="context_usage">Konteks Gebruik</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Groen (+) = Spaar | Rooi (-) = Oorskietwyd</string>
     <string name="smart_rules_subtitle">Outomatiese transaksiekategorisering</string>
     <string name="data_privacy_subtitle">Beheer jou data- en privaatheidsinstellings</string>
     <string name="ai_chat_assistant">AI Geselsassistent</string>
-    <string name="ai_chat_subtitle_not_downloaded">Laai Qwen 2.5 model af (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Besig om af te laai… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Aflaai gepouseer. Tik om voort te gaan.</string>
-    <string name="ai_chat_subtitle_completed">Qwen gereed vir geselsie</string>
     <string name="ai_chat_subtitle_failed">Aflaai het misluk. Tik om weer te probeer.</string>
     <string name="ai_chat_subtitle_insufficient_space">Nie genoeg stoorplek nie</string>
     <string name="notifications">Kennisgewings</string>

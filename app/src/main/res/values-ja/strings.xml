@@ -279,7 +279,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">その他のオプション</string>
     <string name="clear_chat">チャットをクリア</string>
-    <string name="qwen_model_required">Qwen モデルが必要</string>
     <string name="download_ai_model_prompt">設定からAIモデルをダウンロードしてチャットを開始</string>
     <string name="go_to_settings">設定に移動</string>
     <string name="model_required">必要なモデル</string>
@@ -296,7 +295,6 @@
     <string name="chat_memory_almost_full_warning_format">チャットメモリは%1$d%%使用中。近いうちにクリアを検討してください。</string>
     <string name="chat_memory_usage_format">チャットメモリは %1$d%%がいっぱいです。</string>
     <string name="clear">クリア</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d メッセージ</string>
     <string name="tokens_format">%1$s トークン</string>
     <string name="context_usage">コンテキストの使用法</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -751,10 +749,8 @@
     <string name="smart_rules_subtitle">自動取引分類</string>
     <string name="data_privacy_subtitle">データおよびプライバシー設定を管理</string>
     <string name="ai_chat_assistant">AIチャットアシスタント</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5モデルをダウンロード（%1$d MB）</string>
     <string name="ai_chat_subtitle_downloading">ダウンロード中… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">ダウンロードが一時停止されました。タップして再開します。</string>
-    <string name="ai_chat_subtitle_completed">チャットの準備ができているQwen</string>
     <string name="ai_chat_subtitle_failed">ダウンロードに失敗しました。タップして再試行します。</string>
     <string name="ai_chat_subtitle_insufficient_space">ストレージ容量が不足しています</string>
     <string name="notifications">通知</string>

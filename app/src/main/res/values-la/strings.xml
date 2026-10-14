@@ -280,7 +280,6 @@ Utilis pro budget diuturnis per plures periodos</string>
     <string name="vittify_ai">AI Vittify</string>
     <string name="more_options">Plura Optiones</string>
     <string name="clear_chat">Purga Sermonem</string>
-    <string name="qwen_model_required">Qwen Modulum Requisitum</string>
     <string name="download_ai_model_prompt">Depone AI modulum ex Occasus ut incipias colloqui</string>
     <string name="go_to_settings">I ad Occasus</string>
     <string name="model_required">Modulus Requisitus</string>
@@ -297,7 +296,6 @@ Utilis pro budget diuturnis per plures periodos</string>
     <string name="chat_memory_almost_full_warning_format">Memoria sermonis est %1$d%% plena. Considera mox purgandum.</string>
     <string name="chat_memory_usage_format">Memoria Chat est %1$d%% plena.</string>
     <string name="clear">clarus</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d nuntii</string>
     <string name="tokens_format">%1$s tesserae</string>
     <string name="context_usage">Usus Contextus</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Viridis (+) = Pecunia Servata | Ruber (-) = Superfluum Expensum</string>
     <string name="smart_rules_subtitle">Automatica transactionis categorization</string>
     <string name="data_privacy_subtitle">Gere tua data et secretum occasus</string>
     <string name="ai_chat_assistant">AI Chat Auxiliator</string>
-    <string name="ai_chat_subtitle_not_downloaded">Download Qwen 2.5 exemplar (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Downloadans… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Download pausavit. Tange ut resumere.</string>
-    <string name="ai_chat_subtitle_completed">Qwen paratus est ad colloquium</string>
     <string name="ai_chat_subtitle_failed">Download defecit. Tange ut conare iterum.</string>
     <string name="ai_chat_subtitle_insufficient_space">Non satis spatium repono</string>
     <string name="notifications">Notificationes</string>

@@ -280,7 +280,6 @@
     <string name="vittify_ai">کاشیرو AI</string>
     <string name="more_options">گزینه‌های بیشتر</string>
     <string name="clear_chat">پاک کردن گفتگو</string>
-    <string name="qwen_model_required">مدل Qwen لازم است</string>
     <string name="download_ai_model_prompt">برای شروع گفتگو مدل هوش مصنوعی را از تنظیمات دانلود کنید</string>
     <string name="go_to_settings">رفتن به تنظیمات</string>
     <string name="model_required">مدل لازم است</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">حافظه چت %1$d٪ پر است. بهتر است به زودی پاک شود.</string>
     <string name="chat_memory_usage_format">حافظه چت %1$d٪ پر است.</string>
     <string name="clear">پاک کردن</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d پیام</string>
     <string name="tokens_format">%1$s توکن</string>
     <string name="context_usage">استفاده از زمینه</string>
     <string name="percentage_format_no_brackets">%1$d٪</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">دسته‌بندی خودکار تراکنش‌ها</string>
     <string name="data_privacy_subtitle">مدیریت داده‌ها و تنظیمات حریم خصوصی</string>
     <string name="ai_chat_assistant">دستیار چت هوش مصنوعی</string>
-    <string name="ai_chat_subtitle_not_downloaded">دانلود مدل Qwen 2.5 (%1$d مگابایت)</string>
     <string name="ai_chat_subtitle_downloading">در حال دانلود… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">دانلود متوقف شد. برای از سرگیری لمس کنید.</string>
-    <string name="ai_chat_subtitle_completed">Qwen آماده چت است</string>
     <string name="ai_chat_subtitle_failed">دانلود ناموفق بود. برای تلاش مجدد لمس کنید.</string>
     <string name="ai_chat_subtitle_insufficient_space">فضای ذخیره‌سازی کافی نیست</string>
     <string name="notifications">اطلاعیه‌ها</string>

@@ -20,8 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# LiteRT (Edge AI) - Critical for JNI method resolution
--keep class com.google.ai.edge.litertlm.** { *; }
+
 
 # Room
 -keep class * extends androidx.room.RoomDatabase
@@ -97,6 +96,12 @@
     public static *** w(...);
     public static *** e(...);
 }
+
+# R8 Full-Mode & Proguard aggressive optimization
+-optimizationpasses 5
+-allowaccessmodification
+-mergeinterfacesaggressively
+
 
 # Protobuf
 -dontwarn com.google.protobuf.Internal$ProtoMethodMayReturnNull

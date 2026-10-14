@@ -23,7 +23,7 @@ export const privacyPolicyData: LegalDocument = {
   manifesto:
     'Your money is your business. Vittify runs 100% on your device, contains zero ads, zero trackers, and never uploads your personal data to remote servers.',
   summaryPills: [
-    { label: '100% On-Device Processing', accent: 'var(--color-accent-teal)' },
+    { label: 'On-Device Parsing, Optional Cloud AI', accent: 'var(--color-accent-teal)' },
     { label: 'Zero Trackers & Zero Ads', accent: 'var(--color-accent-mint)' },
     { label: 'Client-Side AES Encryption', accent: 'var(--color-accent-lavender)' },
     { label: 'P2P Encrypted Sync', accent: 'var(--color-accent-coral)' },
@@ -31,7 +31,7 @@ export const privacyPolicyData: LegalDocument = {
   sections: [
     {
       id: 'on-device-philosophy',
-      title: '1. Core Philosophy: 100% On-Device Processing',
+      title: '1. Core Philosophy: On-Device Parsing, Optional Cloud AI',
       subtitle: 'Your phone is the only server Vittify will ever need.',
       points: [
         'Vittify is fundamentally engineered as a local-first, privacy-focused financial companion.',
@@ -163,7 +163,7 @@ export const termsOfServiceData: LegalDocument = {
       title: '2. Nature of the Application & Financial Disclaimer',
       subtitle: 'An organizational estimation tool, not a certified financial advisor.',
       paragraphs: [
-        'Vittify is an on-device personal expense tracker and organizational tool designed to help you monitor personal spending habits and budget allocations.',
+        'Vittify is an on-device personal expense tracker and organizational tool designed to help you monitor personal spending habits and budget allocations, with optional cloud AI integration.',
         'Vittify does NOT provide certified financial advice, legal counsel, tax planning, investment recommendations, or banking services.',
         'Information displayed within the app—including currency exchange rates, budget projections, category estimates, and spending totals—is provided for convenience and estimation purposes only. Always refer to your official bank statements and institutional accounts for authoritative balances.',
       ],

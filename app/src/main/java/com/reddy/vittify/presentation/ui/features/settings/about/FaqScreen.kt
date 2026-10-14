@@ -68,7 +68,7 @@ private val FAQ_LIST = listOf(
         category = FaqCategory.SMS_PARSING,
         question = "How does Vittify automatically track my expenses from SMS?",
         answer = "Vittify reads incoming bank and financial SMS alerts directly on your device. It runs an on-device rule engine and parser tailored to Indian financial institutions to extract the amount, transaction type (debit/credit), merchant or recipient, and account reference. Everything happens in real-time right when you receive the SMS alert.",
-        highlight = "100% on-device processing. No SMS data ever leaves your phone."
+        highlight = "100% on-device processing for parsing, with optional cloud AI."
     ),
     FaqItem(
         id = "which_banks_supported",

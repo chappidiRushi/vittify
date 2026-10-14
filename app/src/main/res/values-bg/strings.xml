@@ -280,7 +280,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Още опции</string>
     <string name="clear_chat">Изчисти чата</string>
-    <string name="qwen_model_required">Изисква се Qwen модел</string>
     <string name="download_ai_model_prompt">Изтеглете AI модела от Настройки, за да започнете чат</string>
     <string name="go_to_settings">Отидете в Настройки</string>
     <string name="model_required">Изисква се модел</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">Паметта на чата е %1$d%% пълна. Помислете за изчистване скоро.</string>
     <string name="chat_memory_usage_format">Паметта на чата е %1$d%% пълна.</string>
     <string name="clear">Изчисти</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d съобщения</string>
     <string name="tokens_format">%1$s токена</string>
     <string name="context_usage">Използване в контекст</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">Автоматична категоризация на транзакции</string>
     <string name="data_privacy_subtitle">Управление на вашите данни и настройки за поверителност</string>
     <string name="ai_chat_assistant">AI чат асистент</string>
-    <string name="ai_chat_subtitle_not_downloaded">Изтегляне на модел Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Изтегляне… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Изтеглянето е паузирано. Докоснете, за да продължите.</string>
-    <string name="ai_chat_subtitle_completed">Qwen е готов за чат</string>
     <string name="ai_chat_subtitle_failed">Грешка при изтегляне. Докоснете, за да опитате отново.</string>
     <string name="ai_chat_subtitle_insufficient_space">Няма достатъчно място за съхранение</string>
     <string name="notifications">Известия</string>

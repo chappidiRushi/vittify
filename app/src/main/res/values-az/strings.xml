@@ -280,7 +280,6 @@ Xüsusi zaman dövrləri ilə bir dəfəlik büdcələr üçün faydalıdır</st
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Daha çox seçim</string>
     <string name="clear_chat">Söhbəti Təmizlə</string>
-    <string name="qwen_model_required">Qwen Modeli Lazımdır</string>
     <string name="download_ai_model_prompt">Söhbətə başlamaq üçün AI modelini Parametrlərdən yükləyin</string>
     <string name="go_to_settings">Parametrlərə Keç</string>
     <string name="model_required">Model Lazımdır</string>
@@ -297,7 +296,6 @@ Xüsusi zaman dövrləri ilə bir dəfəlik büdcələr üçün faydalıdır</st
     <string name="chat_memory_almost_full_warning_format">Çat yaddaşı %1$d%%doludur. Tezliklə təmizləməyi düşünün.</string>
     <string name="chat_memory_usage_format">Çat yaddaşı %1$d%%doludur.</string>
     <string name="clear">Təmizlə</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d mesaj</string>
     <string name="tokens_format">%1$s token</string>
     <string name="context_usage">Kontekst İstifadəsi</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Yaşıl (+) = Əmanət | Qırmızı (-) = Artıq xərcləmə</string>
     <string name="smart_rules_subtitle">Avtomatik əməliyyat kateqoriyalaşdırılması</string>
     <string name="data_privacy_subtitle">Məlumat və məxfilik parametrlərini idarə et</string>
     <string name="ai_chat_assistant">AI Chat Köməkçisi</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 modelini yüklə (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Yüklənir… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Yükləmə dayandırıldı. Davam etmək üçün toxun.</string>
-    <string name="ai_chat_subtitle_completed">Qwen çat üçün hazırdır</string>
     <string name="ai_chat_subtitle_failed">Yükləmə uğursuz oldu. Yenidən cəhd etmək üçün toxun.</string>
     <string name="ai_chat_subtitle_insufficient_space">Kifayət qədər yaddaş yoxdur</string>
     <string name="notifications">Bildirişlər</string>
