@@ -118,3 +118,11 @@
 -dontwarn com.tom_roush.pdfbox.filter.JPXFilter
 -dontwarn com.tom_roush.pdfbox.pdmodel.graphics.image.SampledImageReader
 -dontwarn com.gemalto.jp2.JP2Decoder
+
+# Apache POI & XMLBeans
+-dontwarn aQute.bnd.annotation.spi.**
+-dontwarn java.awt.**
+-dontwarn javax.xml.stream.**
+-dontwarn net.sf.saxon.**
+-dontwarn org.apache.batik.**
+-dontwarn org.osgi.framework.**
