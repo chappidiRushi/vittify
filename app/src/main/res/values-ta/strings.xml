@@ -280,7 +280,6 @@
     <string name="vittify_ai">கேஷிரோ ஏ.ஐ.</string>
     <string name="more_options">மேலும் விருப்பங்கள்</string>
     <string name="clear_chat">அரட்டையை அழிக்கவும்</string>
-    <string name="qwen_model_required">குவென் மாதிரி தேவையாகும்</string>
     <string name="download_ai_model_prompt">அரட்டைத் தொடங்குவதற்கு அமைப்புகள் மூலம் AI மாதிரியை பதிவிறக்கம் செய்யவும்</string>
     <string name="go_to_settings">அமைப்புகளுக்குச் செல்</string>
     <string name="model_required">மாதிரி தேவையாகும்</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">சாட் நினைவகங்கள் %1$d%% நிரம்பியுள்ளது. விரைவில் அழிக்கும் எண்ணத்தில் இருங்கள்.</string>
     <string name="chat_memory_usage_format">சாட் நினைவகங்கள் %1$d%% நிரம்பியுள்ளது.</string>
     <string name="clear">அழிக்க</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d செய்திகள்</string>
     <string name="tokens_format">%1$s டோக்கன்கள்</string>
     <string name="context_usage">சூழல் பயன்பாடு</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">சுயமாக பரிவர்த்தனை வகைப்படுத்தல்</string>
     <string name="data_privacy_subtitle">உங்கள் தரவு மற்றும் தனியுரிமை அமைப்புகளை நிர்வகிக்கவும்</string>
     <string name="ai_chat_assistant">AI வாதரவாளர்</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 மாடலை தரவிறக்கம் செய்க (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">தரவிறக்கம் செய்யப்படுகிறது… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">தரவிறக்கம் இடையறுத்தது. மீண்டும் தொடங்கத் தட்டவும்.</string>
-    <string name="ai_chat_subtitle_completed">உரையாடலுக்காக Qwen தயார்</string>
     <string name="ai_chat_subtitle_failed">தரவிறக்கம் தோல்வியடைந்தது. மீண்டும் முயற்சி செய்யத் தட்டவும்.</string>
     <string name="ai_chat_subtitle_insufficient_space">பரவசம் போதுமானது இல்லை</string>
     <string name="notifications">அறிவிப்புகள்</string>

@@ -2,11 +2,26 @@ name: Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
+  validate-pr-source:
+    name: Verify Source Branch
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    steps:
+      - name: Verify PR to main originates from dev
+        run: |
+          echo "Target branch (base): ${{ github.base_ref }}"
+          echo "Source branch (head): ${{ github.head_ref }}"
+          if [ "${{ github.head_ref }}" != "dev" ]; then
+            echo "::error::Pull requests targeting 'main' must originate from 'dev'. Merging '${{ github.head_ref }}' into 'main' is not allowed."
+            exit 1
+          fi
+          echo "Check passed: PR source is 'dev'."
+
   parser-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5

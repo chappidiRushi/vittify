@@ -279,7 +279,6 @@ Handig voor eenmalige budgetten met aangepaste tijdsperiodes</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Meer opties</string>
     <string name="clear_chat">Chat wissen</string>
-    <string name="qwen_model_required">Model Qwen Vereist</string>
     <string name="download_ai_model_prompt">Download het AI-model van Instellingen om te beginnen met chatten</string>
     <string name="go_to_settings">Ga naar Instellingen</string>
     <string name="model_required">Model vereist</string>
@@ -296,7 +295,6 @@ Handig voor eenmalige budgetten met aangepaste tijdsperiodes</string>
     <string name="chat_memory_almost_full_warning_format">Chatgeheugen is %1$d%% vol. Overweeg het opschonen snel.</string>
     <string name="chat_memory_usage_format">Chatgeheugen is %1$d%% vol.</string>
     <string name="clear">Verwijderen</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d berichten</string>
     <string name="tokens_format">%1$s tokens</string>
     <string name="context_usage">Context gebruik</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -751,10 +749,8 @@ Handig voor eenmalige budgetten met aangepaste tijdsperiodes</string>
     <string name="smart_rules_subtitle">Automatische transactiecategorieën</string>
     <string name="data_privacy_subtitle">Beheer uw gegevens- en privacy-instellingen</string>
     <string name="ai_chat_assistant">AI Chat-assistent</string>
-    <string name="ai_chat_subtitle_not_downloaded">Download Qwen 2.5-model (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Downloaden… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Download gepauzeerd. Tik om te hervatten.</string>
-    <string name="ai_chat_subtitle_completed">Qwen klaar voor chat</string>
     <string name="ai_chat_subtitle_failed">Download mislukt. Tik om opnieuw te proberen.</string>
     <string name="ai_chat_subtitle_insufficient_space">Niet genoeg opslagruimte</string>
     <string name="notifications">Meldingen</string>

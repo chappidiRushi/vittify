@@ -280,7 +280,6 @@ Hasznos hosszú távú költségvetésekhez több időszakra</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">További lehetőségek</string>
     <string name="clear_chat">Beszélgetés törlése</string>
-    <string name="qwen_model_required">Qwen modell szükséges</string>
     <string name="download_ai_model_prompt">Töltse le az AI modellt a Beállításokból a csevegés elkezdéséhez</string>
     <string name="go_to_settings">Ugrás a Beállításokhoz</string>
     <string name="model_required">Modell szükséges</string>
@@ -297,7 +296,6 @@ Hasznos hosszú távú költségvetésekhez több időszakra</string>
     <string name="chat_memory_almost_full_warning_format">A chat memória %1$d%%-os. Érdemes hamarosan törölni.</string>
     <string name="chat_memory_usage_format">A chat memória %1$d%%-os.</string>
     <string name="clear">Törlés</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d üzenet</string>
     <string name="tokens_format">%1$s token</string>
     <string name="context_usage">Kontextus felhasználás</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Zöld (+) = Megtakarítás | Piros (-) = Túlköltekezés</string>
     <string name="smart_rules_subtitle">Automatikus tranzakció-kategorizálás</string>
     <string name="data_privacy_subtitle">Adatok és adatvédelmi beállítások kezelése</string>
     <string name="ai_chat_assistant">AI Chat Asszisztens</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 modell letöltése (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Letöltés… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Letöltés szüneteltetve. Érintse a folytatáshoz.</string>
-    <string name="ai_chat_subtitle_completed">Qwen készen áll a csevegésre</string>
     <string name="ai_chat_subtitle_failed">A letöltés sikertelen volt. Érintse a próbálkozáshoz.</string>
     <string name="ai_chat_subtitle_insufficient_space">Nincs elegendő tárhely</string>
     <string name="notifications">Értesítések</string>

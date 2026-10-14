@@ -5,7 +5,7 @@ Automatically extracts transaction data from bank SMS messages and PDF Statement
 Key Features:
 • Multi-Source Transaction Extraction - Automatically parses SMS and PDF Statements [Gpay & Phonepe UPI] with pattern-based extraction
 • 100% Offline Core Features - Transaction parsing, analytics, and exports work without internet
-• Optional AI Chat - Download Qwen 2.5 model (1.5GB, Apache 2.0) for natural language queries
+• Optional Gemini AI integration for natural language queries (Bring Your Own Key)
 • Dynamic Home Screen - Customizable widgets including heatmaps, analytics, and transaction lists
 • Advanced Budgeting - Track historical spending, manage monthly limits, and view subscription trends
 • Auto-Categorization - Intelligent merchant cleaning and categorization for clear spending insights
@@ -24,7 +24,7 @@ Currently Supported Banks & Countries (80+ banks across 14 countries):
 Privacy & Security:
 • No internet required for core functionality (SMS parsing, analytics, exports)
 • Pattern-based transaction extraction - no AI needed for parsing
-• Optional AI chat uses on-device Qwen 2.5 model (Apache 2.0 licensed)
+• Optional Gemini AI chat integration (Bring Your Own Key)
 • SMS permission is read-only - we never send messages
 • No user accounts or cloud sync required
 • Open source - audit the code yourself on GitHub
@@ -45,7 +45,7 @@ Perfect for:
 
 Technical Notes:
 • Core SMS parsing uses regex patterns, not AI
-• Optional Qwen 2.5 model (Apache 2.0) for chat feature only
+• Optional Gemini AI integration for chat feature only
 • F-Droid flavor excludes all proprietary dependencies
 
-Cashiro respects your privacy while helping you take control of your finances. Join thousands of users who trust Cashiro for secure, automatic expense tracking without compromising their data.
+Vittify respects your privacy while helping you take control of your finances. Join thousands of users who trust Vittify for secure, automatic expense tracking without compromising their data.

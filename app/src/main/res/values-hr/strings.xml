@@ -280,7 +280,6 @@ Korisno za dugoročne proračune tijekom više razdoblja</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Više opcija</string>
     <string name="clear_chat">Očisti chat</string>
-    <string name="qwen_model_required">Potrebno Qwen Model</string>
     <string name="download_ai_model_prompt">Preuzmite AI model iz Postavki za početak razgovora</string>
     <string name="go_to_settings">Idi na Postavke</string>
     <string name="model_required">Potreban model</string>
@@ -297,7 +296,6 @@ Korisno za dugoročne proračune tijekom više razdoblja</string>
     <string name="chat_memory_almost_full_warning_format">Memorija chata je %1$d%% puna. Razmotrite čišćenje uskoro.</string>
     <string name="chat_memory_usage_format">Memorija chata je %1$d%% puna.</string>
     <string name="clear">Očisti</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d poruka</string>
     <string name="tokens_format">%1$s tokena</string>
     <string name="context_usage">Korištenje konteksta</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Zeleno (+) = Uštede | Crveno (-) = Prekomerno trošenje</string>
     <string name="smart_rules_subtitle">Automatska kategorizacija transakcija</string>
     <string name="data_privacy_subtitle">Upravljaj svojim podacima i postavkama privatnosti</string>
     <string name="ai_chat_assistant">AI Chat Asistent</string>
-    <string name="ai_chat_subtitle_not_downloaded">Preuzmi Qwen 2.5 model (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Preuzimanje… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Preuzimanje pauzirano. Dodirni za nastavak.</string>
-    <string name="ai_chat_subtitle_completed">Qwen spreman za chat</string>
     <string name="ai_chat_subtitle_failed">Preuzimanje nije uspjelo. Dodirni za ponovno pokušaj.</string>
     <string name="ai_chat_subtitle_insufficient_space">Nedovoljno prostora za pohranu</string>
     <string name="notifications">Obavijesti</string>

@@ -68,7 +68,7 @@ import java.math.BigDecimal
 @Composable
 fun DataSanitizationScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToAccountAudit: (String, String) -> Unit = { _, _ -> },
+    onNavigateToAccountAudit: (String, String, String?) -> Unit = { _, _, _ -> },
     initialTabName: String? = null,
     viewModel: DataSanitizationViewModel = hiltViewModel(),
     blurEffects: Boolean = true
@@ -279,8 +279,8 @@ fun DataSanitizationScreen(
                                 haptic.click()
                                 viewModel.fixAccountDiscrepancy(accId, expected)
                             },
-                            onAuditAccount = { bank, last4 ->
-                                onNavigateToAccountAudit(bank, last4)
+                            onAuditAccount = { bank, last4, accId ->
+                                onNavigateToAccountAudit(bank, last4, accId)
                             },
                             onEditAccount = { accountToEdit = it },
                             onDeleteAccount = { acc ->
@@ -482,8 +482,8 @@ fun DataSanitizationScreen(
             account = account,
             onDismiss = { accountToEdit = null },
             onSave = { updated ->
+                viewModel.updateAccount(updated)
                 accountToEdit = null
-                viewModel.runFullAudit()
             }
         )
     }
@@ -1251,7 +1251,7 @@ fun androidx.compose.foundation.lazy.LazyListScope.accountsTabContent(
     onUnhideSingle: (String, String) -> Unit,
     onFixAllBalances: () -> Unit,
     onFixBalance: (String, BigDecimal) -> Unit,
-    onAuditAccount: (String, String) -> Unit,
+    onAuditAccount: (String, String, String?) -> Unit,
     onEditAccount: (AccountBalanceEntity) -> Unit,
     onDeleteAccount: (AccountBalanceEntity) -> Unit,
     onDeleteCard: (Long) -> Unit
@@ -1299,7 +1299,7 @@ fun androidx.compose.foundation.lazy.LazyListScope.accountsTabContent(
                                     )
                                 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    TextButton(onClick = { onAuditAccount(disc.account.bankName, disc.account.accountLast4) }) {
+                                    TextButton(onClick = { onAuditAccount(disc.account.bankName, disc.account.accountLast4, disc.account.id) }) {
                                         Text("Audit")
                                     }
                                     FilledTonalButton(onClick = { onFixBalance(disc.account.id, disc.expectedBalance) }) {
@@ -2379,7 +2379,7 @@ fun EditAccountQuickSheet(
     onSave: (AccountBalanceEntity) -> Unit
 ) {
     var bankName by remember { mutableStateOf(account.bankName) }
-    var last4 by remember { mutableStateOf(account.accountLast4) }
+    var last4 by remember { mutableStateOf(account.accountLast4.filter { it.isDigit() }.take(4)) }
 
     VittifyModalBottomSheet(
         onDismissRequest = onDismiss
@@ -2400,14 +2400,23 @@ fun EditAccountQuickSheet(
             )
             OutlinedTextField(
                 value = last4,
-                onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) last4 = it },
+                onValueChange = { input ->
+                    val digits = input.filter { it.isDigit() }.take(4)
+                    last4 = digits
+                },
                 label = { Text("Account Last 4 Digits") },
+                placeholder = { Text("e.g. 1234") },
+                supportingText = if (last4.isNotEmpty() && last4.length != 4) {
+                    { Text("Must be exactly 4 digits", color = MaterialTheme.colorScheme.error) }
+                } else null,
+                isError = last4.isNotEmpty() && last4.length != 4,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 shape = VittifyShapes.input
             )
             Button(
                 onClick = { onSave(account.copy(bankName = bankName.trim(), accountLast4 = last4.trim())) },
+                enabled = bankName.isNotBlank() && last4.length == 4,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = VittifyShapes.button
             ) {

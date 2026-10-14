@@ -89,11 +89,13 @@ import com.reddy.vittify.utils.CurrencyFormatter
 fun OnboardingProgressIndicator(
     currentStep: Int,
     totalSteps: Int = 6,
+    titleOverride: String? = null,
     onBack: (() -> Unit)? = null,
     onSkip: (() -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    val stepTitle = when (currentStep) {
+    val stepTitle = titleOverride ?: when (currentStep) {
         1 -> stringResource(R.string.terms_and_privacy_title)
         2 -> stringResource(R.string.permissions_hub_title)
         3 -> stringResource(R.string.data_recovery_title)
@@ -108,7 +110,7 @@ fun OnboardingProgressIndicator(
             .fillMaxWidth()
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm)
     ) {
-        // Navigation bar row: Back, Step counter label, and Skip action
+        // Navigation bar row: Back, Step counter label, and Action/Close
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -152,7 +154,9 @@ fun OnboardingProgressIndicator(
             }
 
             Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.CenterEnd) {
-                if (onSkip != null && currentStep == 3) {
+                if (trailingContent != null) {
+                    trailingContent()
+                } else if (onSkip != null && currentStep == 3) {
                     TextButton(
                         onClick = onSkip,
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Spacing.xs)

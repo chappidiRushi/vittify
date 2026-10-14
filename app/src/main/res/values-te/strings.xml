@@ -280,7 +280,6 @@
     <string name="vittify_ai">క్యాషిరో AI</string>
     <string name="more_options">మరిన్ని ఆప్షన్లు</string>
     <string name="clear_chat">చాట్ క్లియర్ చేయండి</string>
-    <string name="qwen_model_required">క్వెన్ మోడల్ అవసరం</string>
     <string name="download_ai_model_prompt">చాటింగ్ ప్రారంభించడానికి సెటింగ్స్ నుండి AI మోడల్ డౌన్‌లోడ్ చేయండి</string>
     <string name="go_to_settings">సెట్టింగ్స్ కు వెళ్ళండి</string>
     <string name="model_required">మోడల్ అవసరం</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">చాట్ మెమరీ %1$d%% రాదు. త్వరలో క్లియర్ చేయాలని పరిశీలించండి.</string>
     <string name="chat_memory_usage_format">చాట్ మెమరీ %1$d%% రాదు.</string>
     <string name="clear">క్లియర్ చేయి</string>
-    <string name="qwen_model_messages_format">క్వెన్ 2.5 • %1$d సందేశాలు</string>
     <string name="tokens_format">%1$s టోకెన్లు</string>
     <string name="context_usage">సందర్భం ఉపయోగం</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">యాంత్రిక లావాదేవీ వర్గీకరణ</string>
     <string name="data_privacy_subtitle">మీ డేటా మరియు గోప్యతా సెట్టింగులను నిర్వహించండి</string>
     <string name="ai_chat_assistant">కృత్రిమ మేధా చాట్ సహాయక</string>
-    <string name="ai_chat_subtitle_not_downloaded">Qwen 2.5 మోడల్ డౌన్‌లోడ్ (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">డౌన్‌లోడ్ అవుతోంది… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">డౌన్‌లోడ్ ఆపివేయబడింది. కొనసాగించడానికి ట్యాప్ చేయండి.</string>
-    <string name="ai_chat_subtitle_completed">చాట్ కోసం Qwen సిద్ధంగా ఉంది</string>
     <string name="ai_chat_subtitle_failed">డౌన్‌లోడ్ విఫలం. మళ్లీ ప్రయత్నించడానికి ట్యాప్ చేయండి.</string>
     <string name="ai_chat_subtitle_insufficient_space">సంగ్రహ స్థలం తక్కువగా ఉంది</string>
     <string name="notifications">నోటిఫికేషన్లు</string>

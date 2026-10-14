@@ -102,6 +102,7 @@ import com.reddy.vittify.presentation.ui.components.AttachmentSection
 import com.reddy.vittify.presentation.ui.components.BrandIcon
 import com.reddy.vittify.presentation.ui.components.CategorySelectionSheet
 import com.reddy.vittify.presentation.ui.components.DatePicker
+import com.reddy.vittify.presentation.ui.components.ReceiptScanPlatter
 import com.reddy.vittify.presentation.ui.components.TimePicker
 import com.reddy.vittify.presentation.ui.features.accounts.NumberPad
 import com.reddy.vittify.presentation.ui.features.categories.EditSubcategorySheet
@@ -272,6 +273,7 @@ private fun EditableItemRow(
 fun TransactionTabContent(
     viewModel: AddViewModel,
     onSave: () -> Unit,
+    onScanReceipt: () -> Unit = {},
     isTransitioning: Boolean = false,
     blurEffects: Boolean,
     hazeState: HazeState
@@ -281,6 +283,7 @@ fun TransactionTabContent(
     val transactionCategories by viewModel.transactionCategories.collectAsState()
     val transactionSubcategories by viewModel.transactionSubcategories.collectAsState()
     val transactionAttachments by viewModel.transactionAttachments.collectAsState()
+    val isAiEnabled by viewModel.isAiEnabled.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -326,6 +329,13 @@ fun TransactionTabContent(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Scan Receipt Option
+            if (isAiEnabled) {
+                ReceiptScanPlatter(
+                    onClick = onScanReceipt
+                )
+            }
+
             // Amount Input
             AmountInput(
                 amount = uiState.amount.ifEmpty { "0" },
@@ -711,7 +721,7 @@ fun TransactionTabContent(
                     )
 
                     // Subcategory Display (Read-only, selected via sheet)
-                    if (uiState.subcategory != null) {
+                    if (uiState.subcategory != null && !hasItems) {
                         Spacer(modifier = Modifier.height(Spacing.md))
                         TextField(
                             value = uiState.subcategory ?: stringResource(R.string.none_label),

@@ -18,6 +18,8 @@ local.properties
 # Testing scripts and logs
 crash_log.txt
 test_results.txt
+*.sqlite
+*.sql
 
 # Kotlin/JVM specific
 *.class

@@ -12,14 +12,14 @@ Vittify is built with privacy as its primary founding principle. We believe pers
 
 ### Key Highlights
 
-- 🛡️ **100% On-Device Processing**: Financial calculations, categorization, and parsing execute exclusively on your phone.
+- 🛡️ **On-Device Processing**: Financial calculations, categorization, and parsing execute exclusively on your phone (with optional cloud AI integration).
 - 🚫 **Zero Trackers & Zero Ads**: No analytics SDKs, no telemetry, no tracking pixels, and no commercial profiling.
 - 🔐 **Client-Side AES Encryption**: Optional backups are encrypted on-device before transmission.
 - 📡 **P2P Encrypted Sync**: Couple and partner sync communicates directly device-to-device without cloud databases.
 
 ---
 
-## 1. Core Philosophy: 100% On-Device Processing
+## 1. Core Philosophy: On-Device Parsing, Optional Cloud AI
 
 - **Local-First Architecture**: Vittify is fundamentally engineered as a local-first, privacy-focused financial companion.
 - **Hardware-Level Processing**: All transaction parsing, financial calculations, categorization, and account balance computations occur exclusively on your device's hardware.

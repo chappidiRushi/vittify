@@ -1,6 +1,6 @@
 # Vittify
 
-Vittify is a minimalist, AI-powered Android expense tracker. It reads transaction SMS on-device, automatically categorizes them, and presents spending as a simple, delightful financial timeline.
+Vittify is a minimalist, AI-powered Android expense tracker. It reads transaction SMS on-device, automatically categorizes them, and presents spending as a simple, delightful financial timeline. It now features optional Gemini AI integration for natural language queries.
 
 The product should feel like:
 

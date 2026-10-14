@@ -246,7 +246,7 @@ dependencies {
     
     // Color Picker for Compose
     implementation(libs.colorpicker.compose)
-    implementation(libs.haze)
+    // Haze library removed in favor of zero-overhead lightweight glassmorphism (no-op blur passes)
     
     // Splash Screen API
     implementation(libs.androidx.core.splashscreen)
@@ -300,10 +300,6 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
     
-    // LiteRT-LM for on-device LLM inference
-
-
-    
     // Google Play In-App Updates (only for standard flavor)
     "standardImplementation"(libs.app.update)
     "standardImplementation"(libs.app.update.ktx)
@@ -326,6 +322,10 @@ dependencies {
     
     // OpenCSV for CSV export
     implementation(libs.opencsv)
+
+    // Apache POI for Excel (.xlsx) import and export
+    implementation(libs.poi)
+    implementation(libs.poi.ooxml)
     testImplementation(kotlin("test"))
 
     // coil for images

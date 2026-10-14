@@ -50,16 +50,27 @@ export default function App() {
 
   useEffect(() => {
     if (route === 'home') {
-      document.title = 'Vittify — Smart Expense Tracker'
+      document.title = 'Vittify — Ready-to-Use Private Expense Tracker & SMS Parser for Android'
+    } else if (route === 'privacy') {
+      document.title = 'Privacy Policy — Vittify'
+    } else if (route === 'terms') {
+      document.title = 'Terms of Service — Vittify'
     }
   }, [route])
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
+      {/* Accessible skip link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[150] focus:px-4 focus:py-2 focus:bg-[var(--color-accent-coral)] focus:text-white focus:font-semibold focus:rounded-xl focus:shadow-2xl focus:outline-none"
+      >
+        Skip to main content
+      </a>
       <ScrollProgress />
       <Header currentRoute={route} onNavigate={navigate} />
 
-      <main>
+      <main id="main-content" tabIndex={-1} className="outline-none">
         {route === 'privacy' && <PrivacyPolicyPage onNavigate={navigate} />}
         {route === 'terms' && <TermsOfServicePage onNavigate={navigate} />}
         {route === 'home' && (

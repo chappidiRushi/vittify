@@ -280,7 +280,6 @@
     <string name="vittify_ai">كاشيرو AI</string>
     <string name="more_options">خيارات أكثر</string>
     <string name="clear_chat">مسح الدردشة</string>
-    <string name="qwen_model_required">نموذج Qwen مطلوب</string>
     <string name="download_ai_model_prompt">قم بتنزيل نموذج الذكاء الاصطناعي من الإعدادات لبدء الدردشة</string>
     <string name="go_to_settings">انتقل إلى الإعدادات</string>
     <string name="model_required">النموذج مطلوب</string>
@@ -297,7 +296,6 @@
     <string name="chat_memory_almost_full_warning_format">ذاكرة الدردشة ممتلئة بنسبة %1$d%%. فكّر في مسحها قريبًا.</string>
     <string name="chat_memory_usage_format">ذاكرة الدردشة ممتلئة بنسبة %1$d%%.</string>
     <string name="clear">مسح</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d رسائل</string>
     <string name="tokens_format">%1$s رموز</string>
     <string name="context_usage">استخدام السياق</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@
     <string name="smart_rules_subtitle">تصنيف المعاملات تلقائيًا</string>
     <string name="data_privacy_subtitle">إدارة بياناتك وإعدادات الخصوصية</string>
     <string name="ai_chat_assistant">مساعد الدردشة بالذكاء الاصطناعي</string>
-    <string name="ai_chat_subtitle_not_downloaded">تحميل نموذج Qwen 2.5 (%1$d ميغابايت)</string>
     <string name="ai_chat_subtitle_downloading">جارٍ التحميل… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">تم إيقاف التحميل مؤقتًا. اضغط للاستئناف.</string>
-    <string name="ai_chat_subtitle_completed">Qwen جاهز للدردشة</string>
     <string name="ai_chat_subtitle_failed">فشل التحميل. اضغط لإعادة المحاولة.</string>
     <string name="ai_chat_subtitle_insufficient_space">لا توجد مساحة تخزين كافية</string>
     <string name="notifications">الإشعارات</string>

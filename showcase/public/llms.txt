@@ -1,0 +1,67 @@
+# Vittify
+
+> A 100% private, offline-first personal finance companion and expense tracker for Android. Built from the ground up for convenience, speed, and daily ease of use.
+
+## Overview
+Vittify (package: `com.reddy.vittify`, website: https://vittify.in, repository: https://github.com/chappidiRushi/vittify) turns cryptic bank SMS notifications and physical paper receipts into a clean, actionable financial timeline with zero server dependencies.
+
+- **Status**: Stable & Ready to Use. Pre-built APKs available on GitHub Releases. Community feedback and bug reports are welcomed on GitHub Issues.
+- **License**: GNU Affero General Public License v3.0 (AGPL-3.0)
+- **Platform**: Android 8.0+ (API 26–36)
+- **Architecture**: MVVM + Clean Architecture + UDF, Kotlin 2.3.0, Jetpack Compose BOM 2026.03.01, Material 3 Expressive.
+
+## Core Philosophy & Design
+- **Built for Convenience & Daily Ease of Use**: Tracking spending shouldn't feel like a chore. Automatic SMS parsing, 1-tap launcher widgets, on-device OCR, and natural English inputs make daily tracking effortless.
+- **Privacy & Offline Sovereignty**: Zero cloud databases, zero telemetry, zero trackers, and zero third-party advertising. All bank SMS, account numbers, and receipts remain strictly on-device.
+
+## Key Features
+
+### 1. Intelligent On-Device SMS Parser
+- Automatically recognizes and extracts transactions from 157+ banks across 24+ countries (India, US, UK, UAE, Nepal, Thailand, Kenya, Nigeria, Saudi Arabia, Germany, etc.).
+- Read-only SMS inspection; message bodies are parsed locally in milliseconds and never uploaded anywhere.
+- Auto-categorizes merchants, extracts account last-4 digits, balances, and handles debit/credit/transfer/investment types.
+
+### 2. Receipt Scanning, On-Device OCR & AI Extraction
+- **Google ML Kit OCR**: Snap physical receipts or invoices to extract merchant, total amount, taxes, and dates on-device without cloud latency.
+- **Optional Gemini AI Extraction**: Bring Your Own Key (BYOK) for structured breakdown of complex line items, taxes, discounts, and tips.
+- **Split Transactions**: Easily split single receipts across multiple categories (e.g. groceries vs. household items).
+- **Receipt & Document Attachments**: Attach bill photos directly to transaction records for warranty and audit storage.
+
+### 3. Convenience First: Home Screen Widgets & Shortcuts
+- **Home Screen Quick Add Widget**: Log cash spending, street food, or transit fares in two taps directly from the launcher.
+- **Scan Receipt Launcher Widget**: Dedicated 1-tap shortcut to launch receipt scanning directly.
+- **Plain-English Quick Add**: Type natural language sentences like "₹450 groceries at Blinkit via HDFC" to auto-fill transactions.
+- **Subcategory Catalogue**: Rich built-in item catalogue providing instant autocomplete matching.
+
+### 4. Smart UPI & Bank PDF Statement Parsing
+- Directly import monthly UPI statements from Google Pay (GPay), PhonePe, Paytm, and standard bank PDF exports.
+- Generate branded, publication-ready PDF statements with executive summaries and category distributions.
+
+### 5. Serverless Couple / Partner P2P Sync
+- Share and synchronize finances with a partner without storing data on any remote server.
+- Uses encrypted peer-to-peer transport over Google Play Services Nearby Connections and WebRTC local mesh.
+- Pair in 5 seconds via QR code; switch between "Both", "Me", and "Partner" spending views.
+
+### 6. Optional Google Gemini AI (BYOK)
+- 100% opt-in. Vittify is fully functional offline without AI.
+- Connect your private Google Gemini API key directly (Gemini 2.5 Flash, 2.5 Pro, lightweight models).
+- Offline token counter and configurable prompt templates.
+
+### 7. Encrypted Multi-Cloud Backup & Restore
+- Supports Google Drive, Nextcloud, and any custom WebDAV endpoint.
+- Client-side AES-256 encryption using passphrase before upload; cloud providers only see opaque ciphertext.
+
+### 8. Financial Intelligence & Budgets
+- Category-level monthly budgets with adaptive daily allowance indicators.
+- Subscription and recurring payment tracker with annualized forecasts.
+- GitHub-style daily spending heatmaps and interactive bezier trend curves.
+- Multi-currency support (INR, USD, AED, EUR, GBP, NPR, THB, and more) with live conversion approximations.
+
+## Documentation & Links
+- Website: https://vittify.in/
+- Source Code: https://github.com/chappidiRushi/vittify
+- Releases & APK: https://github.com/chappidiRushi/vittify/releases
+- Issue Tracker: https://github.com/chappidiRushi/vittify/issues
+- Privacy Policy: https://vittify.in/privacy
+- Terms of Service: https://vittify.in/terms
+- Full LLM Reference: https://vittify.in/llms-full.txt

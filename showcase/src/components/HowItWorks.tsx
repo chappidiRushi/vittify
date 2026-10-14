@@ -6,25 +6,25 @@ const steps = [
   {
     number: '01',
     icon: MessageSquareText,
-    title: 'Grant SMS permission.',
+    title: 'Zero-effort setup.',
     description:
-      'A one-time, transparent permission request. Vittify only reads messages from known bank senders — nothing personal, nothing else.',
+      'Grant a one-time SMS permission, or pin the 1-tap Home Screen Quick Add & Scan Receipt widgets. Vittify only inspects verified bank senders — completely offline.',
     color: 'var(--color-accent-coral)',
   },
   {
     number: '02',
     icon: Cpu,
-    title: 'Vittify does the work.',
+    title: 'Vittify does the heavy lifting.',
     description:
-      '155+ on-device parsers recognize your bank\'s SMS format, extract the amount, merchant, and account, and categorize the transaction automatically — in milliseconds.',
+      '157+ on-device parsers and ML Kit receipt OCR extract amounts, merchants, accounts, and itemized splits automatically — in milliseconds, with zero server delay.',
     color: 'var(--color-accent-lavender)',
   },
   {
     number: '03',
     icon: BarChart3,
-    title: 'See your financial story.',
+    title: 'Instant financial clarity.',
     description:
-      'A clean timeline, budget progress bars, savings trends, and subscription costs. All computed locally, all immediately readable.',
+      'Enjoy effortless money tracking: clean scannable timelines, adaptive budget allowances, split line items, and partner sync. Built for daily convenience and peace of mind.',
     color: 'var(--color-accent-mint)',
   },
 ]
@@ -33,17 +33,17 @@ export function HowItWorks() {
   const { ref, inView } = useInView(0.1)
 
   return (
-    <section id="how-it-works" className="py-28">
+    <section id="how-it-works" className="py-28" aria-label="How Vittify works">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-16">
           <span className="text-xs font-semibold tracking-widest uppercase text-[var(--color-accent-mint)]">
-            How It Works
+            Built for Convenience
           </span>
           <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold text-[var(--color-text-primary)] tracking-tighter">
-            Three steps.
+            Three simple steps.
             <br />
-            <span className="text-[var(--color-text-secondary)] font-medium">Then it just works.</span>
+            <span className="text-[var(--color-text-secondary)] font-medium">Tracking money becomes effortless.</span>
           </h2>
         </div>
 

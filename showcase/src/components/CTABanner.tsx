@@ -27,15 +27,20 @@ export function CTABanner() {
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/8 text-xs text-[var(--color-text-secondary)] mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent-mint)] animate-pulse" />
-            Now in beta — free & open source
+            Ready to use · Built for convenience · 100% Free & Open Source
           </div>
 
           {/* Headline */}
           <h2 className="text-4xl sm:text-5xl font-extrabold text-[var(--color-text-primary)] tracking-tighter leading-tight mb-4">
-            Ready to track smarter?
+            Ready for effortless finance tracking?
           </h2>
-          <p className="text-[var(--color-text-secondary)] text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-            Build from source in minutes. No account, no cloud, no subscription — ever.
+          <p className="text-[var(--color-text-secondary)] text-lg mb-8 max-w-xl mx-auto leading-relaxed">
+            Download the APK or build from source in minutes. Experience pure convenience with on-device parsing, 1-tap widgets, and zero subscription paywalls.
+          </p>
+
+          {/* Bug report note */}
+          <p className="text-xs sm:text-sm text-[var(--color-text-tertiary)] mb-10 max-w-lg mx-auto">
+            🚀 <strong>Ready for daily use!</strong> As an actively evolving project across 157+ banks, minor edge cases might occur. Found a bug? Please report it on GitHub and we’ll fix it as soon as possible!
           </p>
 
           {/* CTAs */}
@@ -45,15 +50,17 @@ export function CTABanner() {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2.5 px-8 py-4 text-sm font-bold bg-[var(--color-text-primary)] text-[var(--color-bg)] rounded-2xl hover:opacity-92 transition-opacity shadow-lg"
+              aria-label="View Vittify source code on GitHub"
             >
               <Github size={18} />
-              Get the Source
+              View on GitHub
             </a>
             <a
               href="https://github.com/chappidiRushi/vittify/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2.5 px-8 py-4 text-sm font-semibold text-[var(--color-text-primary)] rounded-2xl border border-white/12 hover:bg-white/5 transition-all"
+              aria-label="Download Vittify Android APK from GitHub releases"
             >
               <Download size={18} />
               Download APK
@@ -62,7 +69,7 @@ export function CTABanner() {
 
           {/* Sub-note */}
           <p className="mt-6 text-xs text-[var(--color-text-tertiary)]">
-            Android 8.0+ · No root required · AGPL-3.0 open source
+            Android 8.0+ (API 26–36) · Built for Convenience · AGPL-3.0 Open Source
           </p>
         </div>
       </motion.div>

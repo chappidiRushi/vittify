@@ -1155,7 +1155,7 @@ object GlobalSearchIndex {
         GlobalSearchPageItem(
             id = "privacy_policy",
             title = "Privacy Policy",
-            subtitle = "100% on-device guarantee and data commitments",
+            subtitle = "100% on-device parsing guarantee and data commitments",
             keywords = listOf("privacy policy", "privacy", "zero tracking", "gdpr", "on device", "data safety", "security manifesto"),
             iconVector = Icons.Rounded.Security,
             destination = PrivacyPolicy
@@ -1171,8 +1171,8 @@ object GlobalSearchIndex {
         GlobalSearchPageItem(
             id = "credits",
             title = "Credits & Acknowledgments",
-            subtitle = "Cashiro fork, open-source libraries, and contributors",
-            keywords = listOf("credits", "acknowledgments", "cashiro", "open source", "authors", "contributors", "libraries", "fork"),
+            subtitle = "Open-source libraries and contributors",
+            keywords = listOf("credits", "acknowledgments", "open source", "authors", "contributors", "libraries", "fork"),
             iconVector = Icons.Rounded.Favorite,
             destination = Credits
         ),

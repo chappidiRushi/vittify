@@ -216,6 +216,7 @@ import com.reddy.vittify.presentation.ui.icons.Folder2
 import com.reddy.vittify.presentation.ui.icons.Iconax
 import com.reddy.vittify.presentation.ui.icons.Menu
 import com.reddy.vittify.presentation.ui.icons.Messages
+import com.reddy.vittify.presentation.ui.icons.ReceiptSearch
 import com.reddy.vittify.presentation.ui.icons.RefreshCircle
 import com.reddy.vittify.presentation.ui.icons.Search
 import com.reddy.vittify.presentation.ui.icons.VideoTime
@@ -266,11 +267,21 @@ fun SharedTransitionScope.TransactionDetailScreen(
     transactionId: Long,
     sharedElementKey: String? = null,
     onNavigateBack: () -> Unit,
+    onNavigateToAi: () -> Unit = {},
     transactionDetailViewModel: TransactionDetailViewModel = hiltViewModel(),
     animatedContentScope: AnimatedContentScope? = null,
     blurEffects: Boolean,
 ) {
     val uiState by transactionDetailViewModel.uiState.collectAsStateWithLifecycle()
+    val isScanningReceipt by transactionDetailViewModel.isScanningReceipt.collectAsStateWithLifecycle()
+    val receiptScanError by transactionDetailViewModel.receiptScanError.collectAsStateWithLifecycle()
+    val showAiNotConfigured by transactionDetailViewModel.showAiNotConfiguredDialog.collectAsStateWithLifecycle()
+    val isAiEnabled by transactionDetailViewModel.isAiEnabled.collectAsStateWithLifecycle()
+
+    val launchReceiptScanner = com.reddy.vittify.presentation.ui.components.rememberReceiptScannerLauncher { imageUri ->
+        transactionDetailViewModel.processScannedReceipt(imageUri)
+    }
+
     val transaction = uiState.transaction
     val isEditMode = uiState.isEditMode
     val editableTransaction = uiState.editableTransaction
@@ -614,8 +625,30 @@ fun SharedTransitionScope.TransactionDetailScreen(
                                 )
                             }
                         }
-                    } else{
-                        Box(modifier = Modifier.size(32.dp)) //for edit transaction title alignment
+                    } else if (isAiEnabled) {
+                        Box(
+                            modifier = Modifier
+                                .animateContentSize()
+                                .padding(end = 16.dp)
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    transactionDetailViewModel.onScanReceiptClicked {
+                                        launchReceiptScanner()
+                                    }
+                                },
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                    contentColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Iconax.ReceiptSearch,
+                                    contentDescription = stringResource(R.string.scan_receipt),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
                     }
                 }
             )
@@ -638,6 +671,11 @@ fun SharedTransitionScope.TransactionDetailScreen(
                     accountPrimaryCurrency = accountPrimaryCurrency,
                     convertedAmount = convertedAmount,
                     availableAccounts = availableAccounts,
+                    onScanReceipt = {
+                        transactionDetailViewModel.onScanReceiptClicked {
+                            launchReceiptScanner()
+                        }
+                    },
                     onAmountClick = { showNumberPad = true },
                     onCategoryClick = { showCategoryMenu = true },
                     onAccountClick = { showAccountSheet = true },
@@ -1036,6 +1074,21 @@ fun SharedTransitionScope.TransactionDetailScreen(
             hazeState = hazeState
         )
     }
+
+    com.reddy.vittify.presentation.ui.components.ReceiptScanningProgressDialog(
+        isVisible = isScanningReceipt
+    )
+
+    com.reddy.vittify.presentation.ui.components.AiNotConfiguredDialog(
+        isVisible = showAiNotConfigured,
+        onDismiss = transactionDetailViewModel::dismissAiNotConfiguredDialog,
+        onNavigateToAiSettings = onNavigateToAi
+    )
+
+    com.reddy.vittify.presentation.ui.components.ReceiptScanErrorDialog(
+        errorMessage = receiptScanError,
+        onDismiss = transactionDetailViewModel::clearReceiptScanError
+    )
 }
 
 @Composable
@@ -1133,6 +1186,7 @@ private fun TransactionDetailContent(
     editableAttachments: List<String> = emptyList(),
     onAddAttachment: (String) -> Unit = {},
     onRemoveAttachment: (String) -> Unit = {},
+    onScanReceipt: () -> Unit = {},
     blurEffects: Boolean,
     hazeState: HazeState = remember { HazeState()},
     accountIconName: String?,
@@ -1215,6 +1269,15 @@ private fun TransactionDetailContent(
                     onCategoryClick = onCategoryClick,
                     onAccountClick = onAccountClick
                 )
+
+                // Scan Receipt in Edit Mode
+                val isAiEnabled by viewModel.isAiEnabled.collectAsStateWithLifecycle()
+                if (isAiEnabled) {
+                    Spacer(modifier = Modifier.height(Spacing.md))
+                    com.reddy.vittify.presentation.ui.components.ReceiptScanPlatter(
+                        onClick = onScanReceipt
+                    )
+                }
 
                 // Attachments Section in Edit Mode
                 Spacer(modifier = Modifier.height(Spacing.md))

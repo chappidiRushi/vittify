@@ -131,7 +131,7 @@ import java.math.BigDecimal
 fun ManageAccountsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAccountDetail: (String, String) -> Unit,
-    onNavigateToAccountAudit: (String, String) -> Unit,
+    onNavigateToAccountAudit: (String, String, String?) -> Unit,
     onNavigateToDataSanitization: (String?) -> Unit = {},
     manageAccountsViewModel: ManageAccountsViewModel = hiltViewModel(),
     blurEffects: Boolean,
@@ -445,7 +445,7 @@ fun ManageAccountsScreen(
                                             showHistoryDialog = true
                                         },
                                         onAuditBalance = {
-                                            onNavigateToAccountAudit(account.bankName, account.accountLast4)
+                                            onNavigateToAccountAudit(account.bankName, account.accountLast4, account.id)
                                         },
                                         onUnlinkCard = {},
                                         onDeleteAccount = {
@@ -515,7 +515,7 @@ fun ManageAccountsScreen(
                                             showHistoryDialog = true
                                         },
                                         onAuditBalance = {
-                                            onNavigateToAccountAudit(account.bankName, account.accountLast4)
+                                            onNavigateToAccountAudit(account.bankName, account.accountLast4, account.id)
                                         },
                                         onUnlinkCard = { cardId ->
                                             manageAccountsViewModel.unlinkCard(cardId)
@@ -608,7 +608,7 @@ fun ManageAccountsScreen(
                                             showHistoryDialog = true
                                         },
                                         onAuditBalance = {
-                                            onNavigateToAccountAudit(card.bankName, card.accountLast4)
+                                            onNavigateToAccountAudit(card.bankName, card.accountLast4, card.id)
                                         },
                                         onDeleteAccount = {
                                             accountToDelete = card
@@ -730,7 +730,7 @@ fun ManageAccountsScreen(
                                                     showHistoryDialog = true
                                                 },
                                                 onAuditBalance = {
-                                                    onNavigateToAccountAudit(account.bankName, account.accountLast4)
+                                                    onNavigateToAccountAudit(account.bankName, account.accountLast4, account.id)
                                                 },
                                                 onUnlinkCard = { cardId ->
                                                     manageAccountsViewModel.unlinkCard(cardId)
@@ -794,7 +794,7 @@ fun ManageAccountsScreen(
                                                     showHistoryDialog = true
                                                 },
                                                 onAuditBalance = {
-                                                    onNavigateToAccountAudit(card.bankName, card.accountLast4)
+                                                    onNavigateToAccountAudit(card.bankName, card.accountLast4, card.id)
                                                 },
                                                 onDeleteAccount = {
                                                     accountToDelete = card

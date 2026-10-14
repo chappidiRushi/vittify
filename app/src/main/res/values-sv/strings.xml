@@ -280,7 +280,6 @@ Användbart för långtidsbudgetar över flera perioder</string>
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Fler alternativ</string>
     <string name="clear_chat">Rensa chatt</string>
-    <string name="qwen_model_required">Qwen-modell krävs</string>
     <string name="download_ai_model_prompt">Ladda ner AI-modellen från Inställningar för att börja chatta</string>
     <string name="go_to_settings">Gå till Inställningar</string>
     <string name="model_required">Modell krävs</string>
@@ -297,7 +296,6 @@ Användbart för långtidsbudgetar över flera perioder</string>
     <string name="chat_memory_almost_full_warning_format">Chattminne är %1$d%% fullt. Överväg att rensa snart.</string>
     <string name="chat_memory_usage_format">Chattminne är %1$d%% fullt.</string>
     <string name="clear">Rensa</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • %1$d meddelanden</string>
     <string name="tokens_format">%1$s token</string>
     <string name="context_usage">Användning av kontext</string>
     <string name="percentage_format_no_brackets">%1$d%%</string>
@@ -753,10 +751,8 @@ Grön (+) = Sparande | Röd (-) = Överspending</string>
     <string name="smart_rules_subtitle">Automatisk kategorisering av transaktioner</string>
     <string name="data_privacy_subtitle">Hantera dina data- och sekretessinställningar</string>
     <string name="ai_chat_assistant">AI Chattassistent</string>
-    <string name="ai_chat_subtitle_not_downloaded">Ladda ner Qwen 2.5-modell (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Laddar ner… %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Nedladdning pausad. Tryck för att återuppta.</string>
-    <string name="ai_chat_subtitle_completed">Qwen redo för chatt</string>
     <string name="ai_chat_subtitle_failed">Nedladdning misslyckades. Tryck för att försöka igen.</string>
     <string name="ai_chat_subtitle_insufficient_space">Inte tillräckligt lagringsutrymme</string>
     <string name="notifications">Aviseringar</string>

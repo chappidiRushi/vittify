@@ -38,7 +38,7 @@ data class PolicySection(
 
 private val POLICY_SECTIONS = listOf(
     PolicySection(
-        title = "1. Core Philosophy: 100% On-Device Processing",
+        title = "1. Core Philosophy: 100% On-Device Parsing, Optional Cloud AI",
         points = listOf(
             "Vittify is fundamentally designed as a local-first, privacy-focused financial companion.",
             "All transaction parsing, financial calculations, categorization, and account balance computations happen exclusively on your device's hardware.",

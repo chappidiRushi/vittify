@@ -316,6 +316,13 @@ class DataSanitizationViewModel @Inject constructor(
         }
     }
 
+    fun updateAccount(account: AccountBalanceEntity) {
+        viewModelScope.launch {
+            val res = sanitizationRepository.updateAccount(account)
+            handleOpResult(res)
+        }
+    }
+
     fun unhideAccount(bankName: String, accountLast4: String) {
         val key = "${bankName}_${accountLast4}"
         val current = sharedPrefs.getStringSet("hidden_accounts", emptySet())?.toMutableSet() ?: mutableSetOf()

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -256,8 +257,6 @@ fun SharedTransitionScope.TransactionsScreen(
             initialCurrency,
             initialType
         )
-        // Delay heavy data loading until transition finished for smoothness
-        delay(500)
         transactionsViewModel.startLoading()
     }
 
@@ -336,28 +335,8 @@ fun SharedTransitionScope.TransactionsScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .nestedScroll(scrollBehaviorLarge.nestedScrollConnection)
-            .then(
-                if (animatedContentScope != null && (initialCategory != null || initialMerchant != null)) {
-                    Modifier.sharedBounds(
-                        rememberSharedContentState(
-                            key = if (initialCategory != null) {
-                                "category_$initialCategory"
-                            } else {
-                                "merchant_$initialMerchant"
-                            }
-                        ),
-                        animatedVisibilityScope = animatedContentScope,
-                        boundsTransform = { _, _ ->
-                            spring(
-                                stiffness = Spring.StiffnessLow,
-                                dampingRatio = Spring.DampingRatioLowBouncy
-                            )
-                        },
-                        resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit, Alignment.Center)
-                    )
-                } else Modifier
-            ),
+            .clipToBounds()
+            .nestedScroll(scrollBehaviorLarge.nestedScrollConnection),
         topBar = {
             CustomTitleTopAppBar(
                 title = if (selectionMode) stringResource(R.string.items_selected_format, selectedTransactionIds.size) else stringResource(R.string.transactions),
@@ -631,11 +610,7 @@ fun SharedTransitionScope.TransactionsScreen(
             }
 
             // Period Filter Chips - hide on scroll down
-            AnimatedVisibility(
-                visible = !isCollapsed,
-                enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
-                exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
-            ) {
+            if (!isCollapsed) {
                 Column {
                     LazyRow(
                         modifier = Modifier
@@ -944,8 +919,8 @@ fun SharedTransitionScope.TransactionsScreen(
                                         showDate = dateGroup == DateGroup.EARLIER,
                                         shape = position.toShape(),
                                         onClick = { onTransactionClick(transaction.id, "transaction_${transaction.id}") },
-                                        animatedContentScope = animatedContentScope,
-                                        sharedElementKey = "transaction_${transaction.id}",
+                                        animatedContentScope = null,
+                                        sharedElementKey = null,
                                         isSelectionMode = selectionMode,
                                         isSelected = selectedTransactionIds.contains(transaction.id),
                                         onSelectionToggle = { transactionsViewModel.toggleTransactionSelection(transaction.id) },

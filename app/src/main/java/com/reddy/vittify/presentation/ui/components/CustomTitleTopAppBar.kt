@@ -173,21 +173,6 @@ private fun HomeStickyCollapsingTopAppBar(
         modifier = modifier
             .fillMaxWidth()
             .height(totalHeight)
-            .then(
-                if (blurEffects && fraction > 0.01f) {
-                    Modifier.hazeEffect(
-                        state = hazeState,
-                        block = fun HazeEffectScope.() {
-                            style = HazeDefaults.style(
-                                backgroundColor = Color.Transparent,
-                                blurRadius = lerp(0.dp, 20.dp, fraction),
-                                noiseFactor = -1f,
-                            )
-                            progressive = HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
-                        }
-                    )
-                } else Modifier
-            )
             .background(surfaceColor.copy(alpha = bgAlpha))
             .padding(top = statusBarTop)
     ) {
@@ -256,39 +241,18 @@ private fun Modifier.animatedOffsetModifier(
 ): Modifier {
     // Define the target offset based on conditions
     val targetOffsetX = when {
-        hasBackButton && hasActionButton-> 0.dp
-        isHomeScreen-> (0).dp
+        hasBackButton && hasActionButton -> 0.dp
+        isHomeScreen -> (0).dp
         hasBackButton -> (-26).dp
         else -> (-10).dp
     }
 
-    // Convert to pixels for animation
-    val density = LocalDensity.current
-    val targetOffsetXPx = with(density) { targetOffsetX.toPx() }
-
-    val transition = updateTransition(
-        targetState = Triple(hasBackButton, false, targetOffsetXPx), // false for isInSelectionMode
-        label = "offsetTransition"
-    )
-
-    val animatedOffsetX by transition.animateFloat(
-        transitionSpec = {
-            spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessMediumLow
-            )
-        },
-        label = "offsetX"
-    ) { (_, _, offset) -> offset }
-
-    // Apply offset directly as a float value instead of rounding to Int
     return this
         .fillMaxWidth()
         .layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
             layout(placeable.width, placeable.height) {
-                // Use the exact float value for positioning
-                placeable.placeRelative(x = animatedOffsetX.toInt(), y = 0)
+                placeable.placeRelative(x = targetOffsetX.roundToPx(), y = 0)
             }
         }
 }
@@ -344,21 +308,6 @@ private fun LargerTopAppBar(
         scrollBehavior = scrollBehaviorLarge,
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (blurEffects) Modifier.hazeEffect(
-                    state = hazeState,
-                    block = fun HazeEffectScope.() {
-                        style = HazeDefaults.style(
-                            backgroundColor = Color.Transparent,
-                            tint = tint(backgroundColor),
-                            blurRadius = 10.dp,
-                            noiseFactor = -1f,
-                        )
-                        progressive =
-                            HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
-                    }
-                ) else Modifier
-            )
             .windowInsetsPadding(WindowInsets.statusBars)
             .alpha(1f - collapsedFraction)
     )
@@ -403,11 +352,7 @@ private fun NavigationForLargeTopAppBar(
     isHomeScreen: Boolean = false,
     navigationContent: @Composable () -> Unit = {},
 ){
-    BlurredAnimatedVisibility(
-        visible = hasBackButton && !isHomeScreen,
-        enter = fadeIn() + scaleIn(),
-        exit = fadeOut() + scaleOut()
-    ) {
+    if (hasBackButton && !isHomeScreen) {
         navigationContent()
     }
 }
@@ -417,11 +362,7 @@ private fun ActionForLargeTopAppBar(
     actionContent: @Composable () -> Unit = {},
     isHomeScreen: Boolean = false,
 ){
-    BlurredAnimatedVisibility(
-        visible = !isHomeScreen,
-        enter = fadeIn() + scaleIn(),
-        exit = fadeOut() + scaleOut()
-    ) {
+    if (!isHomeScreen) {
         actionContent()
     }
 }
@@ -471,11 +412,7 @@ private fun RegularTopAppBar(
                 scrolledContainerColor = Color.Transparent
             ),
             navigationIcon = {
-                BlurredAnimatedVisibility(
-                    visible = hasBackButton || isHomeScreen,
-                    enter = fadeIn() + scaleIn(),
-                    exit = fadeOut() + scaleOut()
-                ) {
+                if (hasBackButton || isHomeScreen) {
                     navigationContent()
                 }
             },
@@ -486,20 +423,6 @@ private fun RegularTopAppBar(
             windowInsets = WindowInsets(0.dp),
             modifier = modifier
                 .fillMaxWidth()
-                .then(
-                    if (blurEffects) Modifier.hazeEffect(
-                        state = hazeState,
-                        block = fun HazeEffectScope.() {
-                            style = HazeDefaults.style(
-                                backgroundColor = Color.Transparent,
-                                blurRadius = 10.dp,
-                                noiseFactor = -1f,
-                            )
-                            progressive =
-                                HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
-                        }
-                    ) else Modifier
-                )
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .alpha(collapsedFraction)
         )

@@ -44,6 +44,7 @@ fun VittifyApp(
     onEditComplete: () -> Unit = {},
     addTransactionTab: Int? = null,
     addTransactionType: String? = null,
+    autoScanReceipt: Boolean = false,
     nlpAmount: String? = null,
     nlpMerchant: String? = null,
     nlpType: String? = null,
@@ -117,12 +118,13 @@ fun VittifyApp(
     }
 
     // Navigate to Add screen when addTransactionTab changes
-    LaunchedEffect(addTransactionTab, addTransactionType, nlpAmount, nlpMerchant, nlpType, nlpBankName, nlpNotes, nlpCategory, nlpSubcategory) {
+    LaunchedEffect(addTransactionTab, addTransactionType, autoScanReceipt, nlpAmount, nlpMerchant, nlpType, nlpBankName, nlpNotes, nlpCategory, nlpSubcategory) {
         addTransactionTab?.let { tab ->
             navController.navigate(
                 AddTransaction(
                     initialTab = tab,
                     type = addTransactionType,
+                    autoScanReceipt = autoScanReceipt,
                     nlpAmount = nlpAmount,
                     nlpMerchant = nlpMerchant,
                     nlpType = nlpType,

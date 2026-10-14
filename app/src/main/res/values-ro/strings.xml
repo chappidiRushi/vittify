@@ -278,7 +278,6 @@
     <string name="vittify_ai">Vittify AI</string>
     <string name="more_options">Mai multe opțiuni</string>
     <string name="clear_chat">Curăță Chat</string>
-    <string name="qwen_model_required">Este necesar un model Qwen</string>
     <string name="download_ai_model_prompt">Descarcă modelul AI din Setări pentru a începe conversațiile</string>
     <string name="go_to_settings">Mergi la Setări</string>
     <string name="model_required">Modelul Necesar</string>
@@ -295,7 +294,6 @@
     <string name="chat_memory_almost_full_warning_format">Memoria de chat este %1$d%% plină. Luați în considerare ștergerea în curând.</string>
     <string name="chat_memory_usage_format">Memoria de chat este %1$d%% plină.</string>
     <string name="clear">Curăță</string>
-    <string name="qwen_model_messages_format">Qwen 2.5 • Mesaje %1$d</string>
     <string name="tokens_format">Jetoane %1$s</string>
     <string name="context_usage">Utilizare context</string>
     <string name="percentage_format_no_brackets">%1$d%</string>
@@ -750,10 +748,8 @@
     <string name="smart_rules_subtitle">Categorisire automată a tranzacțiilor</string>
     <string name="data_privacy_subtitle">Gestionați datele și setările de confidențialitate</string>
     <string name="ai_chat_assistant">Asistent AI de Chat</string>
-    <string name="ai_chat_subtitle_not_downloaded">Descarcă modelul Qwen 2.5 (%1$d MB)</string>
     <string name="ai_chat_subtitle_downloading">Se descarcă... %1$d%%</string>
     <string name="ai_chat_subtitle_paused">Descărcarea este pusă pe pauză. Atingeți pentru a relua.</string>
-    <string name="ai_chat_subtitle_completed">Qwen este gata de chat</string>
     <string name="ai_chat_subtitle_failed">Descărcarea a eșuat. Atingeți pentru a reîncerca.</string>
     <string name="ai_chat_subtitle_insufficient_space">Spațiu de stocare insuficient</string>
     <string name="notifications">Notificări</string>

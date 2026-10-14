@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/scan_receipt_widget_desc"
+    android:initialLayout="@layout/widget_scan_receipt"
+    android:previewLayout="@layout/widget_scan_receipt"
+    android:minWidth="140dp"
+    android:minHeight="48dp"
+    android:minResizeWidth="70dp"
+    android:minResizeHeight="40dp"
+    android:maxResizeWidth="512dp"
+    android:maxResizeHeight="80dp"
+    android:resizeMode="horizontal"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:targetCellWidth="3"
+    android:targetCellHeight="1" />
