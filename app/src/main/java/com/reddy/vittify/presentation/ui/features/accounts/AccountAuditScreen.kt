@@ -92,6 +92,7 @@ import java.math.BigDecimal
 fun AccountAuditScreen(
     bankName: String,
     accountLast4: String,
+    accountId: String? = null,
     onNavigateBack: () -> Unit,
     onTransactionClick: (Long) -> Unit = {},
     viewModel: AccountAuditViewModel = hiltViewModel()
@@ -104,8 +105,8 @@ fun AccountAuditScreen(
     val lazyListState = rememberLazyListState()
 
     // Trigger audit on first composition
-    LaunchedEffect(bankName, accountLast4) {
-        viewModel.runAudit(bankName, accountLast4)
+    LaunchedEffect(accountId, bankName, accountLast4) {
+        viewModel.runAudit(accountId = accountId, bankName = bankName, accountLast4 = accountLast4)
     }
 
     // Handle snackbar messages
@@ -1043,7 +1044,7 @@ private fun LedgerDataRow(
     val typeLabel = when (tx.transactionType) {
         TransactionType.INCOME     -> "Income"
         TransactionType.EXPENSE    -> "Expense"
-        TransactionType.TRANSFER   -> "Transfer"
+        TransactionType.TRANSFER   -> if (row.income != null) "Transfer In" else "Transfer Out"
         TransactionType.CREDIT     -> "Credit"
         TransactionType.INVESTMENT -> "Investment"
         else                       -> tx.transactionType.name

@@ -17,6 +17,10 @@ export const faqs: FAQItem[] = [
     a: 'Yes. You can import Google Pay, PhonePe, and Paytm UPI PDF statements, as well as standard bank PDF exports. Vittify uses PdfBox to extract and parse transaction data locally, with no third-party processing.',
   },
   {
+    q: 'Can I import my data from Excel, Cashew, or CSV?',
+    a: 'Yes. Vittify features a dedicated full-screen Import Wizard supporting Vittify backups (.json, .zip), multi-sheet Excel (.xlsx) workbooks, Cashew SQLite database files (.sqlite), and custom CSV spreadsheets. You can download sample templates with dropdowns, preview and map accounts and categories, pair self-transfers, and verify running balances with automated balance auditing.',
+  },
+  {
     q: 'Does Vittify sync with any cloud service?',
     a: 'There is no automatic cloud sync for your live data. Backup (to Google Drive, Nextcloud, or WebDAV) is a separate, fully opt-in feature — and the backup file is AES-256 encrypted on your device before upload, so the storage provider only ever sees ciphertext.',
   },

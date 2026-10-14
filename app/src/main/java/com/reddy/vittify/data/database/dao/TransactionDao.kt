@@ -267,7 +267,7 @@ interface TransactionDao {
             account_id = :accountId
             OR from_account_id = :accountId
             OR to_account_id = :accountId
-            OR (transaction_type = 'TRANSFER' AND (
+            OR (transaction_type = 'TRANSFER' AND :accountLast4 != '' AND (
                 to_account = :accountLast4 OR to_account LIKE '%' || :accountLast4
                 OR from_account = :accountLast4 OR from_account LIKE '%' || :accountLast4
             ))
@@ -283,12 +283,17 @@ interface TransactionDao {
     @Query(
         """
         SELECT t.* FROM transactions t
-        LEFT JOIN account_balances a ON t.account_id = a.id
+        LEFT JOIN account_balances a_from ON (t.account_id = a_from.id OR t.from_account_id = a_from.id)
+        LEFT JOIN account_balances a_to ON t.to_account_id = a_to.id
         WHERE t.is_deleted = 0
         AND (
-            (a.bank_name = :bankName AND a.account_last4 = :accountLast4)
+            (a_from.bank_name = :bankName AND (:accountLast4 = '' OR a_from.account_last4 = :accountLast4))
             OR
-            (t.transaction_type = 'TRANSFER' AND (
+            (a_to.bank_name = :bankName AND (:accountLast4 = '' OR a_to.account_last4 = :accountLast4))
+            OR
+            (t.from_account = :bankName OR t.to_account = :bankName)
+            OR
+            (t.transaction_type = 'TRANSFER' AND :accountLast4 != '' AND (
                 t.to_account = :accountLast4 OR t.to_account LIKE '%' || :accountLast4
                 OR t.from_account = :accountLast4 OR t.from_account LIKE '%' || :accountLast4
             ))
@@ -310,7 +315,7 @@ interface TransactionDao {
             account_id = :accountId
             OR from_account_id = :accountId
             OR to_account_id = :accountId
-            OR (transaction_type = 'TRANSFER' AND (
+            OR (transaction_type = 'TRANSFER' AND :accountLast4 != '' AND (
                 to_account = :accountLast4 OR to_account LIKE '%' || :accountLast4
                 OR from_account = :accountLast4 OR from_account LIKE '%' || :accountLast4
             ))
@@ -328,13 +333,18 @@ interface TransactionDao {
     @Query(
         """
         SELECT t.* FROM transactions t
-        LEFT JOIN account_balances a ON t.account_id = a.id
+        LEFT JOIN account_balances a_from ON (t.account_id = a_from.id OR t.from_account_id = a_from.id)
+        LEFT JOIN account_balances a_to ON t.to_account_id = a_to.id
         WHERE t.is_deleted = 0 
         AND t.date_time BETWEEN :startDate AND :endDate
         AND (
-            (a.bank_name = :bankName AND a.account_last4 = :accountLast4)
+            (a_from.bank_name = :bankName AND (:accountLast4 = '' OR a_from.account_last4 = :accountLast4))
             OR
-            (t.transaction_type = 'TRANSFER' AND (
+            (a_to.bank_name = :bankName AND (:accountLast4 = '' OR a_to.account_last4 = :accountLast4))
+            OR
+            (t.from_account = :bankName OR t.to_account = :bankName)
+            OR
+            (t.transaction_type = 'TRANSFER' AND :accountLast4 != '' AND (
                 t.to_account = :accountLast4 OR t.to_account LIKE '%' || :accountLast4
                 OR t.from_account = :accountLast4 OR t.from_account LIKE '%' || :accountLast4
             ))

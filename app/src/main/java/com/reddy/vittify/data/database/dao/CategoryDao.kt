@@ -46,4 +46,7 @@ interface CategoryDao {
     
     @Query("DELETE FROM categories")
     suspend fun deleteAllCategories()
+
+    @Query("DELETE FROM categories WHERE is_system = 0")
+    suspend fun deleteNonSystemCategories()
 }

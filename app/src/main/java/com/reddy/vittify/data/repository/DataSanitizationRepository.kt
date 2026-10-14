@@ -113,38 +113,30 @@ class DataSanitizationRepository @Inject constructor(
             hiddenAccountKeys.contains("${acc.bankName}_${acc.accountLast4}")
         }
 
-        // Account Discrepancies
+        // Account Discrepancies (Unified with AccountAudit single source of truth)
         val discrepancies = mutableListOf<AccountDiscrepancy>()
         val ghostAccounts = mutableListOf<AccountBalanceEntity>()
 
         allAccounts.forEach { acc ->
-            if (acc.isWallet || acc.accountLast4.equals("wallet", ignoreCase = true)) {
-                // Wallets like Cash are valid built-in system accounts, not ghost accounts
-                return@forEach
-            }
-
-            val accTxns = transactionDao.getTransactionsByAccount(acc.bankName, acc.accountLast4)
-                .first()
-                .filter { !it.isDeleted && it.transactionType != TransactionType.BALANCE_UPDATE }
+            val accTxns = transactionRepository.get().getTransactionsForAccount(
+                accountId = acc.id,
+                bankName = acc.bankName,
+                accountLast4 = acc.accountLast4
+            )
 
             if (accTxns.isEmpty() && acc.balance.compareTo(BigDecimal.ZERO) == 0) {
-                ghostAccounts.add(acc)
+                if (!acc.isWallet && !acc.accountLast4.equals("wallet", ignoreCase = true)) {
+                    ghostAccounts.add(acc)
+                }
             } else if (accTxns.isNotEmpty()) {
-                val chronological = accTxns.sortedBy { it.dateTime }
-                val auditBalances = BalanceCalculator.calculateAuditBalances(
-                    transactions = chronological,
-                    accountLast4 = acc.accountLast4,
-                    isCreditCard = acc.isCreditCard,
-                    currentBalance = acc.balance
-                )
-                val diff = auditBalances.expectedBalance - acc.balance
-                if (diff.compareTo(BigDecimal.ZERO) != 0) {
+                val audit = BalanceCalculator.computeAccountAudit(acc, accTxns)
+                if (!audit.isHealthy) {
                     discrepancies.add(
                         AccountDiscrepancy(
                             account = acc,
                             currentBalance = acc.balance,
-                            expectedBalance = auditBalances.expectedBalance,
-                            discrepancy = diff
+                            expectedBalance = audit.expectedBalance,
+                            discrepancy = audit.discrepancy
                         )
                     )
                 }
@@ -160,8 +152,8 @@ class DataSanitizationRepository @Inject constructor(
             ghostAccounts = ghostAccounts
         )
 
-        // 4. Transaction Anomalies
-        val duplicateTxnGroups = findDuplicateTransactions(activeTransactions)
+        // 4. Transaction Anomalies (Uses unified BalanceCalculator duplicate detection filtering dismissed)
+        val duplicateTxnGroups = BalanceCalculator.findDuplicateTransactions(activeTransactions)
 
         val orphanedTxns = activeTransactions.filter { tx ->
             val accId = tx.accountId
@@ -238,46 +230,20 @@ class DataSanitizationRepository @Inject constructor(
         )
     }
 
-    private fun findDuplicateTransactions(transactions: List<TransactionEntity>): List<DuplicateTransactionGroup> {
-        val groups = mutableListOf<DuplicateTransactionGroup>()
-        val seen = mutableSetOf<Long>()
-
-        for (i in transactions.indices) {
-            val current = transactions[i]
-            if (current.id in seen) continue
-
-            val duplicates = mutableListOf(current)
-            for (j in i + 1 until transactions.size) {
-                val other = transactions[j]
-                if (other.id in seen) continue
-
-                val sameAmount = current.amount.compareTo(other.amount) == 0
-                val sameMerchant = current.merchantName.equals(other.merchantName, ignoreCase = true)
-                val sameType = current.transactionType == other.transactionType
-                val withinWindow = kotlin.math.abs(Duration.between(current.dateTime, other.dateTime).toMinutes()) <= 5
-
-                if (sameAmount && sameMerchant && sameType && withinWindow) {
-                    duplicates.add(other)
-                    seen.add(other.id)
-                }
-            }
-
-            if (duplicates.size > 1) {
-                seen.add(current.id)
-                groups.add(
-                    DuplicateTransactionGroup(
-                        key = "${current.merchantName}_${current.amount}_${current.id}",
-                        transactions = duplicates,
-                        amount = current.amount,
-                        merchantName = current.merchantName
-                    )
-                )
-            }
-        }
-        return groups
-    }
-
     // --- Sanitization Mutation Methods ---
+
+    suspend fun updateAccount(account: AccountBalanceEntity): SanitizationOperationResult = withContext(Dispatchers.IO) {
+        try {
+            val existing = accountBalanceDao.getLatestBalance(account.bankName, account.accountLast4)
+            if (existing != null && existing.id != account.id) {
+                return@withContext SanitizationOperationResult(false, "An account with ${account.bankName} (••• ${account.accountLast4}) already exists.")
+            }
+            accountBalanceDao.updateBalance(account)
+            SanitizationOperationResult(true, "Account format updated successfully", 1)
+        } catch (e: Exception) {
+            SanitizationOperationResult(false, "Failed to update account: ${e.message}")
+        }
+    }
 
     suspend fun claimAllUnassigned(myDeviceId: String): SanitizationOperationResult = withContext(Dispatchers.IO) {
         try {

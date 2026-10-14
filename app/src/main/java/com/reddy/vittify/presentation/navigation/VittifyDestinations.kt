@@ -372,6 +372,7 @@ data class Transactions(
 @Serializable data class DataSanitization(val initialTab: String? = null)
 @Serializable object ManageArchivedTransactions
 @Serializable data class CloudBackup(val fromOnboarding: Boolean = false, val targetOptionId: String? = null)
+@Serializable object ImportWizard
 @Serializable object P2pDeviceSync
 @Serializable object CoupleTracker
 
@@ -394,7 +395,11 @@ data class Transactions(
 
 @Serializable object AddAccount
 
-@Serializable data class AccountAudit(val bankName: String, val accountLast4: String)
+@Serializable data class AccountAudit(
+    val bankName: String = "",
+    val accountLast4: String = "",
+    val accountId: String? = null
+)
 
 @Serializable object About
 

@@ -326,6 +326,10 @@ dependencies {
     
     // OpenCSV for CSV export
     implementation(libs.opencsv)
+
+    // Apache POI for Excel (.xlsx) import and export
+    implementation(libs.poi)
+    implementation(libs.poi.ooxml)
     testImplementation(kotlin("test"))
 
     // coil for images

@@ -31,5 +31,8 @@ interface SubcategoryDao {
     @Query("DELETE FROM subcategories WHERE id = :subcategoryId")
     suspend fun deleteSubcategoryById(subcategoryId: Long)
 
+    @Query("DELETE FROM subcategories WHERE is_system = 0")
+    suspend fun deleteNonSystemSubcategories()
+
     @Query("SELECT COUNT(*) FROM subcategories") suspend fun getSubcategoryCount(): Int
 }

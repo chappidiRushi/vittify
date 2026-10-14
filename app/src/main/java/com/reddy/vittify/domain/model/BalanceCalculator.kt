@@ -1,9 +1,32 @@
 package com.reddy.vittify.domain.model
 
+import com.reddy.vittify.data.database.entity.AccountBalanceEntity
 import com.reddy.vittify.data.database.entity.TransactionEntity
 import com.reddy.vittify.data.database.entity.TransactionType
+import com.reddy.vittify.data.model.DuplicateTransactionGroup
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.LocalDate
+
+data class LedgerRow(
+    val rowNumber: Int,
+    val transaction: TransactionEntity,
+    val paid: BigDecimal?,
+    val income: BigDecimal?,
+    val balance: BigDecimal
+)
+
+data class AccountAuditSummary(
+    val initialBalance: BigDecimal,
+    val expectedBalance: BigDecimal,
+    val discrepancy: BigDecimal,
+    val totalIncome: BigDecimal,
+    val totalExpenses: BigDecimal,
+    val totalTransfersIn: BigDecimal,
+    val totalTransfersOut: BigDecimal,
+    val isHealthy: Boolean,
+    val chronologicalTransactions: List<TransactionEntity>
+)
 
 /**
  * Single source of truth for balance calculations.
@@ -86,6 +109,17 @@ object BalanceCalculator {
      * @param toAccount The destination account identifier from the transaction.
      * @return The resolved transfer direction.
      */
+    /**
+     * Resolves the transfer direction for a given account in a transfer transaction.
+     *
+     * Uses suffix matching: if the account's last-4 appears as a suffix of `fromAccount`
+     * or `toAccount`, the direction is determined. If both or neither match, returns NONE.
+     *
+     * @param accountLast4 The last-4 digits of the account to resolve direction for.
+     * @param fromAccount The source account identifier from the transaction.
+     * @param toAccount The destination account identifier from the transaction.
+     * @return The resolved transfer direction.
+     */
     fun resolveTransferDirection(
         accountLast4: String,
         fromAccount: String?,
@@ -99,6 +133,81 @@ object BalanceCalculator {
             isDestination && !isSource -> TransferDirection.DESTINATION
             // Both match (self-transfer) or neither match — no balance change
             else -> TransferDirection.NONE
+        }
+    }
+
+    /**
+     * Resolves transfer direction using full account context (ID, bank name, last-4, and nickname).
+     * Handles accounts without last-4 (e.g. wallets or imported accounts), cross-account transfers,
+     * and explicit fromAccountId / toAccountId relations.
+     */
+    fun resolveTransferDirection(
+        accountId: String?,
+        bankName: String?,
+        accountLast4: String?,
+        accountName: String?,
+        transaction: TransactionEntity
+    ): TransferDirection {
+        if (transaction.transactionType != TransactionType.TRANSFER) {
+            return TransferDirection.NONE
+        }
+
+        // 1. Direct ID matching (most reliable)
+        val isSourceById = accountId != null && (
+            transaction.fromAccountId == accountId ||
+            (transaction.fromAccountId == null && transaction.accountId == accountId)
+        )
+        val isDestById = accountId != null && transaction.toAccountId == accountId
+
+        if (isSourceById || isDestById) {
+            return when {
+                isSourceById && !isDestById -> TransferDirection.SOURCE
+                isDestById && !isSourceById -> TransferDirection.DESTINATION
+                else -> TransferDirection.NONE
+            }
+        }
+
+        // 2. Account last-4 suffix matching (if last-4 is present and not blank)
+        val cleanLast4 = accountLast4?.trim() ?: ""
+        if (cleanLast4.isNotEmpty()) {
+            val isSourceByLast4 = isAccountMatch(cleanLast4, transaction.fromAccount)
+            val isDestByLast4 = isAccountMatch(cleanLast4, transaction.toAccount)
+
+            if (isSourceByLast4 || isDestByLast4) {
+                return when {
+                    isSourceByLast4 && !isDestByLast4 -> TransferDirection.SOURCE
+                    isDestByLast4 && !isSourceByLast4 -> TransferDirection.DESTINATION
+                    else -> TransferDirection.NONE
+                }
+            }
+        }
+
+        // 3. Bank name & Account name matching
+        val isSourceByName = (!bankName.isNullOrBlank() && transaction.fromAccount?.trim().equals(bankName.trim(), ignoreCase = true)) ||
+                (!accountName.isNullOrBlank() && transaction.fromAccount?.trim().equals(accountName.trim(), ignoreCase = true))
+        val isDestByName = (!bankName.isNullOrBlank() && transaction.toAccount?.trim().equals(bankName.trim(), ignoreCase = true)) ||
+                (!accountName.isNullOrBlank() && transaction.toAccount?.trim().equals(accountName.trim(), ignoreCase = true))
+
+        return when {
+            isSourceByName && !isDestByName -> TransferDirection.SOURCE
+            isDestByName && !isSourceByName -> TransferDirection.DESTINATION
+            else -> TransferDirection.NONE
+        }
+    }
+
+    /**
+     * Returns the effective amount for a transaction relative to an account and its direction.
+     * For transfers entering an account (DESTINATION), uses targetAmount if available.
+     * Otherwise uses amount.
+     */
+    fun getEffectiveAmount(
+        transaction: TransactionEntity,
+        direction: TransferDirection
+    ): BigDecimal {
+        return if (direction == TransferDirection.DESTINATION && transaction.targetAmount != null) {
+            transaction.targetAmount
+        } else {
+            transaction.amount
         }
     }
 
@@ -142,7 +251,10 @@ object BalanceCalculator {
         transactions: List<TransactionEntity>,
         accountLast4: String,
         isCreditCard: Boolean,
-        currentBalance: BigDecimal
+        currentBalance: BigDecimal,
+        accountId: String? = null,
+        bankName: String? = null,
+        accountName: String? = null
     ): AuditBalances {
         val chronologicalTransactions = transactions.sortedBy { it.dateTime }
         if (chronologicalTransactions.isEmpty()) {
@@ -152,28 +264,34 @@ object BalanceCalculator {
             )
         }
 
+        fun getDirection(t: TransactionEntity): TransferDirection {
+            return if (t.transactionType == TransactionType.TRANSFER) {
+                if (accountId != null || bankName != null) {
+                    resolveTransferDirection(accountId, bankName, accountLast4, accountName, t)
+                } else {
+                    resolveTransferDirection(accountLast4, t.fromAccount, t.toAccount)
+                }
+            } else {
+                TransferDirection.NONE
+            }
+        }
+
         val lastWithBalanceAfter = chronologicalTransactions.lastOrNull { it.balanceAfter != null }
         return if (lastWithBalanceAfter != null) {
             val anchorBalance = lastWithBalanceAfter.balanceAfter!!
             val anchorIndex = chronologicalTransactions.indexOf(lastWithBalanceAfter)
 
             val afterAnchorEffects = chronologicalTransactions.drop(anchorIndex + 1).fold(BigDecimal.ZERO) { acc, t ->
-                val direction = if (t.transactionType == TransactionType.TRANSFER) {
-                    resolveTransferDirection(accountLast4, t.fromAccount, t.toAccount)
-                } else {
-                    TransferDirection.NONE
-                }
-                acc + balanceEffect(t.amount, t.transactionType, isCreditCard, direction)
+                val direction = getDirection(t)
+                val effAmount = getEffectiveAmount(t, direction)
+                acc + balanceEffect(effAmount, t.transactionType, isCreditCard, direction)
             }
             val expectedBalance = anchorBalance + afterAnchorEffects
 
             val upToAnchorEffects = chronologicalTransactions.take(anchorIndex + 1).fold(BigDecimal.ZERO) { acc, t ->
-                val direction = if (t.transactionType == TransactionType.TRANSFER) {
-                    resolveTransferDirection(accountLast4, t.fromAccount, t.toAccount)
-                } else {
-                    TransferDirection.NONE
-                }
-                acc + balanceEffect(t.amount, t.transactionType, isCreditCard, direction)
+                val direction = getDirection(t)
+                val effAmount = getEffectiveAmount(t, direction)
+                acc + balanceEffect(effAmount, t.transactionType, isCreditCard, direction)
             }
             val initialBalance = anchorBalance - upToAnchorEffects
 
@@ -183,12 +301,9 @@ object BalanceCalculator {
             )
         } else {
             val totalNetEffect = chronologicalTransactions.fold(BigDecimal.ZERO) { acc, t ->
-                val direction = if (t.transactionType == TransactionType.TRANSFER) {
-                    resolveTransferDirection(accountLast4, t.fromAccount, t.toAccount)
-                } else {
-                    TransferDirection.NONE
-                }
-                acc + balanceEffect(t.amount, t.transactionType, isCreditCard, direction)
+                val direction = getDirection(t)
+                val effAmount = getEffectiveAmount(t, direction)
+                acc + balanceEffect(effAmount, t.transactionType, isCreditCard, direction)
             }
 
             AuditBalances(
@@ -196,6 +311,181 @@ object BalanceCalculator {
                 expectedBalance = totalNetEffect
             )
         }
+    }
+
+    /**
+     * Unified single-source-of-truth method to compute audit balances and totals for any account.
+     * Accurately handles transfers, cross-currency amounts, credit cards, and ledger chronology.
+     */
+    fun computeAccountAudit(
+        account: AccountBalanceEntity,
+        transactions: List<TransactionEntity>
+    ): AccountAuditSummary {
+        val chronological = transactions.sortedBy { it.dateTime }
+
+        fun resolveDirection(tx: TransactionEntity): TransferDirection {
+            return resolveTransferDirection(
+                accountId = account.id.ifBlank { null },
+                bankName = account.bankName,
+                accountLast4 = account.accountLast4,
+                accountName = account.accountName,
+                transaction = tx
+            )
+        }
+
+        val totalIncome = chronological
+            .filter { it.transactionType == TransactionType.INCOME || it.transactionType == TransactionType.CREDIT }
+            .fold(BigDecimal.ZERO) { acc, t -> acc + t.amount }
+
+        val totalExpenses = chronological
+            .filter { it.transactionType == TransactionType.EXPENSE || it.transactionType == TransactionType.INVESTMENT }
+            .fold(BigDecimal.ZERO) { acc, t -> acc + t.amount }
+
+        val totalTransfersIn = chronological
+            .filter {
+                it.transactionType == TransactionType.TRANSFER &&
+                resolveDirection(it) == TransferDirection.DESTINATION
+            }
+            .fold(BigDecimal.ZERO) { acc, t ->
+                acc + getEffectiveAmount(t, TransferDirection.DESTINATION)
+            }
+
+        val totalTransfersOut = chronological
+            .filter {
+                it.transactionType == TransactionType.TRANSFER &&
+                resolveDirection(it) == TransferDirection.SOURCE
+            }
+            .fold(BigDecimal.ZERO) { acc, t ->
+                acc + getEffectiveAmount(t, TransferDirection.SOURCE)
+            }
+
+        val auditBalances = calculateAuditBalances(
+            transactions = chronological,
+            accountLast4 = account.accountLast4,
+            isCreditCard = account.isCreditCard,
+            currentBalance = account.balance,
+            accountId = account.id.ifBlank { null },
+            bankName = account.bankName,
+            accountName = account.accountName
+        )
+
+        val discrepancy = auditBalances.expectedBalance - account.balance
+
+        return AccountAuditSummary(
+            initialBalance = auditBalances.initialBalance,
+            expectedBalance = auditBalances.expectedBalance,
+            discrepancy = discrepancy,
+            totalIncome = totalIncome,
+            totalExpenses = totalExpenses,
+            totalTransfersIn = totalTransfersIn,
+            totalTransfersOut = totalTransfersOut,
+            isHealthy = discrepancy.compareTo(BigDecimal.ZERO) == 0,
+            chronologicalTransactions = chronological
+        )
+    }
+
+    /**
+     * Builds chronological bank-statement ledger rows with a running balance.
+     */
+    fun buildLedgerRows(
+        account: AccountBalanceEntity,
+        chronologicalTransactions: List<TransactionEntity>,
+        initialBalance: BigDecimal
+    ): List<LedgerRow> {
+        var runningBalance = initialBalance
+        return chronologicalTransactions.mapIndexed { index, tx ->
+            val direction = if (tx.transactionType == TransactionType.TRANSFER) {
+                resolveTransferDirection(
+                    accountId = account.id.ifBlank { null },
+                    bankName = account.bankName,
+                    accountLast4 = account.accountLast4,
+                    accountName = account.accountName,
+                    transaction = tx
+                )
+            } else {
+                TransferDirection.NONE
+            }
+
+            val effAmount = getEffectiveAmount(tx, direction)
+
+            val effect = balanceEffect(
+                amount = effAmount,
+                transactionType = tx.transactionType,
+                isCreditCard = account.isCreditCard,
+                direction = direction
+            )
+
+            runningBalance = runningBalance + effect
+
+            val (paid, income) = if (account.isCreditCard) {
+                when {
+                    effect > BigDecimal.ZERO -> effect to null
+                    effect < BigDecimal.ZERO -> null to effect.abs()
+                    else -> null to null
+                }
+            } else {
+                when {
+                    effect > BigDecimal.ZERO -> null to effect
+                    effect < BigDecimal.ZERO -> effect.abs() to null
+                    else -> null to null
+                }
+            }
+
+            LedgerRow(
+                rowNumber = index + 1,
+                transaction = tx,
+                paid = paid,
+                income = income,
+                balance = runningBalance
+            )
+        }
+    }
+
+    /**
+     * Single source of truth for detecting suspected duplicate transactions:
+     * - Filters out transactions already marked as intentional (isDuplicateDismissed == true)
+     * - Matches identical amount, merchant name (case-insensitive), transaction type, within 5 minutes
+     */
+    fun findDuplicateTransactions(transactions: List<TransactionEntity>): List<DuplicateTransactionGroup> {
+        val nonDismissed = transactions.filter { !it.isDuplicateDismissed }
+        val groups = mutableListOf<DuplicateTransactionGroup>()
+        val seen = mutableSetOf<Long>()
+
+        for (i in nonDismissed.indices) {
+            val current = nonDismissed[i]
+            if (current.id in seen) continue
+
+            val duplicates = mutableListOf(current)
+            for (j in i + 1 until nonDismissed.size) {
+                val other = nonDismissed[j]
+                if (other.id in seen) continue
+
+                val sameAmount = current.amount.compareTo(other.amount) == 0
+                val sameMerchant = current.merchantName.equals(other.merchantName, ignoreCase = true)
+                val sameType = current.transactionType == other.transactionType
+                val withinWindow = kotlin.math.abs(
+                    Duration.between(current.dateTime, other.dateTime).toMinutes()
+                ) <= 5
+
+                if (sameAmount && sameMerchant && sameType && withinWindow) {
+                    duplicates.add(other)
+                    seen.add(other.id)
+                }
+            }
+
+            if (duplicates.size > 1) {
+                seen.add(current.id)
+                groups.add(
+                    DuplicateTransactionGroup(
+                        key = "${current.merchantName}_${current.amount}_${current.id}",
+                        transactions = duplicates,
+                        amount = current.amount,
+                        merchantName = current.merchantName
+                    )
+                )
+            }
+        }
+        return groups
     }
 
     // ─────────────────────────────────────────────────────────────────────────
