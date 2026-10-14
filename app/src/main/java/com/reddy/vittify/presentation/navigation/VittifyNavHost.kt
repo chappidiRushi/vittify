@@ -105,6 +105,7 @@ import com.reddy.vittify.presentation.ui.features.settings.applock.AppLockScreen
 import com.reddy.vittify.presentation.ui.features.settings.dataprivacy.DataPrivacyScreen
 import com.reddy.vittify.presentation.ui.features.settings.archived.ManageArchivedTransactionsScreen
 import com.reddy.vittify.presentation.ui.features.settings.cloudbackup.BackupSyncScreen
+import com.reddy.vittify.presentation.ui.features.settings.importwizard.ImportWizardScreen
 import com.reddy.vittify.presentation.ui.features.sync.p2p.P2pSyncScreen
 import com.reddy.vittify.presentation.ui.features.couple.CoupleTrackerScreen
 import com.reddy.vittify.presentation.ui.features.settings.developer.DeveloperScreen
@@ -273,7 +274,7 @@ fun VittifyNavHost(
                             }
                         },
                         onRestoreBackup = {
-                            navController.safeNavigate(CloudBackup(fromOnboarding = true))
+                            navController.safeNavigate(ImportWizard)
                         },
                         onNavigateToTerms = {
                             navController.safeNavigate(TermsOfService)
@@ -570,8 +571,8 @@ fun VittifyNavHost(
                     val route = backStackEntry.toRoute<DataSanitization>()
                     com.reddy.vittify.presentation.ui.features.settings.sanitization.DataSanitizationScreen(
                         onNavigateBack = { navController.safePopBackStack() },
-                        onNavigateToAccountAudit = { bankName, last4 ->
-                            navController.safeNavigate(AccountAudit(bankName, last4))
+                        onNavigateToAccountAudit = { bankName, last4, accountId ->
+                            navController.safeNavigate(AccountAudit(bankName, last4, accountId))
                         },
                         initialTabName = route.initialTab,
                         blurEffects = themeUiState.blurEffects
@@ -586,8 +587,8 @@ fun VittifyNavHost(
                 ) {
                     com.reddy.vittify.presentation.ui.features.settings.sanitization.DataSanitizationScreen(
                         onNavigateBack = { navController.safePopBackStack() },
-                        onNavigateToAccountAudit = { bankName, last4 ->
-                            navController.safeNavigate(AccountAudit(bankName, last4))
+                        onNavigateToAccountAudit = { bankName, last4, accountId ->
+                            navController.safeNavigate(AccountAudit(bankName, last4, accountId))
                         },
                         initialTabName = "archived",
                         blurEffects = themeUiState.blurEffects
@@ -604,6 +605,7 @@ fun VittifyNavHost(
                     BackupSyncScreen(
                         onNavigateBack = { navController.safePopBackStack() },
                         onNavigateToAccounts = { navController.safeNavigate(ManageAccounts) },
+                        onNavigateToImportWizard = { navController.safeNavigate(ImportWizard) },
                         onRestoreSuccess = {
                             if (args.fromOnboarding) {
                                 navController.safeNavigate(Home) {
@@ -612,6 +614,24 @@ fun VittifyNavHost(
                             }
                         },
                         blurEffects = themeUiState.blurEffects
+                    )
+                }
+
+                composable<ImportWizard>(
+                    enterTransition = VittifyTransitions.horizontalSlideEnter,
+                    exitTransition = VittifyTransitions.horizontalSlideExit,
+                    popEnterTransition = VittifyTransitions.horizontalSlidePopEnter,
+                    popExitTransition = VittifyTransitions.horizontalSlidePopExit
+                ) {
+                    ImportWizardScreen(
+                        onNavigateBack = { navController.safePopBackStack() },
+                        onNavigateHome = {
+                            navController.safeNavigate(Home) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        },
+                        onNavigateAccounts = { navController.safeNavigate(ManageAccounts) },
+                        onNavigateAudit = { navController.safeNavigate(DataSanitization()) }
                     )
                 }
 
@@ -762,8 +782,8 @@ fun VittifyNavHost(
                         onNavigateToAccountDetail = { bankName, last4 ->
                             navController.safeNavigate(AccountDetail(bankName, last4))
                         },
-                        onNavigateToAccountAudit = { bankName, last4 ->
-                            navController.safeNavigate(AccountAudit(bankName, last4))
+                        onNavigateToAccountAudit = { bankName, last4, accountId ->
+                            navController.safeNavigate(AccountAudit(bankName, last4, accountId))
                         },
                         onNavigateToDataSanitization = { tab ->
                             navController.safeNavigate(DataSanitization(tab))
@@ -793,6 +813,7 @@ fun VittifyNavHost(
                     AccountAuditScreen(
                         bankName = accountAudit.bankName,
                         accountLast4 = accountAudit.accountLast4,
+                        accountId = accountAudit.accountId,
                         onNavigateBack = { navController.safePopBackStack() },
                         onTransactionClick = { transactionId ->
                             navController.safeNavigate(TransactionDetail(transactionId))

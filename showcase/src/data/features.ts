@@ -148,6 +148,23 @@ export const features: Feature[] = [
     ],
   },
   {
+    id: 'import-wizard',
+    label: 'Smart Import & Restore',
+    headline: 'Bring your financial history from anywhere.',
+    description:
+      'Zero lock-in. Migrate your complete financial ledger into Vittify with an interactive step-by-step wizard. Ingest Vittify backups, multi-sheet Excel (.xlsx) workbooks, Cashew SQLite database backups, or custom CSV files. Preview, select, and map accounts and categories before importing.',
+    screenshot: 'backup_sync.png',
+    screenshotAlt: 'Vittify restore and import wizard showing multiple sources and preview mapping',
+    tag: 'Excel · Cashew · CSV',
+    tagColor: 'mint',
+    bullets: [
+      'Multi-source ingestion — Vittify JSON/ZIP, Excel (.xlsx), Cashew (.sqlite), and CSV',
+      'Downloadable sample Excel & CSV templates with dynamic dependent dropdowns',
+      'Interactive preview with category auto-matching and account mapping',
+      'Self-transfers & multi-currency handling with automated balance audit',
+    ],
+  },
+  {
     id: 'analytics',
     label: 'Analytics & Heatmaps',
     headline: 'Insights that actually mean something.',

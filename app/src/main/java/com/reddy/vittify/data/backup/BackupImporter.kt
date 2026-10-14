@@ -110,6 +110,8 @@ class BackupImporter @Inject constructor(
         }
     }
 
+    suspend fun readBackup(uri: Uri): VittifyBackup? = readBackupFile(uri)
+
     /**
      * Read and parse backup file
      */

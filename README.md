@@ -113,7 +113,17 @@ Captured directly from **Google Pixel 7 Pro** running the latest Vittify Beta bu
 - **Branded Statement Generator**: Export crisp, publication-ready PDF statements with executive summaries, visual expense breakdowns, and categorized itemizations.
 - **CSV Data Portability**: Export your entire ledger or filtered subsets as standard CSV files for tax filing, spreadsheet analysis, or personal backups.
 
-### 👫 3. Couple / Partner P2P Sync (Flagship)
+### � 3. Multi-Format Data Import & Migration Wizard
+- **Universal Multi-Source Ingestion**: Effortlessly migrate or restore your financial history into Vittify with zero vendor lock-in:
+  - **Cashew SQLite Backup (`.sqlite`, `.sql`) [Beta]**: Direct migration from Cashew expense tracker database files. Automatically decodes multi-currency wallets, categories and subcategories, and correlates paired self-transfers.
+  - **Excel Spreadsheet (`.xlsx`) [Beta]**: Ingest comprehensive multi-sheet workbooks (`Bank Accounts`, `Categories`, `Subcategories`, `Transactions`, `Subscriptions`). Download pre-built sample templates with dynamic dependent dropdowns directly from the app.
+  - **Custom CSV (`.csv`) [Beta]**: Import transaction history from standard spreadsheet CSV files with downloadable sample template support.
+  - **Vittify Backup (`.json`, `.zip`)**: Instant full-ledger restore from local encrypted or unencrypted Vittify archives.
+- **Interactive Multi-Step Preview & Mapping**: Preview every bank account, category, subscription, and transaction before anything is saved. Includes an accessibility action bar with rapid **Select Range** selection.
+- **Category Auto-Matching**: Intelligently auto-maps imported categories to in-app equivalents, with options to create new root categories or nest them under existing parents.
+- **Self-Transfer & Multi-Currency Handling**: Accurately maps cross-account transfers and preserves foreign exchange amounts (e.g. `$10.00 USD → ₹952.34 INR`) with automated post-import balance auditing.
+
+### 👫 4. Couple / Partner P2P Sync (Flagship)
 - **100% Serverless & Cloudless**: Share and sync financial activity with your partner without storing your financial life on a remote server.
 - **Encrypted Local Mesh**: Direct device-to-device transport using **Google Play Services Nearby Connections** and **WebRTC** over local Wi-Fi or Bluetooth.
 - **Effortless Pairing**: Pair instantly by scanning a QR code or entering a secure 6-character exchange code.
@@ -121,70 +131,70 @@ Captured directly from **Google Pixel 7 Pro** running the latest Vittify Beta bu
 - **Background Auto-Sync**: Automatically syncs newly registered transactions hourly when both devices are in proximity.
 - **Granular Privacy Controls**: Choose which accounts or transaction tags are shared with your partner.
 
-### 🤖 4. Google Gemini AI & Plain-English Quick Add (Beta)
+### 🤖 5. Google Gemini AI & Plain-English Quick Add (Beta)
 - **Experimental Beta Feature**: Completely optional. Vittify remains 100% functional and offline without configuring any API key.
 - **Bring Your Own Key (BYOK)**: Connect your private Google Gemini API key directly to your device—no third-party proxy servers or monthly subscriptions.
 - **Model Flexibility & Guidance**: Choose between `Gemini 2.5 Flash`, `Gemini 2.5 Pro`, or lightweight models with clear guidance and custom quick add prompts.
 - **Natural Language Quick Add**: Simply type what you spent in natural English (e.g., *"Paid 450 for grocery at Blinkit via HDFC"* or *"Spent $34.50 on dinner with Sarah"*), and it automatically resolves amount, merchant, category, and payment account.
 - **Offline Token Counter**: Monitor local request and token usage directly from the in-app AI settings.
 
-### 🧾 5. Receipt Scanning, On-Device OCR & AI Extraction (New)
+### 🧾 6. Receipt Scanning, On-Device OCR & AI Extraction (New)
 - **On-Device OCR (Google ML Kit)**: Snap physical receipts, store paper bills, or invoices—extracts merchant names, totals, tax, and dates directly on your phone without sending photos to any server.
 - **Gemini AI Receipt Extraction (Optional BYOK)**: Automatically parses dense line items, itemized costs, and tax breakdowns into structured records.
 - **Split Transactions & Line Items**: Split complex receipts across multiple categories (e.g. supermarket run split into Groceries and Household Essentials) or split expenses with friends.
 - **Document & Bill Attachments**: Attach photos of bills, receipts, and invoices directly to transactions for audit and warranty records.
 
-### 📱 6. Home Screen Widgets & Launcher Shortcuts (Built for Convenience)
+### 📱 7. Home Screen Widgets & Launcher Shortcuts (Built for Convenience)
 - **Glanceable Quick Add Widget**: Log cash spending, street food, or transit fares in two taps directly from your home screen.
 - **Scan Receipt Widget**: One-tap camera shortcut directly on your home launcher to capture and scan receipts instantly.
 - **App Shortcuts**: Long-press app icon to immediately jump into Quick Add or Scan Receipt.
 
-### 🎯 7. Granular Budgets & Spending Controls
+### 🎯 8. Granular Budgets & Spending Controls
 - **Category-Level Limits**: Set flexible monthly spending caps for dining, groceries, shopping, travel, and more.
 - **Adaptive Daily Allowance**: Calculates how much you can spend per day to stay within budget based on current velocity and days remaining.
 - **Threshold Warnings**: Visual alerts and warning indicators when approaching 80% or 100% of your allocated limits.
 - **Historical Budget Ledger**: Review past monthly performance to identify spending habits and seasonal trends.
 
-### 🔁 8. Subscription & Recurring Payment Tracker
+### 🔁 9. Subscription & Recurring Payment Tracker
 - **Commitment Forecasting**: Track all recurring payments (Netflix, Spotify, ChatGPT Plus, Amazon Prime, broadband, rent, utilities).
 - **Monthly & Annual Projections**: Instant visibility into total annualized fixed costs.
 - **Service Identity**: Recognizes recurring merchants and displays crisp brand icons and billing cycle countdowns.
 
-### 💳 9. Multi-Currency & Advanced Account Management
+### 💳 10. Multi-Currency & Advanced Account Management
 - **Universal Multi-Currency Engine**: Native support for **INR (₹)**, **USD ($)**, **AED (د.إ)**, **EUR (€)**, **GBP (£)**, **NPR (₨)**, **THB (฿)**, **ETB (ብር)**, **TZS (TSh)**, **PKR (₨)**, and dozens more.
 - **Live Approximate Conversions**: View foreign transactions with real-time approximate local currency equivalents.
 - **Comprehensive Account Types**: Bank accounts, credit cards, investments, savings, digital wallets, and a dedicated **Cash Wallet**.
 - **Running Ledger with Balance Trend Graphs**: Visualize balance evolution over time and reconcile manual adjustments easily.
 
-### 📈 10. Interactive Analytics & Financial Heatmaps
+### 📈 11. Interactive Analytics & Financial Heatmaps
 - **Dynamic Trend Graphs**: Smooth animated bezier curves illustrating spend vs. income over custom horizons.
 - **Category Donut Visualizations**: Interactive segment breakdowns with percentage contributions and quick drill-downs.
 - **Daily Financial Heatmap**: GitHub-style activity heatmaps showing transaction intensity across every day of the month.
 - **Flexible Time Horizons**: Switch between *Today*, *This Week*, *This Month*, *Last Month*, *Quarter*, *Year-to-Date*, or *Custom Date Range*.
 
-### ⚙️ 11. Smart Automation Rules & Webhooks
+### ⚙️ 12. Smart Automation Rules & Webhooks
 - **Conditional Rule Engine**: Define triggers (e.g., *"If SMS merchant contains 'Uber' or 'Lyft', set category to Transport"*).
 - **Automatic Account Mapping**: Automatically route transactions to specific accounts based on incoming sender patterns.
 - **Outgoing HTTP Webhooks**: Fire real-time JSON webhooks to your private home automation servers, Notion databases, or custom dashboards whenever a transaction is recorded.
 
-### 🎨 12. Material 3 Expressive Design & Theming
+### 🎨 13. Material 3 Expressive Design & Theming
 - **Dynamic Monet Theming**: Adapts dynamically to your Android wallpaper palette on Android 12+.
 - **Curated Expressive Themes**: Hand-crafted themes including *Latte*, *Macchiato*, *Rosé Pine*, and high-contrast *AMOLED Pure Black*.
 - **Animated Mesh Canvas**: Optional fluid animated background canvas providing tactile ambiance.
 - **Navigation Modes**: Choose between edge-to-edge system navigation and a floating squircle navigation bar.
 - **Custom Launcher Icons**: Personalize your home screen with themed app icons.
 
-### 🔒 13. Privacy & Offline Sovereignty
+### 🔒 14. Privacy & Offline Sovereignty
 - **Zero Cloud Architecture**: No sign-ups, no user accounts, no analytics tracking, no Firebase, and no advertisements.
 - **Biometric Lock**: Protect your financial data with Android BiometricPrompt (Fingerprint / Face Unlock).
 - **Encrypted Local Storage**: Sensitive settings and credentials stored using AndroidX EncryptedSharedPreferences and cryptographic keystores.
 - **Data Sanitization**: Option to sanitize or mask sensitive account digits when sharing screenshots or exporting records.
 
-### ☁️ 14. Encrypted Multi-Cloud Backup & Restore
+### ☁️ 15. Encrypted Multi-Cloud Backup & Restore
 - **Google Drive Integration**: Direct, one-tap backup to your private Google Drive AppData folder with scheduled daily/weekly auto-backups.
 - **Nextcloud & WebDAV**: Sync with self-hosted Nextcloud instances, ownCloud, Synology NAS, or any custom WebDAV endpoint.
 - **Client-Side AES-256 Encryption**: All backup archives are encrypted locally before upload with your private passphrase. The cloud provider only ever sees ciphertext.
-- **Full Offline Portability**: Restore your entire ledger and preferences on any new device with zero friction.
+- **Full Offline Portability**: Restore your entire ledger and preferences on any new device with zero friction, or migrate from external tools (Cashew, Excel, CSV) via the built-in Import Wizard.
 
 ---
 

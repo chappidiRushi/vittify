@@ -23,6 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -162,6 +163,7 @@ fun BackupSyncScreen(
     onNavigateBack: () -> Unit,
     targetOptionId: String? = null,
     onNavigateToAccounts: () -> Unit = {},
+    onNavigateToImportWizard: () -> Unit = {},
     onRestoreSuccess: () -> Unit = {},
     viewModel: BackupSyncViewModel = hiltViewModel(),
     dataPrivacyViewModel: DataPrivacyViewModel = hiltViewModel(),
@@ -1041,10 +1043,84 @@ fun BackupSyncScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(1.5.dp)
                     ) {
-                        // Import Data
+                        // Restore & Import Data (Vittify, Excel, Cashew, CSV)
                         ListItem(
-                            headline = { Text(stringResource(R.string.import_data)) },
-                            supporting = { Text(stringResource(R.string.import_data_sub)) },
+                            headline = {
+                                Text(
+                                    text = "Restore & Import Data",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            },
+                            supporting = {
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text(
+                                        text = "Restore from Vittify backups, or import from Excel, Cashew, or CSV files.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Surface(
+                                            shape = MaterialTheme.shapes.extraSmall,
+                                            color = MaterialTheme.colorScheme.surfaceVariant
+                                        ) {
+                                            Text(
+                                                text = "Vittify",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
+                                        Surface(
+                                            shape = MaterialTheme.shapes.extraSmall,
+                                            color = Color(0xFFE8F5E9)
+                                        ) {
+                                            Text(
+                                                text = "Excel (Beta)",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF2E7D32),
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
+                                        Surface(
+                                            shape = MaterialTheme.shapes.extraSmall,
+                                            color = Color(0xFFFFF3E0)
+                                        ) {
+                                            Text(
+                                                text = "Cashew (Beta)",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFE65100),
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
+                                        Surface(
+                                            shape = MaterialTheme.shapes.extraSmall,
+                                            color = Color(0xFFEDE7F6)
+                                        ) {
+                                            Text(
+                                                text = "CSV (Beta)",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF512DA8),
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
+                                    }
+                                }
+                            },
                             leading = {
                                 Box(
                                     modifier = Modifier
@@ -1066,7 +1142,7 @@ fun BackupSyncScreen(
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             },
-                            onClick = { importLauncher.launch("*/*") },
+                            onClick = onNavigateToImportWizard,
                             shape = ListItemPosition.Top.toShape(),
                             padding = PaddingValues(0.dp)
                         )

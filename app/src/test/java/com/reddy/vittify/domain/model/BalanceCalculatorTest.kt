@@ -3,6 +3,7 @@ package com.reddy.vittify.domain.model
 import com.reddy.vittify.data.database.entity.TransactionEntity
 import com.reddy.vittify.data.database.entity.TransactionType
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -258,6 +259,153 @@ class BalanceCalculatorTest {
         assertEquals(BigDecimal.ZERO, result.initialBalance)
         // Credit card debt: +500 (expense) - 200 (payment) = 300
         assertEquals(BigDecimal("300"), result.expectedBalance)
+    }
+
+    @Test
+    fun testResolveTransferDirection_WithAccountContext() {
+        val transferTx = TransactionEntity(
+            id = 10,
+            amount = BigDecimal("10.00"),
+            targetAmount = BigDecimal("952.34"),
+            merchantName = "US ACCOUNT → Primary",
+            category = "Self Transfer",
+            transactionType = TransactionType.TRANSFER,
+            dateTime = LocalDateTime.now(),
+            accountId = "acc_us",
+            fromAccountId = "acc_us",
+            toAccountId = "acc_primary",
+            fromAccount = "US ACCOUNT",
+            toAccount = "Primary",
+            currency = "USD"
+        )
+
+        // For US ACCOUNT: direction must be SOURCE
+        val sourceDir = BalanceCalculator.resolveTransferDirection(
+            accountId = "acc_us",
+            bankName = "US ACCOUNT",
+            accountLast4 = "",
+            accountName = "US ACCOUNT",
+            transaction = transferTx
+        )
+        assertEquals(BalanceCalculator.TransferDirection.SOURCE, sourceDir)
+        assertEquals(BigDecimal("10.00"), BalanceCalculator.getEffectiveAmount(transferTx, sourceDir))
+
+        // For Primary: direction must be DESTINATION
+        val destDir = BalanceCalculator.resolveTransferDirection(
+            accountId = "acc_primary",
+            bankName = "Primary",
+            accountLast4 = "",
+            accountName = "Primary",
+            transaction = transferTx
+        )
+        assertEquals(BalanceCalculator.TransferDirection.DESTINATION, destDir)
+        assertEquals(BigDecimal("952.34"), BalanceCalculator.getEffectiveAmount(transferTx, destDir))
+
+        // Audit calculation for Primary (DESTINATION) with empty last-4
+        val resultPrimary = BalanceCalculator.calculateAuditBalances(
+            transactions = listOf(transferTx),
+            accountLast4 = "",
+            isCreditCard = false,
+            currentBalance = BigDecimal("952.34"),
+            accountId = "acc_primary",
+            bankName = "Primary",
+            accountName = "Primary"
+        )
+        assertEquals(BigDecimal.ZERO, resultPrimary.initialBalance)
+        assertEquals(BigDecimal("952.34"), resultPrimary.expectedBalance)
+
+        // Audit calculation for US ACCOUNT (SOURCE) with empty last-4
+        val resultUS = BalanceCalculator.calculateAuditBalances(
+            transactions = listOf(transferTx),
+            accountLast4 = "",
+            isCreditCard = false,
+            currentBalance = BigDecimal("-10.00"),
+            accountId = "acc_us",
+            bankName = "US ACCOUNT",
+            accountName = "US ACCOUNT"
+        )
+        assertEquals(BigDecimal.ZERO, resultUS.initialBalance)
+        assertEquals(BigDecimal("-10.00"), resultUS.expectedBalance)
+    }
+
+    @Test
+    fun testComputeAccountAudit_UnifiedCalculations() {
+        val now = LocalDateTime.now()
+        val account = com.reddy.vittify.data.database.entity.AccountBalanceEntity(
+            id = "acc_primary",
+            bankName = "Primary",
+            accountLast4 = "1234",
+            balance = BigDecimal("1500.00")
+        )
+
+        val tx1 = TransactionEntity(
+            id = 1,
+            amount = BigDecimal("2000.00"),
+            merchantName = "Salary",
+            category = "Income",
+            transactionType = TransactionType.INCOME,
+            dateTime = now.minusDays(2),
+            accountId = "acc_primary"
+        )
+
+        val tx2 = TransactionEntity(
+            id = 2,
+            amount = BigDecimal("500.00"),
+            merchantName = "Groceries",
+            category = "Food",
+            transactionType = TransactionType.EXPENSE,
+            dateTime = now.minusDays(1),
+            accountId = "acc_primary"
+        )
+
+        val audit = BalanceCalculator.computeAccountAudit(account, listOf(tx1, tx2))
+        assertEquals(BigDecimal("2000.00"), audit.totalIncome)
+        assertEquals(BigDecimal("500.00"), audit.totalExpenses)
+        assertEquals(BigDecimal("1500.00"), audit.expectedBalance)
+        assertEquals(0, BigDecimal.ZERO.compareTo(audit.discrepancy))
+        assertTrue(audit.isHealthy)
+    }
+
+    @Test
+    fun testFindDuplicateTransactions_FiltersDismissed() {
+        val now = LocalDateTime.now()
+        val tx1 = TransactionEntity(
+            id = 1,
+            amount = BigDecimal("100.00"),
+            merchantName = "Uber",
+            category = "Transport",
+            transactionType = TransactionType.EXPENSE,
+            dateTime = now
+        )
+        val tx2 = TransactionEntity(
+            id = 2,
+            amount = BigDecimal("100.00"),
+            merchantName = "Uber",
+            category = "Transport",
+            transactionType = TransactionType.EXPENSE,
+            dateTime = now.plusMinutes(2),
+            isDuplicateDismissed = true // marked intentional
+        )
+        val tx3 = TransactionEntity(
+            id = 3,
+            amount = BigDecimal("100.00"),
+            merchantName = "Uber",
+            category = "Transport",
+            transactionType = TransactionType.EXPENSE,
+            dateTime = now.plusMinutes(3)
+        )
+
+        // tx2 is dismissed. Only tx1 and tx3 should form the duplicate group!
+        val groups = BalanceCalculator.findDuplicateTransactions(listOf(tx1, tx2, tx3))
+        assertEquals(1, groups.size)
+        assertEquals(2, groups[0].transactions.size)
+        assertTrue(groups[0].transactions.none { it.id == 2L })
+
+        // When all are dismissed
+        val tx1Dismissed = tx1.copy(isDuplicateDismissed = true)
+        val tx3Dismissed = tx3.copy(isDuplicateDismissed = true)
+        val emptyGroups = BalanceCalculator.findDuplicateTransactions(listOf(tx1Dismissed, tx2, tx3Dismissed))
+        assertTrue(emptyGroups.isEmpty())
     }
 
     @Test

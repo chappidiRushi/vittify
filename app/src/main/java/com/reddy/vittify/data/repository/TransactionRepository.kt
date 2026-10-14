@@ -496,6 +496,25 @@ class TransactionRepository @Inject constructor(
         return transactionDao.getTransactionsByAccount(bankName, accountLast4)
     }
 
+    /**
+     * Unified method to fetch all transactions related to an account:
+     * Combines query by account unique ID and query by bank name + last-4 (including transfers),
+     * deduplicates them, and filters out deleted records and balance update markers.
+     */
+    suspend fun getTransactionsForAccount(
+        accountId: String?,
+        bankName: String,
+        accountLast4: String
+    ): List<TransactionEntity> {
+        val byId = if (!accountId.isNullOrBlank()) {
+            transactionDao.getTransactionsByAccountId(accountId, accountLast4).first()
+        } else emptyList()
+        val byAcc = transactionDao.getTransactionsByAccount(bankName, accountLast4).first()
+        return (byId + byAcc)
+            .distinctBy { it.id }
+            .filter { !it.isDeleted && it.transactionType != TransactionType.BALANCE_UPDATE }
+    }
+
     fun getTransactionsByAccountIdAndDateRange(
             accountId: String,
             accountLast4: String,
