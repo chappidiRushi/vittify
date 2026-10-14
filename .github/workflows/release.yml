@@ -152,30 +152,49 @@ jobs:
             VERSION="${MAJOR}.${MINOR}.${PATCH}-beta"
             echo "Mode: Dev branch beta release -> updated patch to $VERSION (code: $CODE)"
           else
-            # Main branch: stable release -> update the major version, NO beta tag
+            # Main branch: stable release -> increment the minor version (keep major version)
             CLEAN_VERSION="${CURRENT_VERSION%%-*}"
             IFS='.' read -r BASE_MAJOR BASE_MINOR BASE_PATCH <<< "$CLEAN_VERSION"
-            BASE_MAJOR="${BASE_MAJOR:-2}"
+            BASE_MAJOR="${BASE_MAJOR:-1}"
+            BASE_MINOR="${BASE_MINOR:-0}"
             
             LATEST_STABLE_TAG=$(git tag -l "v*" | grep -v "beta\|alpha\|rc\|pre" | sort -V | tail -n 1 | sed 's/^v//' || echo "")
             if [ -n "$LATEST_STABLE_TAG" ]; then
-              TAG_MAJOR=$(echo "$LATEST_STABLE_TAG" | cut -d. -f1)
-              if [ "$TAG_MAJOR" -ge "$BASE_MAJOR" ]; then
-                MAJOR=$((TAG_MAJOR + 1))
+              IFS='.' read -r TAG_MAJOR TAG_MINOR TAG_PATCH <<< "$LATEST_STABLE_TAG"
+              TAG_MAJOR="${TAG_MAJOR:-1}"
+              TAG_MINOR="${TAG_MINOR:-0}"
+              
+              if [ "$TAG_MAJOR" -gt "$BASE_MAJOR" ]; then
+                MAJOR="$TAG_MAJOR"
+                # Find the highest minor version tag for this major
+                LATEST_MINOR_TAG=$(git tag -l "v${MAJOR}.*" | grep -v "beta\|alpha\|rc\|pre" | sort -V | tail -n 1 | sed 's/^v//' || echo "")
+                if [ -n "$LATEST_MINOR_TAG" ]; then
+                  IFS='.' read -r _ M_MINOR _ <<< "$LATEST_MINOR_TAG"
+                  MINOR=$(( ${M_MINOR:-0} + 1 ))
+                else
+                  MINOR=1
+                fi
+              elif [ "$TAG_MAJOR" -eq "$BASE_MAJOR" ]; then
+                MAJOR="$TAG_MAJOR"
+                HIGHER_MINOR=$(( TAG_MINOR > BASE_MINOR ? TAG_MINOR : BASE_MINOR ))
+                MINOR=$(( HIGHER_MINOR + 1 ))
               else
-                MAJOR=$((BASE_MAJOR + 1))
+                MAJOR="$BASE_MAJOR"
+                MINOR=$(( BASE_MINOR + 1 ))
               fi
             else
-              MAJOR=$((BASE_MAJOR + 1))
+              MAJOR="${BASE_MAJOR:-1}"
+              MINOR=$(( ${BASE_MINOR:-0} + 1 ))
             fi
             
-            while git rev-parse "refs/tags/v${MAJOR}.0.0" >/dev/null 2>&1; do
-              MAJOR=$((MAJOR + 1))
+            # Avoid tag collision
+            while git rev-parse "refs/tags/v${MAJOR}.${MINOR}.0" >/dev/null 2>&1; do
+              MINOR=$((MINOR + 1))
             done
             
-            VERSION="${MAJOR}.0.0"
-            CODE=$(( MAJOR * 10000 ))
-            echo "Mode: Main branch stable release -> updated major to $VERSION (code: $CODE)"
+            VERSION="${MAJOR}.${MINOR}.0"
+            CODE=$(( MAJOR * 10000 + MINOR * 100 ))
+            echo "Mode: Main branch stable release -> updated minor to $VERSION (code: $CODE)"
           fi
           
           echo "version=$VERSION" >> $GITHUB_OUTPUT
